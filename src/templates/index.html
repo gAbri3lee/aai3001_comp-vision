@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VisionAid</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #262f45;
+    --text: #e8ecf6;
+    --muted: #8892a8;
+    --accent: #4f8cff;
+    --warn: #ff4d4d;
+    --caution: #ffb84d;
+    --note: #7c8aa5;
+    --ok: #34c77b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 24px 16px 40px;
+  }
+  header {
+    max-width: 1080px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    letter-spacing: 0.02em;
+  }
+  header .tagline {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  main {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 820px) {
+    main { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .video-wrap {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .video-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .fps-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .alert-banner {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #1b2338;
+    border: 1px solid var(--panel-border);
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .alert-banner.level-warning { background: #3a1620; border-color: var(--warn); color: #ffb3b3; }
+  .alert-banner.level-caution { background: #3a2c14; border-color: var(--caution); color: #ffd9a0; }
+  .alert-banner.level-note    { background: #1c2436; border-color: var(--note); color: #c4cbdb; }
+  .alert-banner.level-clear   { color: var(--muted); font-weight: 400; }
+
+  .panel h2 {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  button.action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.05s;
+  }
+  button.action:active { transform: scale(0.98); }
+  button.action:disabled { opacity: 0.5; cursor: default; }
+  button.action small {
+    font-weight: 400;
+    font-size: 0.75rem;
+    opacity: 0.85;
+  }
+  button.secondary { background: #2a3352; }
+
+  .result-card {
+    background: #0f1526;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    min-height: 1.4em;
+    word-break: break-word;
+  }
+  .result-card .label {
+    display: block;
+    color: var(--muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  footer {
+    max-width: 1080px;
+    margin: 20px auto 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>VisionAid</h1>
+    <div class="tagline">Hazard-detection vision assistant — live demo console</div>
+  </div>
+  <div class="tagline">This is the operator/demo view. The real user-facing output is audio only.</div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="video-wrap">
+      <img src="/video_feed" alt="Live annotated camera feed">
+      <div class="fps-badge" id="fps-badge">-- FPS</div>
+    </div>
+    <div class="alert-banner level-clear" id="alert-banner">No hazards detected</div>
+  </section>
+
+  <section class="panel">
+    <h2>On-demand queries</h2>
+    <div class="actions">
+      <button class="action" id="btn-scan">
+        Scan text
+        <small>or say &ldquo;vision scan&rdquo;</small>
+      </button>
+      <button class="action secondary" id="btn-identify">
+        Identify item
+        <small>generic object classifier</small>
+      </button>
+    </div>
+
+    <div class="result-card">
+      <span class="label">Last text read</span>
+      <span id="ocr-text">—</span>
+    </div>
+    <div class="result-card">
+      <span class="label">Last item identified</span>
+      <span id="product-text">—</span>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Placeholder pretrained models — detection is not yet fine-tuned on a real hazard dataset, and item ID is a generic ImageNet classifier, not a currency-trained one.
+</footer>
+
+<script>
+  const alertBanner = document.getElementById("alert-banner");
+  const fpsBadge = document.getElementById("fps-badge");
+  const ocrText = document.getElementById("ocr-text");
+  const productText = document.getElementById("product-text");
+  const btnScan = document.getElementById("btn-scan");
+  const btnIdentify = document.getElementById("btn-identify");
+
+  function levelClassFor(alert) {
+    if (!alert) return "level-clear";
+    if (alert.startsWith("Warning")) return "level-warning";
+    if (alert.startsWith("Caution")) return "level-caution";
+    return "level-note";
+  }
+
+  async function pollStatus() {
+    try {
+      const res = await fetch("/status");
+      const data = await res.json();
+      fpsBadge.textContent = `${data.fps.toFixed(1)} FPS`;
+
+      alertBanner.textContent = data.alert || "No hazards detected";
+      alertBanner.className = "alert-banner " + levelClassFor(data.alert);
+
+      ocrText.textContent = data.ocr_text || "—";
+      productText.textContent = data.product_text || "—";
+    } catch (e) {
+      // Server not reachable yet; ignore and retry on the next tick.
+    }
+  }
+
+  function fireAction(button, url, busyLabel) {
+    const original = button.innerHTML;
+    button.disabled = true;
+    button.textContent = busyLabel;
+    fetch(url, { method: "POST" }).finally(() => {
+      setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = original;
+      }, 2500);
+    });
+  }
+
+  btnScan.addEventListener("click", () => fireAction(btnScan, "/scan_text", "Scanning..."));
+  btnIdentify.addEventListener("click", () => fireAction(btnIdentify, "/identify_item", "Identifying..."));
+
+  setInterval(pollStatus, 500);
+  pollStatus();
+</script>
+</body>
+</html>
