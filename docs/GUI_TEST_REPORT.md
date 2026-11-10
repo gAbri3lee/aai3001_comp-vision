@@ -402,3 +402,24 @@ The general COCO model has no pillar class. It covered only 3 of 127 local misse
 (3 of 109 cloud) with an Object box at confidence 0.5 or more, and that box is
 spoken as "Object detected ahead" only if it also passes the gate (centre third,
 large enough). No Pillar box does not mean there is no obstacle.
+
+## Phase E: page
+
+`src/templates/index.html`:
+
+- Banner: the top gated hazard, or "No hazards", coloured by that hazard's band.
+- Hazards list: one row per gated detection in priority order, with class (marked
+  "general model" for COCO people), confidence, position, band, and a magenta
+  "spoken" marker on the hazard being announced.
+- "Ignored detections" is a collapsed section listing far, side and low-confidence
+  detections with their reason.
+- `/?debug=1` switches the video to `/video_feed?debug=1` (ignored boxes drawn
+  grey), opens the ignored section and adds box size and, once calibrated, the
+  distance estimate to each row.
+- Status line: backend, model, inference or round-trip time, alert gate on or off
+  (and "uncalibrated sizes" while `calibrated` is false), depth and speech state.
+- Footer adds "Distance is an estimate from box size, not measured metres." and
+  "No hazards does not mean the scene is safe". The em dash in the tagline was removed.
+
+Checked with headless Chrome against the Phase A clip: banner `Warning, Stair ahead`,
+the stair box drawn magenta with a `SPOKEN` tag, and the list row marked "spoken".

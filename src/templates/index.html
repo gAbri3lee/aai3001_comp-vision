@@ -125,6 +125,25 @@
     letter-spacing: 0.05em;
     margin-bottom: 4px;
   }
+  .status-line { color: var(--muted); font-size: 0.8rem; margin-top: 6px; }
+  ul.hazards { list-style: none; padding: 0; margin: 0; }
+  ul.hazards li {
+    display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline;
+    padding: 8px 10px; margin-bottom: 6px; border-radius: 8px;
+    background: #0f1526; border: 1px solid var(--panel-border); font-size: 0.9rem;
+  }
+  ul.hazards li.spoken { border-color: #ff50ff; box-shadow: 0 0 0 1px #ff50ff inset; }
+  ul.hazards .name { font-weight: 600; }
+  ul.hazards .meta { color: var(--muted); font-size: 0.8rem; }
+  .band { font-size: 0.72rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; }
+  .band.near { color: #ffb3b3; border-color: var(--warn); }
+  .band.mid-close { color: #ffd9a0; border-color: var(--caution); }
+  .band.mid, .band.none { color: #c4cbdb; border-color: var(--note); }
+  .band.far { color: var(--muted); border-color: var(--panel-border); }
+  .spoken-tag { font-size: 0.72rem; color: #ff9cff; font-weight: 600; }
+  details.ignored { margin-top: 12px; color: var(--muted); font-size: 0.85rem; }
+  details.ignored summary { cursor: pointer; }
+  details.ignored li { background: transparent; opacity: 0.8; }
   footer {
     max-width: 1080px;
     margin: 20px auto 0;
@@ -137,7 +156,7 @@
 <header>
   <div>
     <h1>VisionAid</h1>
-    <div class="tagline">Hazard-detection vision assistant — live demo console</div>
+    <div class="tagline">Hazard-detection vision assistant: live demo console</div>
   </div>
   <div class="tagline">This is the operator/demo view. Alerts are shown here and spoken when audio is enabled.</div>
 </header>
@@ -145,35 +164,84 @@
 <main>
   <section class="panel">
     <div class="video-wrap">
-      <img src="/video_feed" alt="Live annotated camera feed">
+      <img id="video" src="/video_feed" alt="Live annotated camera feed">
       <div class="fps-badge" id="fps-badge">-- FPS</div>
     </div>
-    <div class="alert-banner level-clear" id="alert-banner">No detections</div>
+    <div class="alert-banner level-clear" id="alert-banner" aria-live="assertive">No hazards</div>
   </section>
 
   <section class="panel">
-    <div class="result-card"><span class="label">Active detector</span><span id="model-status">Starting…</span></div>
-    <h2>Detected objects</h2>
-    <ul id="object-alerts" aria-live="polite"><li>No detections</li></ul>
+    <div class="result-card"><span class="label">Active detector</span><span id="model-status">Starting...</span>
+      <div class="status-line" id="pipeline-status"></div></div>
+    <h2>Hazards</h2>
+    <ul class="hazards" id="object-alerts" aria-live="polite"><li>No hazards</li></ul>
+    <details class="ignored" id="ignored">
+      <summary id="ignored-summary">Ignored detections (0)</summary>
+      <ul class="hazards" id="ignored-list"></ul>
+    </details>
   </section>
 </main>
 
 <footer>
-  Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Detection is supplementary and can miss hazards. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Depth is relative, not metres. Other common objects are labelled Object by a general detector; objects outside its coverage can still be missed. Cloud mode uploads camera frames.
+  Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Detection is supplementary and can miss hazards; "No hazards" does not mean the scene is safe. Pillar is the weakest class and is often missed. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Distance is an estimate from box size, not measured metres. Depth, when enabled, is relative, not metres. Far detections, side objects and low-confidence general detections are shown as ignored and are not spoken. Other common objects are labelled Object by a general detector; objects outside its coverage can still be missed. Cloud mode uploads camera frames.
 </footer>
 
 <script>
+  const debug = new URLSearchParams(location.search).get("debug") === "1";
   const alertBanner = document.getElementById("alert-banner");
   const fpsBadge = document.getElementById("fps-badge");
   const objectAlerts = document.getElementById("object-alerts");
+  const ignoredList = document.getElementById("ignored-list");
+  const ignoredSummary = document.getElementById("ignored-summary");
   const modelStatus = document.getElementById("model-status");
-  const video = document.querySelector(".video-wrap img");
+  const pipelineStatus = document.getElementById("pipeline-status");
+  const video = document.getElementById("video");
+  if (debug) {
+    video.src = "/video_feed?debug=1";
+    document.getElementById("ignored").open = true;
+  }
 
-  function levelClassFor(alert) {
+  const BAND_LEVEL = {"near": "level-warning", "mid-close": "level-caution", "mid": "level-note"};
+  const REASON_TEXT = {"far": "far", "side": "at the side", "low_confidence": "low confidence"};
+  const POSITION_TEXT = {"left": "left", "center": "ahead", "right": "right"};
+
+  function levelClassFor(alert, band) {
     if (!alert) return "level-clear";
+    if (band && BAND_LEVEL[band]) return BAND_LEVEL[band];
     if (alert.startsWith("Warning")) return "level-warning";
     if (alert.startsWith("Caution")) return "level-caution";
     return "level-note";
+  }
+
+  function isSpoken(d, selected) {
+    return !!selected && d.gated && d.class === selected.class && d.position === selected.position;
+  }
+
+  function span(cls, text) {
+    const el = document.createElement("span");
+    el.className = cls;
+    el.textContent = text;
+    return el;
+  }
+
+  function row(d, selected) {
+    const li = document.createElement("li");
+    const name = d.class + (d.source === "general" && d.class !== "Object" ? " (general model)" : "");
+    li.appendChild(span("name", name));
+    li.appendChild(span("meta", `${(d.confidence * 100).toFixed(0)}%`));
+    li.appendChild(span("meta", POSITION_TEXT[d.position] || d.position));
+    if (d.band) li.appendChild(span("band " + d.band, d.band));
+    if (!d.gated) li.appendChild(span("meta", "ignored: " + (REASON_TEXT[d.reason] || d.reason)));
+    if (debug && d.size != null) li.appendChild(span("meta", `h=${d.size.toFixed(2)}`));
+    if (debug && "distance_est_m" in d) {
+      li.appendChild(span("meta", d.distance_est_m == null ? `distance: ${d.distance_note}`
+                                                           : `about ${d.distance_est_m} m (estimate)`));
+    }
+    if (isSpoken(d, selected)) {
+      li.classList.add("spoken");
+      li.appendChild(span("spoken-tag", "spoken"));
+    }
+    return li;
   }
 
   async function pollStatus() {
@@ -183,25 +251,43 @@
       const data = await res.json();
       fpsBadge.textContent = `${data.fps.toFixed(1)} FPS`;
 
-      alertBanner.textContent = data.error || data.alert || "No detections";
+      const detections = data.detections || [];
+      const gated = detections.filter(d => d.gated).sort((a, b) => b.priority - a.priority);
+      const ignored = detections.filter(d => !d.gated);
+      const top = gated.find(d => d.phrase === data.alert);
+
+      alertBanner.textContent = data.error || data.alert || "No hazards";
+      alertBanner.className = "alert-banner " + (data.error ? "level-warning" : levelClassFor(data.alert, top && top.band));
       video.style.opacity = data.error ? "0.15" : "1";
+
       const timing = data.round_trip_ms ?? data.latency_ms;
       modelStatus.textContent = `${data.backend}: ${data.model}` + (timing == null ? "" : ` · ${timing.toFixed(1)} ms${data.round_trip_ms == null ? " inference" : " round trip"}`);
-      alertBanner.className = "alert-banner " + levelClassFor(data.alert);
+      const gate = data.gate_enabled === false ? "alert gate off" :
+                   "alert gate on" + (data.gate_calibrated ? "" : " (uncalibrated sizes)");
+      pipelineStatus.textContent = [gate, data.depth_enabled ? "depth on" : "depth off",
+                                    data.tts_enabled ? "speech on" : "speech off",
+                                    debug ? "debug view" : null].filter(Boolean).join(" · ");
 
       objectAlerts.replaceChildren();
-      const messages = data.error ? [data.error] : (data.alerts.length ? data.alerts : ["No detections"]);
-      for (const message of messages) {
-        const item = document.createElement("li");
-        item.textContent = message;
-        objectAlerts.appendChild(item);
+      if (data.error) {
+        objectAlerts.appendChild(span("meta", data.error));
+      } else if (!gated.length) {
+        const li = document.createElement("li");
+        li.textContent = "No hazards";
+        objectAlerts.appendChild(li);
+      } else {
+        for (const d of gated) objectAlerts.appendChild(row(d, data.selected));
       }
+      ignoredList.replaceChildren(...ignored.map(d => row(d, null)));
+      ignoredSummary.textContent = `Ignored detections (${ignored.length})`;
     } catch (e) {
       alertBanner.textContent = "Service unavailable";
       alertBanner.className = "alert-banner level-warning";
       video.style.opacity = "0.15";
       modelStatus.textContent = "Unavailable";
+      pipelineStatus.textContent = "";
       objectAlerts.textContent = "Service unavailable";
+      ignoredList.replaceChildren();
     }
   }
 

@@ -115,3 +115,12 @@ def test_webapp_status_speech_and_banner_agree():
     assert abs(by_class['Stair']['size'] - .4) < 1e-6
     for detection in status['detections']:
         assert {'class_id', 'class', 'confidence', 'box_xyxy', 'size', 'band', 'position', 'gated', 'source'} <= set(detection)
+
+
+def test_page_has_spoken_marker_ignored_section_debug_view_and_distance_caveat():
+    from webapp import create_app
+    page = create_app(SimpleNamespace()).test_client().get('/').get_data(as_text=True)
+    for text in ('Ignored detections', 'spoken', 'debug=1', 'alert gate',
+                 'Distance is an estimate from box size, not measured metres.'):
+        assert text in page
+    assert '—' not in page and '–' not in page
