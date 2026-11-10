@@ -210,3 +210,195 @@ confidence and side objects are no longer spoken. The stair image gives
 Known trade-off: a phrase dropped as stale has already used its cooldown, so that
 hazard waits up to 4 s (8 s for Objects) before it is offered again. This only
 happens when the speaker is still busy more than 1 s after the phrase was queued.
+
+## Phase D: distance (estimates, not measurements)
+
+### D1. Recall by object size
+
+```
+python scripts/recall_by_size.py --images "$BUNDLE/test_set/test/images"
+python scripts/recall_by_size.py --backend cloud --endpoint http://127.0.0.1:9100 \
+  --timeout 60 --max-frame-age 60 --images "$BUNDLE/test_set/test/images"
+```
+
+Outputs: `artifacts/recall_by_size/{local,cloud}/recall_by_size.{csv,md,json}`,
+People example sheets `people_{small,large}_{hits,misses}.jpg`, and the prediction
+caches `artifacts/{local,cloud}_test_predictions.json`. Overall recall per class
+matches the saved notebook values (local People 58%, Pillar 17%, Stair 69%,
+Wet Floor Sign 56%, Escalator 90%), which confirms the matching rule.
+
+**How to read size.** A detector sees pixels, not fractions. The test images are
+portrait phone frames letterboxed into 640x640, so a test box of height fraction
+`s` is `s x 640` model-input pixels. A 1280x720 webcam frame becomes 640x360
+inside the model input, so the same pixel height is `640/360 = 1.78` times larger
+as a fraction of the webcam frame. The "webcam fraction" column is that
+conversion, and it is the unit of `alert_gate.min_size`. Distances use the pinhole
+formula `distance = focal_px x real_height_m / box_height_px` with an **assumed**
+focal length of 914 px (720p webcam, about 70 degrees horizontal field of view)
+and a 1.7 m person. They are estimates. A real camera must be measured
+(`docs/DISTANCE_TEST_SHEET.md`).
+
+### Recall by box height, local (yolov8n, thresholds 0.35)
+
+Test box height fraction, model-input pixels, the same pixels as a fraction of a 1280x720 webcam frame, and the estimated distance of a 1.7 m person at that size (focal 914 px). Cells: recall (hits/boxes).
+
+| Test fraction | Input px | Webcam fraction | Person distance (estimate) | Escalator | People | Pillar | Stair | Wet Floor Sign |
+|---|---:|---:|---|---:|---:|---:|---:|---:|
+| 0.00-0.05 | 0-32 | 0.00-0.09 | 24.3 m to far | - | 0% (0/15) | 0% (0/6) | - | 0% (0/5) |
+| 0.05-0.10 | 32-64 | 0.09-0.18 | 12.1 m to 24.3 m | 0% (0/1) | 19% (28/149) | 0% (0/21) | 0% (0/10) | 31% (21/67) |
+| 0.10-0.15 | 64-96 | 0.18-0.27 | 8.1 m to 12.1 m | - | 55% (47/85) | 8% (1/12) | 33% (4/12) | 100% (34/34) |
+| 0.15-0.20 | 96-128 | 0.27-0.36 | 6.1 m to 8.1 m | 0% (0/1) | 69% (37/54) | 0% (0/9) | 33% (7/21) | 100% (9/9) |
+| 0.20-0.25 | 128-160 | 0.36-0.44 | 4.9 m to 6.1 m | 20% (1/5) | 82% (49/60) | 0% (0/15) | 47% (9/19) | - |
+| 0.25-0.30 | 160-192 | 0.44-0.53 | 4.0 m to 4.9 m | 25% (1/4) | 88% (29/33) | 9% (1/11) | 71% (12/17) | 100% (1/1) |
+| 0.30-0.40 | 192-256 | 0.53-0.71 | 3.0 m to 4.0 m | 100% (15/15) | 80% (41/51) | 50% (6/12) | 69% (22/32) | - |
+| 0.40-0.50 | 256-320 | 0.71-0.89 | 2.4 m to 3.0 m | 75% (3/4) | 83% (38/46) | 42% (8/19) | 71% (17/24) | - |
+| 0.50-0.60 | 320-384 | 0.89-1.07 | 2.0 m to 2.4 m | 100% (7/7) | 74% (23/31) | 43% (6/14) | 84% (27/32) | - |
+| 0.60-0.80 | 384-512 | 1.07-1.42 | cut off by frame | 95% (58/61) | 91% (20/22) | 15% (4/27) | 74% (37/50) | - |
+| 0.80-1.00 | 512-640 | 1.42-1.78 | cut off by frame | 95% (57/60) | 83% (19/23) | 0% (0/7) | 89% (63/71) | - |
+| all | | | | 90% (142/158) | 58% (331/569) | 17% (26/153) | 69% (198/288) | 56% (65/116) |
+
+Recall floor per class: the smallest size bucket where recall reaches 50 percent, for that bucket and for all larger boxes, with at least 5 boxes. Shown as a test fraction and as the equivalent webcam fraction (the unit of `alert_gate.min_size`):
+
+- Escalator: test 0.30, webcam 0.53 (config min_size now 0.25)
+- People: test 0.10, webcam 0.18 (config min_size now 0.4)
+- Pillar: no bucket reaches 50 percent (config min_size now 0.35)
+- Stair: test 0.25, webcam 0.44 (config min_size now 0.2)
+- Wet Floor Sign: test 0.10, webcam 0.18 (config min_size now 0.15)
+
+### Recall by box height, cloud (rfdetr-nano, thresholds 0.40)
+
+Test box height fraction, model-input pixels, the same pixels as a fraction of a 1280x720 webcam frame, and the estimated distance of a 1.7 m person at that size (focal 914 px). Cells: recall (hits/boxes).
+
+| Test fraction | Input px | Webcam fraction | Person distance (estimate) | Escalator | People | Pillar | Stair | Wet Floor Sign |
+|---|---:|---:|---|---:|---:|---:|---:|---:|
+| 0.00-0.05 | 0-32 | 0.00-0.09 | 24.3 m to far | - | 0% (0/15) | 0% (0/6) | - | 0% (0/5) |
+| 0.05-0.10 | 32-64 | 0.09-0.18 | 12.1 m to 24.3 m | 0% (0/1) | 32% (48/149) | 0% (0/21) | 0% (0/10) | 61% (41/67) |
+| 0.10-0.15 | 64-96 | 0.18-0.27 | 8.1 m to 12.1 m | - | 55% (47/85) | 17% (2/12) | 25% (3/12) | 97% (33/34) |
+| 0.15-0.20 | 96-128 | 0.27-0.36 | 6.1 m to 8.1 m | 0% (0/1) | 87% (47/54) | 0% (0/9) | 33% (7/21) | 100% (9/9) |
+| 0.20-0.25 | 128-160 | 0.36-0.44 | 4.9 m to 6.1 m | 40% (2/5) | 95% (57/60) | 20% (3/15) | 58% (11/19) | - |
+| 0.25-0.30 | 160-192 | 0.44-0.53 | 4.0 m to 4.9 m | 100% (4/4) | 91% (30/33) | 45% (5/11) | 53% (9/17) | 100% (1/1) |
+| 0.30-0.40 | 192-256 | 0.53-0.71 | 3.0 m to 4.0 m | 80% (12/15) | 92% (47/51) | 50% (6/12) | 78% (25/32) | - |
+| 0.40-0.50 | 256-320 | 0.71-0.89 | 2.4 m to 3.0 m | 50% (2/4) | 100% (46/46) | 63% (12/19) | 83% (20/24) | - |
+| 0.50-0.60 | 320-384 | 0.89-1.07 | 2.0 m to 2.4 m | 100% (7/7) | 97% (30/31) | 50% (7/14) | 88% (28/32) | - |
+| 0.60-0.80 | 384-512 | 1.07-1.42 | cut off by frame | 84% (51/61) | 100% (22/22) | 26% (7/27) | 78% (39/50) | - |
+| 0.80-1.00 | 512-640 | 1.42-1.78 | cut off by frame | 95% (57/60) | 96% (22/23) | 29% (2/7) | 96% (68/71) | - |
+| all | | | | 85% (135/158) | 70% (396/569) | 29% (44/153) | 73% (210/288) | 72% (84/116) |
+
+Recall floor per class: the smallest size bucket where recall reaches 50 percent, for that bucket and for all larger boxes, with at least 5 boxes. Shown as a test fraction and as the equivalent webcam fraction (the unit of `alert_gate.min_size`):
+
+- Escalator: test 0.30, webcam 0.53 (config min_size now 0.25)
+- People: test 0.10, webcam 0.18 (config min_size now 0.4)
+- Pillar: no bucket reaches 50 percent (config min_size now 0.35)
+- Stair: test 0.20, webcam 0.36 (config min_size now 0.2)
+- Wet Floor Sign: test 0.05, webcam 0.09 (config min_size now 0.15)
+
+### Operating range: how close must an object be to be recognised?
+
+"Usable" means recall of at least 50 percent from that size upwards. Webcam
+distances are estimates for the assumed camera.
+
+| Class | Local YOLOv8n usable from | Cloud RF-DETR usable from | Estimated distance (webcam) |
+|---|---|---|---|
+| People (1.7 m) | test 0.10, webcam 0.18 (55 to 88 percent above) | test 0.10, webcam 0.18 (87 to 100 percent from 0.15) | about 12 m local, 80 percent or more within about 6 m; cloud 87 percent or more within about 8 m |
+| Wet Floor Sign (0.65 m) | test 0.10, webcam 0.18 (100 percent above, few large examples) | test 0.05, webcam 0.09 | about 4.6 m local, about 9 m cloud |
+| Stair | test 0.25, webcam 0.44 | test 0.20, webcam 0.36 | no fixed size, so no distance |
+| Escalator | test 0.30, webcam 0.53 (only 11 smaller boxes) | test 0.30, webcam 0.53 | no fixed size, so no distance |
+| Pillar | never steadily 50 percent; best 42 to 50 percent at test 0.30 to 0.60 | 45 to 63 percent at test 0.25 to 0.60 | no fixed size, so no distance |
+
+### Is a person 1 to 2 m away in the background detected, or only one right in front?
+
+From the data, the model is **not** limited to the person right in front.
+
+- With a 720p webcam, a 1.7 m person needs to be about 2.2 m away to fit in the
+  frame at all (`914 x 1.7 / 720`). A person 1 to 2 m away is therefore never "in
+  the background": they fill the frame and their box is cut off at the edges. Test
+  boxes that tall (test fraction 0.60 or more) are found 83 to 91 percent of the
+  time locally and 96 to 100 percent on the cloud model. Most of the misses there
+  are crowds, where one predicted box covers two labelled people
+  (`artifacts/recall_by_size/local/people_large_misses.jpg`).
+- People further back are detected too: locally 80 to 88 percent at about 3 to 6 m,
+  55 percent at about 8 to 12 m and 19 percent at about 12 to 24 m. The cloud
+  model finds 87 to 95 percent out to about 8 m. Examples:
+  `artifacts/recall_by_size/local/people_small_hits.jpg` (small background people
+  at confidence 0.36 to 0.65) and `people_small_misses.jpg`.
+- This is exactly why the gate is needed. Before Phase B every one of those
+  background people was spoken as "Note, People ...". Now a person below 0.40 of
+  the frame height (about 5.4 m) is listed as far and stays silent.
+
+### Proposed min_size (not applied)
+
+The recall floor answers "below what size are detections unreliable". It does not
+answer "how far away should a hazard be before we speak". The gate needs the
+larger of the two. The floors in webcam units compared with the current
+placeholders:
+
+| Class | Local floor | Cloud floor | Current `min_size` | Suggestion |
+|---|---:|---:|---:|---|
+| People | 0.18 | 0.18 | 0.40 (about 5.4 m) | Keep 0.40. It is a speaking-distance choice, well above the floor. |
+| Wet Floor Sign | 0.18 | 0.09 | 0.15 (about 5.5 m) | 0.18 (about 4.6 m), the local floor, so both backends speak at the same size. |
+| Stair | 0.44 | 0.36 | 0.20 | Keep 0.20. Stairs are the most severe class, and a detected distant stair is still worth an early "Note". Raising to 0.44 would silence stairs until they are close. |
+| Escalator | 0.53 | 0.53 | 0.25 | Keep 0.25 for the same reason. The floor rests on only 11 small boxes. |
+| Pillar | none | none | 0.35 | Keep 0.35. |
+
+The config is unchanged and keeps `"calibrated": false` until Nigel decides and the
+tape-measure sheet is filled in.
+
+Caveats: the test images come from phone cameras held in portrait, not the
+deployment webcam. The pinhole conversion assumes one focal length. Box heights of
+objects cut off by the frame understate their size.
+
+### D2. Calibration and the debug distance estimate
+
+- `scripts/calibrate_distance.py --camera 0 --class People --distance 3` (or
+  `--image`) measures `focal_px = box_height_px x distance_m / real_height_m` and
+  appends a sample to the git-ignored `camera_calibration.json`. The app uses the
+  median sample. Boxes cut off by the frame are refused.
+- When that file exists, `/status` adds `distance_est_m` and `distance_note` to
+  People and Wet Floor Sign detections (`src/distance.py`). The estimate is shown
+  only in the debug panel, labelled "estimate", and never spoken. Boxes cut off by
+  the top or bottom edge get no estimate.
+- `docs/DISTANCE_TEST_SHEET.md` is the tape-measure log (1, 2, 3, 5 and 8 m per class).
+
+### D3. Pillar: local versus cloud
+
+```
+python scripts/compare_pillar.py --images "$BUNDLE/test_set/test/images" \
+  --endpoint http://127.0.0.1:9100
+```
+
+All 105 test images with a Pillar label (153 boxes) and all 815 images without
+one. Outputs: `artifacts/pillar/pillar_comparison.{md,json}` and contact sheets
+`artifacts/pillar/pillar_{local,cloud}_{hits,misses}.jpg`.
+
+| | local (yolov8n, 0.35) | cloud (rfdetr-nano, 0.40) |
+|---|---:|---:|
+| Pillar boxes (images) | 153 (105) | 153 (105) |
+| Recall | 17.0% (26 hits, 127 misses) | 28.8% (44 hits, 109 misses) |
+| Precision | 54.2% (22 false of 48) | 51.8% (41 false of 85) |
+| Images without a pillar that got a Pillar box | 14 of 815 | 29 of 815 |
+| Mean confidence of hits | 0.56 | 0.61 |
+| Missed pillars covered by a general Object box (conf >= 0.5, IoU >= 0.5) | 3 of 127 | 3 of 109 |
+| Recall, height 0.00-0.05 | 0% (0/6) | 0% (0/6) |
+| Recall, height 0.05-0.10 | 0% (0/21) | 0% (0/21) |
+| Recall, height 0.10-0.15 | 8% (1/12) | 17% (2/12) |
+| Recall, height 0.15-0.20 | 0% (0/9) | 0% (0/9) |
+| Recall, height 0.20-0.25 | 0% (0/15) | 20% (3/15) |
+| Recall, height 0.25-0.30 | 9% (1/11) | 45% (5/11) |
+| Recall, height 0.30-0.40 | 50% (6/12) | 50% (6/12) |
+| Recall, height 0.40-0.50 | 42% (8/19) | 63% (12/19) |
+| Recall, height 0.50-0.60 | 43% (6/14) | 50% (7/14) |
+| Recall, height 0.60-0.80 | 15% (4/27) | 26% (7/27) |
+| Recall, height 0.80-1.00 | 0% (0/7) | 29% (2/7) |
+
+Local recall (17.0 percent) matches the saved result exactly. The cloud figure
+over HTTP (28.8 percent) is slightly below the saved 29.4 percent because frames
+are JPEG re-encoded on the way to the service. The miss sheets show three kinds of
+miss: thin bollards and poles labelled Pillar where the model boxed the
+neighbouring pole (IoU below 0.5), close-up pillar bases cut off by the frame,
+and plain misses. Some "false" Pillar boxes are unlabelled poles.
+
+**What the app does when a pillar is not detected:** it says nothing about it.
+The general COCO model has no pillar class. It covered only 3 of 127 local misses
+(3 of 109 cloud) with an Object box at confidence 0.5 or more, and that box is
+spoken as "Object detected ahead" only if it also passes the gate (centre third,
+large enough). No Pillar box does not mean there is no obstacle.

@@ -12,6 +12,7 @@ from detection import annotate_hazards
 from capture import LatestFrameCapture
 
 from decision_engine import AlertPolicy, phrase_for
+import distance
 
 # Status fields cleared whenever results expire, fail or the source ends.
 EMPTY_RESULT = dict(alert="", alerts=[], detections=[], selected=None, fps=0.,
@@ -39,6 +40,8 @@ class PipelineState:
         self.depth_estimator = None if args.no_depth else DepthEstimator()
         self.speaker = None if args.no_tts else Speaker()
         self.policy = AlertPolicy(self.settings['alert_gate'], self.settings['severity'])
+        # Optional distance estimate for the debug panel only (never spoken).
+        self.calibration = distance.load_calibration()
         self._lock = threading.Lock()
         self._latest_jpeg = None
         self._latest_debug_jpeg = None
@@ -48,7 +51,8 @@ class PipelineState:
                        "model": self.settings["model"] + ' + general-yolov8n', "backend": args.backend, "error": "",
                        "latency_ms": None, "round_trip_ms": None, "detections": [],
                        "gate_enabled": gate['enabled'], "gate_calibrated": gate.get('calibrated', False),
-                       "depth_enabled": not args.no_depth, "tts_enabled": not args.no_tts}
+                       "depth_enabled": not args.no_depth, "tts_enabled": not args.no_tts,
+                       "distance_calibrated": self.calibration is not None}
 
         self._stop = threading.Event()
 
@@ -73,6 +77,15 @@ class PipelineState:
             if self._frame_is_stale():
                 status.update(EMPTY_RESULT, error="Frame is stale; waiting for fresh inference")
             return status
+
+    def _detection_dict(self, hazard, frame_height):
+        item = hazard.to_dict()
+        if self.calibration is not None and hazard.label in self.settings['alert_gate']['known_heights_m']:
+            value, note = distance.estimate(hazard.label, hazard.xyxy, frame_height, self.calibration,
+                                            self.settings['alert_gate']['known_heights_m'])
+            item['distance_est_m'] = None if value is None else round(value, 1)
+            item['distance_note'] = note
+        return item
 
     def stop(self):
         self._stop.set()
@@ -141,7 +154,7 @@ class PipelineState:
                     self.status["error"] = error
                     self.status["latency_ms"] = batch.latency_ms if batch else None
                     self.status["round_trip_ms"] = batch.round_trip_ms if batch else None
-                    self.status["detections"] = [hazard.to_dict() for hazard in hazards]
+                    self.status["detections"] = [self._detection_dict(hazard, frame.shape[0]) for hazard in hazards]
         except Exception as exc:
             with self._lock:
                 self.status['error'] = f'Pipeline stopped: {exc}'
