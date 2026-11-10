@@ -119,7 +119,7 @@ rules apply to local and cloud mode. Settings are in `visionaid_config.json` und
 | Rule | Effect |
 |---|---|
 | Size = box height / frame height | Stands in for distance. No metres are spoken. |
-| Below the class `min_size` (People 0.40, Stair 0.20, Escalator 0.25, Wet Floor Sign 0.15, Pillar 0.35, Object 0.35) | "far": listed as ignored, never spoken |
+| Below the class `min_size` (People 0.40, Stair 0.20, Escalator 0.25, Wet Floor Sign 0.18, Pillar 0.35, Object 0.35) | "far": listed as ignored, never spoken |
 | Left or right third | Spoken only if clearly near (1.5 times `min_size`). Objects at the sides are never spoken. |
 | General-model detection below confidence 0.5 | Ignored as low confidence |
 | Size against the class `near_size` | **Warning** (near), **Caution** (mid-close) or **Note** (mid) |
@@ -131,8 +131,9 @@ whose cooldown has expired; that hazard is highlighted on the video and marked
 "spoken". The page's **Ignored detections** list shows everything else with the
 reason (far, at the side, low confidence).
 
-The sizes are **uncalibrated placeholders**: the page shows "uncalibrated sizes"
-until they are confirmed. Test-set data on how recall changes with size, and a
+The sizes are **uncalibrated placeholders** (Wet Floor Sign was raised from 0.15
+to 0.18 from the test-set data, decision U1): the page shows "uncalibrated sizes"
+until they are confirmed with the tape-measure test. Test-set data on how recall changes with size, and a
 proposal, are in `docs/GUI_TEST_REPORT.md` (Phase D). Fill in
 `docs/DISTANCE_TEST_SHEET.md` with a tape measure to check them on your camera.
 Add `--no-gate` to any app command to compare with the old behaviour, which
@@ -148,6 +149,35 @@ python scripts/calibrate_distance.py --camera 0 --class People --distance 3
 This saves the git-ignored `camera_calibration.json`. The debug view then shows an
 approximate distance for People and Wet Floor Sign, labelled "estimate". It is
 never spoken, and boxes cut off by the frame edge get no estimate.
+
+### Page controls and keyboard shortcuts
+
+| Control | What it does |
+|---|---|
+| **Local / Cloud** switch and mode badge | Chooses the trained detector. The badge always shows the active one, for example `LOCAL, YOLOv8n` or `CLOUD, RF-DETR Nano`. Cloud is greyed out with the reason when the app was started without `--endpoint`. Switching clears the alert cooldown, so the first hazard afterwards is spoken. |
+| **Retry cloud** | Appears after a cloud failure. It checks the service's `/health` (no frame is sent) and switches back only if that succeeds. |
+| **Pause** | Stops detection and speech. The camera stays open and the last frame stays on screen with a "Paused" label. |
+| **Mute** | Stops the phrase being spoken at once and silences new ones. Detection, the banner and the lists keep working. |
+| **Speech rate** | 120 to 260 words per minute (default 180). Applies to the next phrase. There is no volume control because macOS `say` has none. |
+| **Test voice**, **Replay last alert** | Speak a fixed test phrase, or repeat the last alert, through the same speaker. Both respect Mute. |
+| **Spoken log** | The last 10 phrases sent to the speaker with time and backend, newest first. Kept in memory only; **Clear** empties it. |
+| **Priority legend** | The class order from the config severities, highest first, then Object. The class of the current top hazard is outlined and underlined. |
+| **Analyse an image** | Upload a JPEG or PNG (up to 10 MB) or pick a sample from `golden/images`. It runs through the same detector, alert gate and phrase code as the live view and shows the result in place of the video until **Back to live**. Uploads are not stored. **Speak result** is off by default. |
+
+Keyboard shortcuts: **Space** pauses or resumes, **M** mutes or unmutes, **C**
+switches Local or Cloud. They are ignored while a text box, slider, list or
+checkbox has focus. The banner is a screen-reader live region, and every level is
+written out (Warning, Caution, Note) as well as coloured.
+
+**Cloud privacy notice.** While cloud mode is active the page shows "Cloud mode:
+camera frames are sent to the server." In local mode no frame ever leaves the
+computer; the cloud client is not called at all.
+
+Problems while running appear as plain messages at the top of the page instead of
+a blank screen: camera not found (retried every 2 seconds), no video for 3 seconds
+(the banner is cleared and nothing is spoken), cloud unreachable (the app falls
+back to local), extra object detection off, and speech unavailable. Missing weights
+or a wrong class order still stop the app at startup.
 
 ### 4. Try the full pipeline, including depth
 
@@ -227,7 +257,9 @@ are troubleshooting commands, not a step to repeat on every launch.
 
 Cloud mode changes the trained object detector to RF-DETR. The camera, browser,
 general-object detector, depth and speech remain local; JPEG camera frames go to
-the configured service. There is no automatic switch between local and cloud modes.
+the configured service. If a cloud request fails or times out (3 seconds), the app
+falls back to local on its own and stays there until you press **Retry cloud**.
+It never switches to cloud by itself, and the two detectors are never fused.
 This repository prepares the service but does not provision public hosting.
 
 ### Build and start the service
@@ -245,8 +277,8 @@ The image uses RF-DETR 1.11.2, CPU PyTorch 2.9 and Transformers 5.1; the availab
 Intel macOS PyTorch 2.2 runtime cannot run that RF-DETR environment directly.
 
 Start the service and make the supplied cloud checkpoint available read-only.
-If port 9000 is already in use on your computer, change the first `9000` (for
-example `127.0.0.1:9100:9000`) and use that port in the commands below:
+If port 9000 is taken (php-fpm uses it on some Macs), use port 9100 for the cloud
+service: `-p 127.0.0.1:9100:9000`, then `http://127.0.0.1:9100` in the commands below.
 
 ```sh
 docker run --rm -p 127.0.0.1:9000:9000 \
@@ -270,18 +302,19 @@ and retry; an open port alone does not establish that the model is ready.
 ### Connect the web app to the service
 
 Activate the local Python environment in another Terminal, stop any previous
-web app on port 5001, and start the cloud-connected GUI:
+web app on port 5001, and start the GUI with the cloud service available:
 
 ```sh
-python src/webapp.py --port 5001 --backend cloud \
-  --endpoint http://127.0.0.1:9000 --no-depth
+python src/webapp.py --port 5001 --endpoint http://127.0.0.1:9000 --no-depth
 ```
 
-Open **http://127.0.0.1:5001**. Expect the same camera feed and alert gate, now
-showing cloud/RF-DETR as the active detector and round-trip processing time. The frame
-is uploaded to the service for detection. An unavailable/slow service produces
-an error and expired detections are cleared. Both the service Terminal and GUI
-Terminal must remain running. This example tests the cloud-service architecture
+Open **http://127.0.0.1:5001**. The app starts in local mode; press **Cloud** (or
+**C**) to switch. Add `--backend cloud` to start in cloud mode instead. Both
+detectors are loaded, so the local weights are needed even when starting in cloud
+mode (they are the fallback). In cloud mode the badge reads `CLOUD, RF-DETR Nano`,
+the status shows the round-trip time, and the privacy notice is shown. If the
+service stops, the page says "Cloud unreachable, using local." and keeps working
+on local. Both the service Terminal and GUI Terminal must remain running. This example tests the cloud-service architecture
 on one computer; a real remote deployment needs its own host and endpoint.
 
 The image defaults to CPU. On a Linux NVIDIA host, build with
@@ -349,8 +382,17 @@ python -m pytest -q
 ```
 
 Expect a pass/fail summary in Terminal. These cover configuration, detection
-records, app/backend behaviour, evaluation and dataset validation. Hardware camera,
-microphone and audible-speech checks still need a manual test.
+records, app/backend behaviour, the page controls and messages, evaluation and
+dataset validation. The keyboard-shortcut test needs Node.js and is skipped
+without it. Hardware camera, audible-speech and projector checks still need a
+manual test: see `docs/MANUAL_TEST_SHEET.md`.
+
+Two page checks are separate scripts. `python scripts/check_contrast.py` prints
+the contrast ratio of every colour pair on the page. With the app running,
+`node scripts/check_layout.mjs http://127.0.0.1:5001 artifacts/screenshots`
+loads the page in headless Google Chrome at 1920x1080, 1366x768 (also with
+`?debug=1`) and 390 px wide, checks for page and sideways scrolling, and saves
+screenshots.
 
 ### Check the 20 reference images
 

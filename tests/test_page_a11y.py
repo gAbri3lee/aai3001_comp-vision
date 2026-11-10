@@ -66,4 +66,4 @@ def test_no_em_or_en_dashes_in_the_page_or_scripts():
     html, _ = page()
     shortcuts = (Path(__file__).resolve().parents[1] / 'src' / 'static' / 'shortcuts.js').read_text()
     for text in (html, shortcuts):
-        assert '—' not in text and '–' not in text
+        assert '\u2014' not in text and '\u2013' not in text

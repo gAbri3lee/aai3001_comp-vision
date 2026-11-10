@@ -43,11 +43,16 @@ def test_side_person_needs_to_be_clearly_near():
 
 
 def test_wet_floor_sign_bands_follow_the_size_rule():
-    # 0.16 / 0.28 = 0.57 is below the 0.6 mid-close boundary, so "Note".
-    assert spoken(det('Wet Floor Sign', .5, .16)) == ['Note, Wet Floor Sign ahead']
-    # 0.20 / 0.28 = 0.71 is mid-close by the B1 rule, so "Caution". (The hand-over
-    # table listed "Note" for 0.20, which contradicts its own band rule.)
+    # Decision U1 (second hand-over): min_size is 0.18, so a 0.16 sign is far.
+    assert GATE['min_size']['Wet Floor Sign'] == 0.18
+    [hazard] = run(det('Wet Floor Sign', .5, .16))
+    assert not hazard.gated and hazard.reason == 'far'
+    # 0.18 / 0.28 = 0.64 is already mid-close, so with U1 a sign is never "Note".
+    assert spoken(det('Wet Floor Sign', .5, .18)) == ['Caution, Wet Floor Sign ahead']
+    # 0.20 / 0.28 = 0.71 is mid-close by the B1 rule, so "Caution". (The first
+    # hand-over table listed "Note" for 0.20, which contradicts its own band rule.)
     assert spoken(det('Wet Floor Sign', .5, .20)) == ['Caution, Wet Floor Sign ahead']
+    assert spoken(det('Wet Floor Sign', .5, .30)) == ['Warning, Wet Floor Sign ahead']
 
 
 def test_stair_in_path():

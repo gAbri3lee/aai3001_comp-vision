@@ -27,6 +27,55 @@ Start the app with `python src/webapp.py --port 5001 --no-depth` and open
       generated, then stored only as the `ROBOFLOW_API_KEY` environment variable or
       a Kaggle secret. This cannot be done from code.
 
+## Interface (second hand-over)
+
+Start the cloud service (`curl http://127.0.0.1:9100/health` should say ready),
+then the app with both detectors and speech on:
+`python src/webapp.py --port 5001 --no-depth --endpoint http://127.0.0.1:9100`.
+
+Switch and fallback:
+- [ ] The badge reads `LOCAL, YOLOv8n` at start; Cloud switches it to
+      `CLOUD, RF-DETR Nano` and shows "Cloud mode: camera frames are sent to the server."
+- [ ] Without `--endpoint` the Cloud button reads "Cloud unavailable" and cannot be pressed.
+- [ ] Switching Local to Cloud mid-walk does not confuse the speech: the next
+      hazard is spoken once, from the new detector, with no burst of old phrases.
+- [ ] Stopping the cloud container (`docker stop visionaid-cloud`) shows "Cloud
+      unreachable, using local." within about 3 seconds and alerts continue on local.
+- [ ] Retry cloud stays on local while the container is stopped, and switches back
+      after `docker start visionaid-cloud` once `/health` is ready.
+
+Pause, mute and speech:
+- [ ] Spoken alerts are audible; Mute stops the current phrase at once.
+- [ ] While muted the banner and lists still update; Unmute brings speech back.
+- [ ] Pause freezes the video with a "Paused" label and stops speech; Resume restarts.
+- [ ] Test voice says "VisionAid voice test"; Replay last alert repeats the last alert.
+- [ ] The rate slider changes the speed of the next phrase (try 120 and 260).
+- [ ] The spoken log lists what was actually heard, newest first; Clear empties it.
+
+Upload and samples:
+- [ ] Uploading a phone photo (JPEG) shows the annotated image, banner and list,
+      and Back to live returns to the camera.
+- [ ] A PNG works; a file over 10 MB or a non-image gives a clear message.
+- [ ] Samples 1 to 20 run; Speak result speaks only when ticked and not muted.
+
+Error messages:
+- [ ] Unplugging the camera (or closing the laptop camera cover) shows "Camera not
+      found. Check the connection." or "No video. Waiting for camera.", the page
+      stays up, and it recovers when plugged back in.
+- [ ] With `say` broken or audio unavailable the page says "Speech is unavailable.
+      Alerts show on screen only." (optional; hard to provoke).
+
+Keyboard and layout:
+- [ ] Space pauses, M mutes, C switches; none of them fire while the rate slider,
+      the sample list or the file chooser has focus.
+- [ ] Tab reaches every control with a visible yellow focus outline.
+- [ ] On the projector (1920x1080) the banner is readable from the back of the room.
+- [ ] On the small laptop (1366x768) the video, banner, legend, header controls and
+      status fit without scrolling the page.
+- [ ] A marker can understand the priority from the legend and banner without
+      explanation (ask someone who has not seen the app).
+- [ ] With a screen reader (macOS VoiceOver, Cmd+F5) a new banner alert is announced.
+
 Notes:
 
 | Date | Tester | Check | Result |

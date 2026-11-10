@@ -109,7 +109,7 @@
     "centre_third": [0.3333, 0.6667],
     "side_multiplier": 1.5,
     "min_size": {
-      "Stair": 0.20, "Escalator": 0.25, "Wet Floor Sign": 0.15,
+      "Stair": 0.20, "Escalator": 0.25, "Wet Floor Sign": 0.18,
       "Pillar": 0.35, "People": 0.40, "Object": 0.35
     },
     "near_size": {

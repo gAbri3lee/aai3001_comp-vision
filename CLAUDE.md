@@ -46,7 +46,9 @@ choice per frame, then audio. Local and cloud detections go through the same gat
   The spoken hazard is marked in `/status` (`selected`) and highlighted. The
   speaker keeps one pending phrase, replaces it with the newest and drops it after
   1 s.
-- Gate sizes in config are placeholders (`"calibrated": false`). Data for them is
+- Gate sizes in config are placeholders (`"calibrated": false`), except that Wet
+  Floor Sign `min_size` was raised from 0.15 to 0.18 from test data (decision U1);
+  with that, a Wet Floor Sign is never in the "Note" band. Data for them is
   in `docs/GUI_TEST_REPORT.md` (Phase D); a tape-measure log is in
   `docs/DISTANCE_TEST_SHEET.md`. `--no-gate` restores the old ungated behaviour.
 - An optional distance estimate (`src/distance.py`, git-ignored
@@ -54,10 +56,37 @@ choice per frame, then audio. Local and cloud detections go through the same gat
   Wet Floor Sign, labelled as an estimate. It is never spoken.
 
 The local UI remains the camera/audio host in cloud mode. Camera frames leave the
-device only when cloud is explicitly selected. No automatic fallback or fusion
-between the two detectors is implemented. One request is allowed at a time; newest
-frames replace buffered frames and obsolete cloud responses are discarded. Recorded
-video sources are paced at their own frame rate.
+device only when cloud is explicitly selected; in local mode the cloud client is
+never called (tested). With `--endpoint` both detectors are built and share one
+general model; the app starts local unless `--backend cloud`. A cloud error or the
+3 s deadline falls back to local (last good result held at most 1 s) and stays
+local until a successful Retry; it never switches to cloud by itself, and the two
+detectors are never fused. Switching mode clears the cooldown (U3). One request is
+allowed at a time; newest frames replace buffered frames and obsolete cloud
+responses are discarded. Recorded video sources are paced at their own frame rate.
+
+## Web app endpoints (`src/webapp.py`)
+
+- `GET /status`: live result plus `mode`, `mode_label`, `cloud_available`,
+  `fallback_active`, `last_error`, `health` (list of `{code, severity, message}`),
+  `paused`, `muted`, `speech_rate`, `speech_enabled`, `last_spoken` and
+  `spoken_log` (last 10, newest first, memory only).
+- `POST /mode` `{"backend": "local" | "cloud"}`: cloud only after its `/health`
+  succeeds (this is also Retry cloud). 400 for anything else, 503 if unavailable.
+- `POST /control`: any of `paused`, `muted` (booleans), `rate` (clamped to 120 to
+  260 words per minute, default 180) and `action` (`test_voice`, `replay_last`,
+  `clear_log`). Validated before anything changes; 409 when muted or speech is off.
+- `POST /analyze`: multipart `image` (JPEG or PNG, 10 MB) or form `sample` (an id
+  from `GET /samples`, images from `golden/images`). Same detector, `decide()` and
+  `annotate()` as the live loop with a fresh `AlertPolicy`; nothing is stored.
+- `GET /config`: priority order from the config severities (then Object), band
+  labels and control ranges for the page.
+- Health codes: `camera_missing` (camera retried every 2 s), `no_video` (3 s),
+  `cloud_unreachable`, `general_unavailable`, `speech_unavailable`,
+  `source_ended`, `pipeline_stopped`. Missing weights or a class-order mismatch
+  still stop the app at startup, as does a missing video file.
+- Keyboard shortcuts live in `src/static/shortcuts.js` (tested with node).
+  `scripts/check_contrast.py` and `scripts/check_layout.mjs` check the page.
 
 ## Training and evaluation
 

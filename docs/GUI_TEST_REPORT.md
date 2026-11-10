@@ -539,8 +539,227 @@ benchmark_pipeline.py --no-depth         -> median 46.4 ms, 21.1 FPS (excludes t
 | Report answers Gabriel's three questions with data | Done (Phase D: operating range, background person, Pillar comparison) |
 | No leftover OCR, voice, item ID or old-class references; README explains the key | Done (Phase H) |
 | Committed on Gabriel's branch, pulled from his latest push, no force push | Done |
-| Phase G (in-page Local/Cloud toggle) | Not started: optional, waits for Nigel's agreement |
+| Phase G (in-page Local/Cloud toggle) | Built under the second hand-over (below), Phase 1 |
 
 Not testable here (manual): live camera, audible speech, walking feel, tape-measure
 distances, a second device against a hosted endpoint, and revoking the old
 Roboflow key. See `docs/MANUAL_TEST_SHEET.md`.
+
+---
+
+# Second hand-over: the interface
+
+Work from `VisionAid_GUI_Handover_2_Interface.md`, on the same branch (`gabriel`;
+the hand-over calls it `aai3001_comp-vision-gabriel`, the remote branch is
+`origin/gabriel`). `git fetch` showed nothing new from Gabriel before starting.
+One commit per phase, pushed normally.
+
+## Decisions applied
+
+| # | Decision | Applied as |
+|---|---|---|
+| U1 | Wet Floor Sign `min_size` 0.15 to 0.18 | `visionaid_config.json`; no other gate value changed; `calibrated` stays false |
+| U2 | After a cloud failure stay on local, Retry cloud button | Yes; no automatic switch back |
+| U3 | Default local; clear cooldown on a mode change | Yes, `AlertPolicy.reset()`; also on fallback |
+| U4 | JPEG or PNG, at most 10 MB | Yes, checked by content, not by name or declared type |
+| U5 | 120 to 260 words per minute, default 180, no volume | Yes (the speaker default moved from 175 to 180) |
+| U6 | Space, M, C; ignored in form controls | Yes |
+
+## Phase 1: Local/Cloud switch
+
+- With `--endpoint`, `PipelineState` builds a local and a cloud `SceneDetector`
+  sharing one general model. Without it, Cloud is disabled with the reason. The app
+  starts local unless `--backend cloud`.
+- `POST /mode` switches; cloud is accepted only after the service's `/health`
+  returns ready, model `rfdetr-nano` and the canonical class order (no frame is
+  sent). The same call is the Retry cloud button. Anything else gets a 400.
+- A cloud exception or the existing 3 s deadline falls back to local, sets
+  `fallback_active` and `last_error`, and keeps the last good result for at most
+  one second after the failure.
+- `/status` adds `mode`, `mode_label`, `cloud_available`,
+  `cloud_unavailable_reason`, `fallback_active` and `last_error`.
+- Page: mode badge, Local/Cloud switch, Retry cloud, and the notice "Cloud mode:
+  camera frames are sent to the server."
+- Real stack (cloud container on port 9100, recorded clip): switched local to
+  cloud (round trip 140 ms), stopped the container (fallback within 2 s, message
+  shown), Retry failed while it was down, and succeeded after
+  `docker start`.
+
+## Phase 2: runtime error states
+
+`/status` carries `health`, a list of `{code, severity, message}`, shown at the top
+of the page. Error-level problems also replace the banner and cover the video,
+because "No hazards" would be misleading.
+
+| Condition | Code | Behaviour |
+|---|---|---|
+| Camera not found or lost | `camera_missing` | Page stays up; the camera is reopened every 2 s and resumes on success. A missing video file still stops the app at startup. |
+| Cloud unreachable | `cloud_unreachable` | Phase 1 fallback |
+| General model failed to load or predict | `general_unavailable` | Trained detections continue; message "Extra object detection is off." |
+| Speech unavailable | `speech_unavailable` | `say` missing, a phrase failing, or the speaker failing to start. The banner keeps working. |
+| No frames for 3 s | `no_video` | Results cleared, nothing spoken |
+| Video file ended, loop crashed | `source_ended`, `pipeline_stopped` | Plain message instead of a blank page |
+
+Real check: `--source 7` (no such camera) kept the page up with "Camera not found.
+Check the connection."
+
+## Phase 3: pause, mute and speech controls
+
+- `POST /control` takes `paused`, `muted`, `rate` and `action` (`test_voice`,
+  `replay_last`, `clear_log`). Everything is validated before anything changes;
+  wrong types or unknown keys get 400, a speech action while muted or with
+  `--no-tts` gets 409.
+- Pause: no inference and no speech, the camera stays open, and the last frame
+  stays up with a "Paused" label.
+- Mute: the speaker now runs `say` as a process it can stop. Mute and Pause
+  terminate the current phrase and clear the waiting one. Real check: a long
+  phrase stopped after 0.2 s, with no `say` process left.
+- Rate: clamped to 120 to 260 and applied to the next phrase.
+- Shortcuts are in `src/static/shortcuts.js`, a pure function tested in Node.
+  They were also pressed in headless Chrome against the real app. M, Space and C
+  toggled mute, pause and mode. M with the rate slider focused and Space with the
+  sample list focused did nothing.
+
+## Phase 4: upload and samples
+
+- `POST /analyze` takes a multipart image or a sample id from `GET /samples`.
+  There is no `demo/` folder, so the samples are the 20 `golden/images`.
+- Live and upload share one path: the active detector, `decide()` and `annotate()`,
+  with a fresh `AlertPolicy`, so analysis has its own cooldown.
+- The response has the same fields as `/status` plus the annotated image as a
+  data URL.
+- Upload checks:
+  - type by content: Pillow must read it as JPEG or PNG;
+  - size: 10 MB exactly, and a body limit as well;
+  - at most 40 megapixels;
+  - full decode, so a truncated file gives "The file may be damaged".
+- The client filename is never used and nothing is written to disk.
+- Speak result is off by default and respects mute.
+- Real check: all 20 golden images through `/analyze` matched
+  `replay_alerts.py --source golden/images` exactly. That covered every detection,
+  confidence, gate field and banner.
+
+## Phase 5: legend and spoken log
+
+- `GET /config` serves the priority order from the config severities: Stair,
+  Escalator, Wet Floor Sign, Pillar, People, then Object. The legend is built from
+  it; the HTML has no class names in the legend.
+- The class of the top hazard is marked with a border, an underline and
+  `aria-current`, so colour isn't the only signal.
+- The banner shows a written level (Warning, Caution, Note) as well as colour.
+  Messages are prefixed Problem, Warning or Note.
+- `spoken_log`: the last 10 phrases actually sent to the speaker, newest first,
+  with time, backend and kind (alert, test, replay, upload). Memory only; Clear
+  empties it.
+
+## Phase 6: readability, accessibility and layout
+
+- Contrast: `python scripts/check_contrast.py` checks every colour pair on the
+  page, and all 25 pass. Normal text needs 4.5 to 1; the lowest is muted text on
+  buttons at 5.8. Large text and indicators need 3 to 1. A test also makes sure
+  the stylesheet uses no colour outside the checked tokens.
+- Accessibility:
+  - the banner is a live region (`role="alert"`, assertive, atomic);
+  - all controls are real buttons, inputs or selects with labels;
+  - toggles use `aria-pressed`;
+  - there's a 3 px yellow focus outline.
+- Layout check: `node scripts/check_layout.mjs` drives headless Chrome over the
+  DevTools protocol. Run against the real app on the recorded clip, both during
+  "No hazards" and during "Warning, Stair ahead":
+
+| Size | Horizontal scroll | Page scroll | Main parts outside the viewport | Root font |
+|---|---|---|---|---|
+| 1920x1080 | no | no | none | 19.4 px |
+| 1366x768 | no | no | none | 16.0 px |
+| 1366x768 `?debug=1` | no | no | none | 16.0 px |
+| 390x844 | no | yes (allowed, one column) | n/a | 14 px |
+
+"Main parts" are the header, Local, Cloud, Pause and Mute buttons, video, banner,
+legend and status card. Hazards, ignored detections and the log scroll inside
+their own boxes. Screenshots:
+
+![1920x1080, warning](screenshots/gui2_1920x1080.jpg)
+![1366x768 debug view](screenshots/gui2_1366x768-debug.jpg)
+![390 px wide](screenshots/gui2_390x844.jpg)
+
+The hand-over says to save screenshots under `artifacts/`, but the first
+hand-over says not to commit `artifacts/` (it is git-ignored). The full-size PNGs
+are in `artifacts/screenshots/`, and the three referenced here are committed as
+compressed JPEGs under `docs/screenshots/`.
+
+## Phase 7: config and docs
+
+- U1 is applied. The gate test now checks that a 0.16 sign is far and a 0.18 sign
+  is spoken.
+- README: page controls, shortcuts, the cloud privacy notice, fallback and Retry,
+  the port 9100 line, and the two page check scripts.
+- `CLAUDE.md`: endpoints and `/status` fields.
+- `docs/MANUAL_TEST_SHEET.md`: new interface checks.
+
+## Notes and things that differ from the hand-over
+
+- **U1 side effect.** With `min_size` 0.18 and `near_size` 0.28, a gated Wet Floor
+  Sign is always at least 0.64 of its near size. So it is never "Note"; it is
+  "Caution" or "Warning". This is similar to the side-person case in Phase B.
+- **Port line.** `cloud_service.py` has no `--port` option. The README line says
+  to use port 9100 through the Docker mapping (`-p 127.0.0.1:9100:9000`).
+- **Local weights in cloud mode.** Starting in cloud mode now also loads the local
+  model, because it is the fallback. Missing local weights stop the app at startup.
+- **Cloud analysis.** In cloud mode an uploaded image goes to the cloud service,
+  like camera frames; the privacy notice is shown in that mode.
+- **Mute and cooldown.** While muted the cooldown still records the selected
+  hazard, so after unmuting the same hazard can wait up to 4 s. Resume after Pause
+  does not reset the cooldown; only a mode change does (U3).
+- **Test voice and Replay while paused.** They are allowed, since only Mute means
+  "no sound".
+- Gate logic, phrase wording, cooldown rules, class IDs and the `POST /detect`
+  contract are unchanged.
+
+## Tests added
+
+116 tests and 12 subtests pass. That is 72 before, plus 41 in new files and 3 new
+speaker tests. The new files share fakes in `tests/helpers.py`.
+
+| File | Tests | Covers |
+|---|---:|---|
+| `test_modes.py` | 8 | Switch and status; invalid mode; zero cloud calls in local mode (fake, and the real `CloudDetector` with HTTP mocked); fallback with the 1 s hold; retry only on a healthy `/health`; cooldown cleared on switch |
+| `test_health.py` | 9 | Camera missing at start and lost while running, both recovering; missing video file still fatal; no video; general model off; speech failing and failing to start; detector errors; general-model failures in `SceneDetector` |
+| `test_controls.py` | 6 | Pause stops inference and speech; mute stops speaker calls but not detection; rate clamped and validated; invalid controls; test voice and replay respect mute; speech off |
+| `test_shortcuts_js.py` | 2 | 15 key cases in Node, including form controls; the page loads the script and labels the buttons |
+| `test_analyze.py` | 6 | Upload matches the live path for the same image; JPEG and PNG; separate cooldown; speak respects mute; wrong type, oversized, truncated and empty files; filename unused and nothing stored; samples by id only; detector failure |
+| `test_legend_log.py` | 4 | Legend order follows the config; `/config`; log bounded at 10, matches the fake speaker, newest first, clearable |
+| `test_contrast.py` | 3 | Ratio formula; all page pairs pass; no unchecked colours |
+| `test_page_a11y.py` | 3 | Labels, real buttons, live banner, `aria-pressed`, focus outline, written states, no dashes |
+| `test_tts.py` | +3 | Rate applies to the next phrase; `stop()` ends the playing phrase and clears the waiting one; failures set `error` |
+
+## Final checks (second hand-over)
+
+```
+python -m pytest -q                      -> 116 passed, 12 subtests passed
+verify_detector.py local golden          -> PASS 20/20, 0 extras (largest confidence difference 0.00005)
+verify_detector.py cloud golden (HTTP)   -> PASS 24/25, 0 extras
+python scripts/check_contrast.py         -> 25 of 25 pairs pass
+node scripts/check_layout.mjs            -> all four sizes pass
+```
+
+## Definition of done (second hand-over)
+
+| Item | Status |
+|---|---|
+| Switch works, falls back safely, never sends frames in local mode | Done; tested with fakes, the real client with HTTP mocked, and the real container |
+| Every Phase 2 problem gives a clear message, never a blank page or crash | Done, tested with fakes; the missing camera was also checked on the real app |
+| Pause, mute, rate, test voice and replay work and are tested | Done; real `say` stop checked |
+| Upload and samples use the live code and match its results | Done; 20 of 20 golden images match the replay pipeline |
+| Legend, colours, labels and spoken log, not colour only | Done |
+| Contrast and layout pass at three sizes, with screenshots | Done |
+| pytest green, golden parity unchanged | Done |
+| README, `CLAUDE.md`, this report and the manual sheet updated | Done |
+| Committed on Gabriel's branch, no force push | Done |
+
+Not verified here (in `docs/MANUAL_TEST_SHEET.md`):
+- audible speech, and mute cutting it off by ear;
+- switching modes mid-walk;
+- unplugging a real camera;
+- reading the page from a distance on the projector;
+- whether a marker understands the legend unaided;
+- VoiceOver announcing the banner.
