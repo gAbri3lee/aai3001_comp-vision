@@ -82,6 +82,7 @@ class PipelineTests(unittest.TestCase):
         state.fallback_active, state.last_error, state._hold_until = False, '', None
         state.capture, state.camera_missing, state.source_ended, state.pipeline_stopped = None, False, False, False
         state.args.no_tts, state.speaker, state.speech_error = True, None, None
+        state.paused, state.muted, state.speech_rate, state.last_spoken = False, False, 180, None
         state.status = {'fps': 8., 'alert': 'Stair ahead', 'detections': [{'class_id': 3}],
                         'error': '', 'latency_ms': 10., 'round_trip_ms': 20.}
         status = state.get_status()

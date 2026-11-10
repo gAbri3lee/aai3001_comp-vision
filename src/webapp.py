@@ -7,6 +7,7 @@ second, and stays on local until a successful "Retry cloud" (decision U2).
 """
 import argparse
 import copy
+import math
 import threading
 import time
 
@@ -39,6 +40,17 @@ HEALTH_MESSAGES = {
     "source_ended": ("info", "The video file has ended. Restart the app to play it again."),
     "pipeline_stopped": ("error", "Processing stopped. Restart the app."),
 }
+
+
+# Speech controls (decision U5): words per minute for macOS `say -r`.
+RATE_MIN, RATE_MAX, RATE_DEFAULT = 120, 260, 180
+TEST_PHRASE = "VisionAid voice test"
+CONTROL_KEYS = ("paused", "muted", "rate", "action")
+ACTIONS = ("test_voice", "replay_last")
+
+
+class ControlConflict(RuntimeError):
+    """A valid request that cannot be done now (for example replay while muted)."""
 
 
 def health_entry(code):
@@ -121,6 +133,13 @@ class PipelineState:
             except Exception as exc:
                 # Alerts still show on screen; the page says speech is unavailable.
                 self.speech_error = f"Speech unavailable: {exc}"
+        self.paused = False
+        self.muted = False
+        self.speech_rate = RATE_DEFAULT
+        self.last_spoken = None
+        self._paused_shown = False
+        if self.speaker is not None:
+            self.speaker.rate = RATE_DEFAULT
         self.policy = AlertPolicy(self.settings['alert_gate'], self.settings['severity'])
         # Optional distance estimate for the debug panel only (never spoken).
         self.calibration = distance.load_calibration()
@@ -253,12 +272,107 @@ class PipelineState:
         with self._lock:
             status = dict(self.status)
             status.update(self._mode_fields())
-            if self._hold_expired() or self.camera_missing or self._no_video():
+            status.update(self._control_fields())
+            if self.paused or self._hold_expired() or self.camera_missing or self._no_video():
                 status.update(EMPTY_RESULT)
             elif self._frame_is_stale():
                 status.update(EMPTY_RESULT, error="Frame is stale; waiting for fresh inference")
             status["health"] = self._health()
             return status
+
+    # Pause, mute and speech ------------------------------------------------
+
+    def _control_fields(self):
+        """Caller holds the lock."""
+        return {"paused": self.paused, "muted": self.muted, "speech_rate": self.speech_rate,
+                "speech_rate_min": RATE_MIN, "speech_rate_max": RATE_MAX,
+                "speech_enabled": self.speaker is not None, "last_spoken": self.last_spoken}
+
+    def control_state(self) -> dict:
+        with self._lock:
+            return self._control_fields()
+
+    def control(self, body) -> dict:
+        """Apply pause, mute, rate and one-off speech actions. Everything is
+        validated before anything changes."""
+        if not isinstance(body, dict) or not body:
+            raise ValueError("Send a JSON object with paused, muted, rate or action")
+        unknown = sorted(set(body) - set(CONTROL_KEYS))
+        if unknown:
+            raise ValueError(f"Unknown control: {', '.join(unknown)}")
+        for key in ("paused", "muted"):
+            if key in body and not isinstance(body[key], bool):
+                raise ValueError(f"{key} must be true or false")
+        rate = body.get("rate")
+        if "rate" in body:
+            if isinstance(rate, bool) or not isinstance(rate, (int, float)) or not math.isfinite(rate):
+                raise ValueError("rate must be a number of words per minute")
+            rate = int(round(min(RATE_MAX, max(RATE_MIN, rate))))
+        action = body.get("action")
+        if action is not None and action not in ACTIONS:
+            raise ValueError(f"action must be one of: {', '.join(ACTIONS)}")
+
+        stop_speech = False
+        with self._lock:
+            if "paused" in body:
+                if body["paused"] != self.paused:
+                    self._paused_shown = False
+                self.paused = body["paused"]
+                stop_speech |= self.paused
+                if self.paused:
+                    self.status.update(EMPTY_RESULT)
+            if "muted" in body:
+                self.muted = body["muted"]
+                stop_speech |= self.muted
+            if rate is not None:
+                self.speech_rate = rate
+            speaker = self.speaker
+        if speaker is not None:
+            speaker.rate = self.speech_rate
+            if stop_speech:
+                speaker.stop()  # mute and pause silence the current phrase at once
+        if action is not None:
+            self._speech_action(action)
+        return self.control_state()
+
+    def _speech_action(self, action):
+        with self._lock:
+            if self.speaker is None:
+                raise ControlConflict("Speech is off. Start the app without --no-tts.")
+            if self.muted:
+                raise ControlConflict("Speech is muted. Unmute first.")
+            text = TEST_PHRASE if action == "test_voice" else self.last_spoken
+            if text is None:
+                raise ControlConflict("No alert has been spoken yet.")
+        self._speak(text, kind="test" if action == "test_voice" else "replay")
+
+    def _speak(self, text, kind="alert"):
+        """The only way speech is sent. Returns True if the phrase went to the speaker."""
+        with self._lock:
+            if self.speaker is None or self.muted or (kind == "alert" and self.paused):
+                return False
+            if kind == "alert":
+                self.last_spoken = text
+            speaker = self.speaker
+        speaker.say(text)
+        return True
+
+    def _show_paused(self, frame):
+        """Keep the last frame on screen with a Paused label; no inference."""
+        with self._lock:
+            if self._paused_shown:
+                return
+            self._paused_shown = True
+        shown = frame.copy()
+        height, width = shown.shape[:2]
+        cv2.rectangle(shown, (0, 0), (width, 56), (20, 20, 20), -1)
+        cv2.putText(shown, "Paused", (16, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2, cv2.LINE_AA)
+        ok, buffer = cv2.imencode(".jpg", shown)
+        with self._lock:
+            self.status.update(EMPTY_RESULT)
+            if ok:
+                self._latest_jpeg = self._latest_debug_jpeg = buffer.tobytes()
+                self._frame_captured_at = None  # a paused frame is never "stale"
 
     def _detection_dict(self, hazard, frame_height):
         item = hazard.to_dict()
@@ -329,10 +443,14 @@ class PipelineState:
                     continue
                 with self._lock:
                     self._last_frame_at = time.monotonic()
+                    paused = self.paused
                     mode = self.mode
                     if self._reset_policy:
                         self.policy.reset()
                         self._reset_policy = False
+                if paused:
+                    self._show_paused(frame)  # the camera stays open; nothing is inferred
+                    continue
                 error = ""
                 batch = None
                 result = None
@@ -359,10 +477,8 @@ class PipelineState:
                         result = decide(frame, batch, self.policy, self.depth_estimator,
                                         check=lambda: check_fresh('Inference result is stale; discarded'))
                         annotated, debug_annotated = annotate(frame, result)
-                        if result.speak is not None:
+                        if result.speak is not None and self._speak(result.speak):
                             spoken_at = time.time()
-                            if self.speaker is not None:
-                                self.speaker.say(result.speak)
                     except Exception as exc:
                         # Never retain prior boxes/alerts after an inference failure.
                         error = str(exc)
@@ -432,6 +548,15 @@ def create_app(state: PipelineState) -> Flask:
     @app.route("/status")
     def status():
         return jsonify(state.get_status())
+
+    @app.post("/control")
+    def control():
+        try:
+            return jsonify(state.control(request.get_json(silent=True)))
+        except ControlConflict as exc:
+            return jsonify(error=str(exc), **state.control_state()), 409
+        except ValueError as exc:
+            return jsonify(error=str(exc)), 400
 
     @app.post("/mode")
     def mode():

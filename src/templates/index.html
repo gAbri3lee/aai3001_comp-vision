@@ -172,6 +172,17 @@
   .message.error { border-color: var(--warn); background: #3a1620; color: #ffd0d0; }
   .message.warning { border-color: var(--caution); background: #3a2c14; color: #ffe2b8; }
   .message.info { border-color: var(--accent); background: #16223d; color: #d6e4ff; }
+  kbd {
+    font: 600 0.72rem ui-monospace, Menlo, monospace; padding: 1px 5px; margin-left: 4px;
+    border: 1px solid var(--muted); border-radius: 4px; color: var(--text);
+  }
+  .hint { color: var(--muted); font-size: 0.8rem; }
+  button[aria-pressed="true"]#pause, button[aria-pressed="true"]#mute {
+    background: var(--caution); color: #1a1205; font-weight: 700;
+  }
+  h2.section { margin-top: 16px; }
+  .speech { display: grid; gap: 8px; font-size: 0.9rem; }
+  .speech input[type="range"] { width: 100%; }
   footer {
     max-width: 1080px;
     margin: 20px auto 0;
@@ -193,6 +204,11 @@
       <button type="button" id="mode-cloud" data-mode="cloud" aria-pressed="false">Cloud</button>
     </div>
     <button type="button" id="retry-cloud" hidden>Retry cloud</button>
+    <span class="hint"><kbd>C</kbd> switch</span>
+  </div>
+  <div class="controls" role="group" aria-label="Alerts">
+    <button type="button" id="pause" aria-pressed="false">Pause <kbd>Space</kbd></button>
+    <button type="button" id="mute" aria-pressed="false">Mute <kbd>M</kbd></button>
   </div>
 </header>
 
@@ -217,6 +233,16 @@
       <summary id="ignored-summary">Ignored detections (0)</summary>
       <ul class="hazards" id="ignored-list"></ul>
     </details>
+    <h2 class="section">Speech</h2>
+    <div class="speech">
+      <label for="rate">Speech rate: <span id="rate-value">180</span> words per minute</label>
+      <input type="range" id="rate" min="120" max="260" step="10" value="180">
+      <div class="controls">
+        <button type="button" id="test-voice">Test voice</button>
+        <button type="button" id="replay">Replay last alert</button>
+      </div>
+      <div class="status-line" id="last-spoken">Nothing spoken yet</div>
+    </div>
   </section>
 </main>
 
@@ -224,6 +250,7 @@
   Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Detection is supplementary and can miss hazards; "No hazards" does not mean the scene is safe. Pillar is the weakest class and is often missed. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Distance is an estimate from box size, not measured metres. Depth, when enabled, is relative, not metres. Far detections, side objects and low-confidence general detections are shown as ignored and are not spoken. Other common objects are labelled Object by a general detector; objects outside its coverage can still be missed. Cloud mode uploads camera frames.
 </footer>
 
+<script src="/static/shortcuts.js"></script>
 <script>
   const debug = new URLSearchParams(location.search).get("debug") === "1";
   const alertBanner = document.getElementById("alert-banner");
@@ -259,6 +286,46 @@
   modeButtons.local.addEventListener("click", () => setMode("local"));
   modeButtons.cloud.addEventListener("click", () => setMode("cloud"));
   retryCloud.addEventListener("click", () => setMode("cloud"));
+
+  const pauseButton = document.getElementById("pause");
+  const muteButton = document.getElementById("mute");
+  const rate = document.getElementById("rate");
+  const rateValue = document.getElementById("rate-value");
+  const lastSpoken = document.getElementById("last-spoken");
+  let latest = null;  // Last /status response.
+
+  function control(body) { return post("/control", body); }
+  pauseButton.addEventListener("click", () => control({paused: !(latest && latest.paused)}));
+  muteButton.addEventListener("click", () => control({muted: !(latest && latest.muted)}));
+  rate.addEventListener("input", () => { rateValue.textContent = rate.value; });
+  rate.addEventListener("change", () => control({rate: Number(rate.value)}));
+  document.getElementById("test-voice").addEventListener("click", () => control({action: "test_voice"}));
+  document.getElementById("replay").addEventListener("click", () => control({action: "replay_last"}));
+
+  document.addEventListener("keydown", event => {
+    const action = shortcutFor(event);
+    if (!action || !latest) return;
+    event.preventDefault();
+    if (action === "pause") control({paused: !latest.paused});
+    else if (action === "mute") control({muted: !latest.muted});
+    else if (action === "mode" && (latest.cloud_available || latest.mode === "cloud")) {
+      setMode(latest.mode === "cloud" ? "local" : "cloud");
+    }
+  });
+
+  function renderControls(data) {
+    pauseButton.setAttribute("aria-pressed", String(!!data.paused));
+    pauseButton.firstChild.textContent = data.paused ? "Resume " : "Pause ";
+    muteButton.setAttribute("aria-pressed", String(!!data.muted));
+    muteButton.firstChild.textContent = data.muted ? "Unmute " : "Mute ";
+    rate.min = data.speech_rate_min; rate.max = data.speech_rate_max;
+    if (document.activeElement !== rate) { rate.value = data.speech_rate; rateValue.textContent = data.speech_rate; }
+    const speechOff = !data.speech_enabled;
+    for (const id of ["test-voice", "replay"]) document.getElementById(id).disabled = speechOff || data.muted;
+    document.getElementById("replay").disabled ||= !data.last_spoken;
+    lastSpoken.textContent = speechOff ? "Speech is off (started with --no-tts)." :
+      data.last_spoken ? `Last spoken: ${data.last_spoken}` : "Nothing spoken yet";
+  }
 
   function renderMode(data) {
     modeBadge.textContent = data.mode_label || data.backend;
@@ -334,7 +401,9 @@
       const res = await fetch("/status");
       if (!res.ok) throw new Error("Status unavailable");
       const data = await res.json();
+      latest = data;
       renderMode(data);
+      renderControls(data);
       renderMessages(data);
       fpsBadge.textContent = `${data.fps.toFixed(1)} FPS`;
 
@@ -346,7 +415,7 @@
       // A camera or video problem replaces the banner: "No hazards" would be misleading.
       const blocking = (data.health || []).find(h => h.severity === "error");
       const problem = blocking ? blocking.message : data.error;
-      alertBanner.textContent = problem || data.alert || "No hazards";
+      alertBanner.textContent = problem || (data.paused ? "Paused. No detection or speech." : "") || data.alert || "No hazards";
       alertBanner.className = "alert-banner " + (problem ? "level-warning" : levelClassFor(data.alert, top && top.band));
       video.style.opacity = problem ? "0.15" : "1";
       videoOverlay.hidden = !blocking;
