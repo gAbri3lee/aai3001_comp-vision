@@ -5,245 +5,199 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VisionAid</title>
 <style>
+  /* Colour tokens. scripts/check_contrast.py reads these and checks every text pair. */
   :root {
-    --bg: #0f1420;
-    --panel: #161d2e;
-    --panel-border: #262f45;
-    --text: #e8ecf6;
-    --muted: #8892a8;
-    --accent: #4f8cff;
-    --warn: #ff4d4d;
-    --caution: #ffb84d;
-    --note: #7c8aa5;
-    --ok: #34c77b;
+    --bg: #0b0f19;
+    --panel: #141b2b;
+    --card: #0f1526;
+    --border: #2a3550;
+    --text: #eef2fa;
+    --muted: #a3adc2;
+    --accent: #6ea8ff;
+    --on-accent: #08101f;
+    --button: #24304a;
+    --focus: #ffd84d;
+    --warn-bg: #4a1220;
+    --warn-line: #ff6b6b;
+    --warn-text: #ffdada;
+    --caution-bg: #3f2e0c;
+    --caution-line: #ffb84d;
+    --caution-text: #ffe6b8;
+    --on-caution: #1a1205;
+    --note-bg: #1a2540;
+    --note-line: #8fa6cf;
+    --note-text: #dde6f8;
+    --spoken: #ff8cff;
+    --video-bg: #000000;
+    --overlay-text: #ffffff;
+    --overlay-bg: #080b12;
+    color-scheme: dark;
   }
   * { box-sizing: border-box; }
+  /* Type scales with the window: about 16 px on a 1366 px laptop, 20 px on a 1920 px projector. */
+  html { font-size: clamp(14px, 0.62vw + 7.5px, 20px); }
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    padding: 24px 16px 40px;
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.35;
   }
-  header {
-    max-width: 1080px;
-    margin: 0 auto 20px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    letter-spacing: 0.02em;
-  }
-  header .tagline {
-    color: var(--muted);
-    font-size: 0.85rem;
-  }
-  main {
-    max-width: 1080px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
-    gap: 20px;
-  }
-  @media (max-width: 820px) {
-    main { grid-template-columns: 1fr; }
-  }
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
-    border-radius: 12px;
-    padding: 16px;
-  }
-  .video-wrap {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #000;
-    aspect-ratio: 4 / 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .video-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
-  .fps-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.55);
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-  .video-overlay {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    text-align: center; padding: 16px; font-size: 1.4rem; font-weight: 700;
-    background: rgba(8, 11, 18, 0.82); color: var(--text);
-  }
-  .video-overlay[hidden] { display: none; }
-  .alert-banner {
-    margin-top: 14px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    background: #1b2338;
-    border: 1px solid var(--panel-border);
-    font-weight: 600;
-    font-size: 1.05rem;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .alert-banner.level-warning { background: #3a1620; border-color: var(--warn); color: #ffb3b3; }
-  .alert-banner.level-caution { background: #3a2c14; border-color: var(--caution); color: #ffd9a0; }
-  .alert-banner.level-note    { background: #1c2436; border-color: var(--note); color: #c4cbdb; }
-  .alert-banner.level-clear   { color: var(--muted); font-weight: 400; }
-
-  .panel h2 {
-    margin: 0 0 12px;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-  }
-  .result-card {
-    background: #0f1526;
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    min-height: 1.4em;
-    word-break: break-word;
-  }
-  .result-card .label {
-    display: block;
-    color: var(--muted);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 4px;
-  }
-  .status-line { color: var(--muted); font-size: 0.8rem; margin-top: 6px; }
-  ul.hazards { list-style: none; padding: 0; margin: 0; }
-  ul.hazards li {
-    display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline;
-    padding: 8px 10px; margin-bottom: 6px; border-radius: 8px;
-    background: #0f1526; border: 1px solid var(--panel-border); font-size: 0.9rem;
-  }
-  ul.hazards li.spoken { border-color: #ff50ff; box-shadow: 0 0 0 1px #ff50ff inset; }
-  ul.hazards .name { font-weight: 600; }
-  ul.hazards .meta { color: var(--muted); font-size: 0.8rem; }
-  .band { font-size: 0.72rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; }
-  .band.near { color: #ffb3b3; border-color: var(--warn); }
-  .band.mid-close { color: #ffd9a0; border-color: var(--caution); }
-  .band.mid, .band.none { color: #c4cbdb; border-color: var(--note); }
-  .band.far { color: var(--muted); border-color: var(--panel-border); }
-  .spoken-tag { font-size: 0.72rem; color: #ff9cff; font-weight: 600; }
-  details.ignored { margin-top: 12px; color: var(--muted); font-size: 0.85rem; }
-  details.ignored summary { cursor: pointer; }
-  details.ignored li { background: transparent; opacity: 0.8; }
-  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .switch { display: inline-flex; border: 1px solid var(--panel-border); border-radius: 8px; overflow: hidden; }
-  .switch button { border: 0; border-radius: 0; }
-  .switch button[aria-pressed="true"] { background: var(--accent); color: #0b1020; font-weight: 700; }
-  button {
-    font: inherit; font-size: 0.9rem; color: var(--text); background: #222b42;
-    border: 1px solid var(--panel-border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+  .app { display: flex; flex-direction: column; min-height: 100vh; padding: 0.6rem 1rem 0.4rem; gap: 0.5rem; }
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; }
+  header h1 { margin: 0; font-size: 1.45rem; letter-spacing: 0.02em; }
+  .tagline { color: var(--muted); font-size: 0.8rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; }
+  button, select {
+    font: inherit; font-size: 0.9rem; color: var(--text); background: var(--button);
+    border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.75rem; cursor: pointer;
   }
   button:disabled { opacity: 0.55; cursor: not-allowed; }
   button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
-    outline: 3px solid #ffd84d; outline-offset: 2px;
+    outline: 3px solid var(--focus); outline-offset: 2px;
   }
-  .mode-badge {
-    font-weight: 700; letter-spacing: 0.04em; padding: 4px 10px; border-radius: 8px;
-    border: 1px solid var(--accent); color: #cfe0ff;
-  }
-  .mode-badge.cloud { border-color: var(--caution); color: #ffd9a0; }
-  .messages { max-width: 1080px; margin: 0 auto 12px; display: grid; gap: 6px; }
-  .message { padding: 8px 12px; border-radius: 8px; border: 1px solid; font-size: 0.95rem; }
-  .message.error { border-color: var(--warn); background: #3a1620; color: #ffd0d0; }
-  .message.warning { border-color: var(--caution); background: #3a2c14; color: #ffe2b8; }
-  .message.info { border-color: var(--accent); background: #16223d; color: #d6e4ff; }
+  .switch { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .switch button { border: 0; border-radius: 0; }
+  .switch button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+  #pause[aria-pressed="true"], #mute[aria-pressed="true"] { background: var(--caution-line); color: var(--on-caution); font-weight: 700; }
   kbd {
-    font: 600 0.72rem ui-monospace, Menlo, monospace; padding: 1px 5px; margin-left: 4px;
-    border: 1px solid var(--muted); border-radius: 4px; color: var(--text);
+    font: 600 0.72rem ui-monospace, Menlo, monospace; padding: 0 0.3rem; margin-left: 0.3rem;
+    border: 1px solid currentColor; border-radius: 4px;
   }
   .hint { color: var(--muted); font-size: 0.8rem; }
-  button[aria-pressed="true"]#pause, button[aria-pressed="true"]#mute {
-    background: var(--caution); color: #1a1205; font-weight: 700;
+  .mode-badge {
+    font-weight: 700; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 8px;
+    border: 2px solid var(--accent); color: var(--text);
   }
-  h2.section { margin-top: 16px; }
+  .mode-badge.cloud { border-color: var(--caution-line); }
+  .messages { display: grid; gap: 0.35rem; }
+  .messages:empty { display: none; }
+  .message { padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid; font-size: 0.95rem; }
+  .message::before { font-weight: 700; margin-right: 0.4rem; }
+  .message.error { border-color: var(--warn-line); background: var(--warn-bg); color: var(--warn-text); }
+  .message.error::before { content: "Problem:"; }
+  .message.warning { border-color: var(--caution-line); background: var(--caution-bg); color: var(--caution-text); }
+  .message.warning::before { content: "Warning:"; }
+  .message.info { border-color: var(--note-line); background: var(--note-bg); color: var(--note-text); }
+  .message.info::before { content: "Note:"; }
+
+  /* Wide screens: video column plus a side column; neither makes the page scroll. */
+  main { flex: 1 1 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(19rem, 25rem); gap: 0.8rem; min-height: 0; }
+  .stage { display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; }
+  .side {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem 0.8rem;
+    display: flex; flex-direction: column; gap: 0.45rem; min-height: 0; overflow-y: auto;
+  }
+  .video-wrap {
+    position: relative; flex: 1 1 auto; min-height: 12rem; border-radius: 10px; overflow: hidden;
+    background: var(--video-bg); display: flex; align-items: center; justify-content: center;
+  }
+  .video-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .fps-badge {
+    position: absolute; top: 0.5rem; right: 0.5rem; background: var(--overlay-bg); color: var(--overlay-text);
+    padding: 0.15rem 0.55rem; border-radius: 20px; font-size: 0.75rem;
+  }
+  .video-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 1rem; font-size: 1.5rem; font-weight: 700; background: var(--overlay-bg); color: var(--overlay-text);
+  }
+  .video-overlay[hidden], .view-badge[hidden], .level-chip[hidden] { display: none; }
+  .view-badge {
+    display: flex; gap: 0.6rem; align-items: center; justify-content: space-between; padding: 0.35rem 0.75rem;
+    border-radius: 8px; border: 2px dashed var(--accent); font-weight: 600;
+  }
+  .alert-banner {
+    padding: 0.6rem 0.9rem; border-radius: 10px; border: 3px solid var(--border); background: var(--card);
+    font-weight: 700; font-size: 1.7rem; min-height: 3.4rem; display: flex; align-items: center; flex-wrap: wrap;
+  }
+  .alert-banner.level-warning { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn-text); }
+  .alert-banner.level-caution { background: var(--caution-bg); border-color: var(--caution-line); color: var(--caution-text); }
+  .alert-banner.level-note    { background: var(--note-bg); border-color: var(--note-line); color: var(--note-text); }
+  .alert-banner.level-clear   { color: var(--muted); font-weight: 600; }
   .level-chip {
-    display: inline-block; margin-right: 10px; padding: 1px 8px; border-radius: 6px;
-    font-size: 0.8em; letter-spacing: 0.08em; text-transform: uppercase; border: 2px solid currentColor;
+    margin-right: 0.7rem; padding: 0 0.5rem; border-radius: 6px; font-size: 0.6em;
+    letter-spacing: 0.08em; text-transform: uppercase; border: 2px solid currentColor;
   }
-  .level-chip[hidden] { display: none; }
-  .legend-wrap { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.85rem; }
+  .legend-wrap { display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; align-items: center; font-size: 0.85rem; }
   .legend-title { color: var(--muted); }
-  ol.legend { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; counter-reset: rank; }
-  ol.legend li {
-    counter-increment: rank; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--panel-border); color: var(--muted);
-  }
+  ol.legend { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; margin: 0; padding: 0; counter-reset: rank; }
+  ol.legend li { counter-increment: rank; padding: 0.1rem 0.5rem; border-radius: 6px; border: 1px solid var(--border); color: var(--muted); }
   ol.legend li::before { content: counter(rank) ". "; }
   ol.legend li.current { color: var(--text); border: 2px solid var(--text); font-weight: 700; text-decoration: underline; }
-  .log-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  ol.log { list-style: none; margin: 6px 0 0; padding: 0; font-size: 0.85rem; max-height: 9.5em; overflow-y: auto; }
-  ol.log li { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--panel-border); }
-  ol.log .time { color: var(--muted); font-variant-numeric: tabular-nums; }
-  ol.log .backend { color: var(--muted); margin-left: auto; }
-  .analyze { display: grid; gap: 8px; font-size: 0.9rem; }
-  .analyze select { font: inherit; color: var(--text); background: #222b42; border: 1px solid var(--panel-border);
-                    border-radius: 8px; padding: 5px 8px; max-width: 100%; }
-  .analyze input[type="file"] { max-width: 100%; color: var(--text); }
-  .check { display: inline-flex; gap: 8px; align-items: center; }
-  .view-badge {
-    margin-top: 10px; display: flex; gap: 10px; align-items: center; justify-content: space-between;
-    padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--accent); color: #d6e4ff; font-weight: 600;
+
+  .side h2 {
+    margin: 0.35rem 0 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
   }
-  .view-badge[hidden] { display: none; }
-  .speech { display: grid; gap: 8px; font-size: 0.9rem; }
-  .speech input[type="range"] { width: 100%; }
-  footer {
-    max-width: 1080px;
-    margin: 20px auto 0;
-    color: var(--muted);
-    font-size: 0.78rem;
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.65rem; font-size: 0.9rem; }
+  .status-line { color: var(--muted); font-size: 0.8rem; }
+  .scroll { overflow-y: auto; min-height: 3rem; }
+  .hazard-box { flex: 1 1 5rem; }
+  ul.hazards { list-style: none; padding: 0; margin: 0; }
+  ul.hazards li {
+    display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; align-items: baseline; padding: 0.35rem 0.55rem; margin-bottom: 0.3rem;
+    border-radius: 8px; background: var(--card); border: 1px solid var(--border); font-size: 0.9rem;
+  }
+  ul.hazards li.spoken { border: 2px solid var(--spoken); }
+  ul.hazards .name { font-weight: 700; }
+  ul.hazards .meta { color: var(--muted); font-size: 0.8rem; }
+  .band { font-size: 0.75rem; padding: 0 0.45rem; border-radius: 10px; border: 1px solid; }
+  .band.near { color: var(--warn-text); border-color: var(--warn-line); }
+  .band.mid-close { color: var(--caution-text); border-color: var(--caution-line); }
+  .band.mid, .band.none { color: var(--note-text); border-color: var(--note-line); }
+  .band.far { color: var(--muted); border-color: var(--border); }
+  .spoken-tag { font-size: 0.75rem; color: var(--spoken); font-weight: 700; }
+  details.ignored { color: var(--muted); font-size: 0.85rem; }
+  details.ignored summary { cursor: pointer; padding: 0.15rem 0; }
+  details.ignored ul { max-height: 8rem; overflow-y: auto; margin-top: 0.3rem; }
+  .row { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; font-size: 0.9rem; }
+  .row label { color: var(--text); }
+  input[type="range"] { flex: 1 1 8rem; accent-color: var(--accent); }
+  input[type="file"] { max-width: 100%; color: var(--text); font-size: 0.85rem; }
+  input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
+  .log-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+  ol.log { list-style: none; margin: 0; padding: 0; font-size: 0.85rem; max-height: 7.5rem; overflow-y: auto; flex: 0 0 auto; }
+  ol.log li { display: flex; flex-wrap: wrap; gap: 0 0.5rem; padding: 0.15rem 0; border-bottom: 1px solid var(--border); }
+  ol.log .time, ol.log .backend { color: var(--muted); font-variant-numeric: tabular-nums; }
+  ol.log .backend { margin-left: auto; }
+  footer { color: var(--muted); font-size: 0.75rem; }
+  footer details { display: inline; }
+  footer summary { display: inline; cursor: pointer; text-decoration: underline; }
+
+  @media (min-width: 901px) {
+    .app { height: 100vh; }  /* the page itself never scrolls; long lists scroll in their boxes */
+  }
+  /* Narrow screens: one column and normal page scrolling, never sideways. */
+  @media (max-width: 900px) {
+    main { grid-template-columns: minmax(0, 1fr); }
+    .video-wrap { flex: none; aspect-ratio: 16 / 10; min-height: 0; }
+    .side { overflow: visible; }
+    .alert-banner { font-size: 1.35rem; }
   }
 </style>
 </head>
 <body>
+<div class="app">
 <header>
   <div>
     <h1>VisionAid</h1>
-    <div class="tagline">Hazard-detection vision assistant: live demo console</div>
+    <div class="tagline">Hazard-awareness demo console. Alerts show here and are spoken when speech is on.</div>
   </div>
   <div class="controls" role="group" aria-label="Detector">
-    <span class="mode-badge" id="mode-badge" aria-live="polite">LOCAL</span>
+    <span class="mode-badge" id="mode-badge">LOCAL</span>
     <div class="switch" role="group" aria-label="Detector mode">
       <button type="button" id="mode-local" data-mode="local" aria-pressed="true">Local</button>
       <button type="button" id="mode-cloud" data-mode="cloud" aria-pressed="false">Cloud</button>
     </div>
     <button type="button" id="retry-cloud" hidden>Retry cloud</button>
-    <span class="hint"><kbd>C</kbd> switch</span>
+    <span class="hint" aria-hidden="true"><kbd>C</kbd> switch</span>
   </div>
   <div class="controls" role="group" aria-label="Alerts">
-    <button type="button" id="pause" aria-pressed="false">Pause <kbd>Space</kbd></button>
-    <button type="button" id="mute" aria-pressed="false">Mute <kbd>M</kbd></button>
+    <button type="button" id="pause" aria-pressed="false" aria-keyshortcuts="Space">Pause <kbd>Space</kbd></button>
+    <button type="button" id="mute" aria-pressed="false" aria-keyshortcuts="M">Mute <kbd>M</kbd></button>
   </div>
 </header>
 
-<div class="messages" id="messages" aria-live="polite"></div>
+<div class="messages" id="messages" role="status" aria-live="polite"></div>
 
 <main>
-  <section class="panel">
+  <section class="stage" aria-label="Camera and current alert">
     <div class="video-wrap">
       <img id="video" src="/video_feed" alt="Live annotated camera feed">
       <div class="fps-badge" id="fps-badge">-- FPS</div>
@@ -253,7 +207,7 @@
       <span id="view-text">Showing an analysed image</span>
       <button type="button" id="back-live">Back to live</button>
     </div>
-    <div class="alert-banner level-clear" id="alert-banner" role="status" aria-live="assertive" aria-atomic="true">
+    <div class="alert-banner level-clear" id="alert-banner" role="alert" aria-live="assertive" aria-atomic="true">
       <span class="level-chip" id="level-chip" hidden></span><span id="alert-text">No hazards</span>
     </div>
     <div class="legend-wrap">
@@ -262,72 +216,90 @@
     </div>
   </section>
 
-  <section class="panel">
-    <div class="result-card"><span class="label">Active detector</span><span id="model-status">Starting...</span>
+  <section class="side" aria-label="Details and controls">
+    <div class="card"><strong id="model-status">Starting...</strong>
       <div class="status-line" id="pipeline-status"></div></div>
     <h2>Hazards</h2>
-    <ul class="hazards" id="object-alerts" aria-live="polite"><li>No hazards</li></ul>
-    <details class="ignored" id="ignored">
-      <summary id="ignored-summary">Ignored detections (0)</summary>
-      <ul class="hazards" id="ignored-list"></ul>
-    </details>
-    <h2 class="section">Speech</h2>
-    <div class="speech">
-      <label for="rate">Speech rate: <span id="rate-value">180</span> words per minute</label>
-      <input type="range" id="rate" min="120" max="260" step="10" value="180">
-      <div class="controls">
-        <button type="button" id="test-voice">Test voice</button>
-        <button type="button" id="replay">Replay last alert</button>
-      </div>
-      <div class="status-line" id="last-spoken">Nothing spoken yet</div>
+    <div class="scroll hazard-box">
+      <ul class="hazards" id="object-alerts" aria-live="off"><li>No hazards</li></ul>
+      <details class="ignored" id="ignored">
+        <summary id="ignored-summary">Ignored detections (0)</summary>
+        <ul class="hazards" id="ignored-list"></ul>
+      </details>
     </div>
-    <h2 class="section">Spoken log</h2>
+    <h2>Speech</h2>
+    <div class="row">
+      <label for="rate">Rate <span id="rate-value">180</span> words per minute</label>
+      <input type="range" id="rate" min="120" max="260" step="10" value="180">
+    </div>
+    <div class="row">
+      <button type="button" id="test-voice">Test voice</button>
+      <button type="button" id="replay">Replay last alert</button>
+    </div>
+    <div class="status-line" id="last-spoken">Nothing spoken yet</div>
     <div class="log-head">
-      <span class="status-line">Last 10 phrases, newest first. Memory only.</span>
+      <h2 id="log-title">Spoken log</h2>
       <button type="button" id="clear-log">Clear</button>
     </div>
-    <ol class="log" id="spoken-log" aria-live="off"></ol>
-    <h2 class="section">Analyse an image</h2>
-    <div class="analyze">
-      <label for="upload">Image file: JPEG or PNG, up to 10 MB. It is not stored.</label>
+    <ol class="log" id="spoken-log" aria-labelledby="log-title" tabindex="0"></ol>
+    <h2>Analyse an image</h2>
+    <div class="row">
+      <label for="upload">Image file (JPEG or PNG, up to 10 MB, not stored)</label>
       <input type="file" id="upload" accept="image/jpeg,image/png">
-      <div class="controls">
-        <label for="sample">Sample</label>
-        <select id="sample"><option value="">No samples</option></select>
-        <button type="button" id="analyze-sample">Analyse sample</button>
-      </div>
-      <label class="check"><input type="checkbox" id="speak-result"> Speak result</label>
+    </div>
+    <div class="row">
+      <label for="sample">Sample</label>
+      <select id="sample"><option value="">No samples</option></select>
+      <button type="button" id="analyze-sample">Analyse sample</button>
+      <label class="row"><input type="checkbox" id="speak-result"> Speak result</label>
     </div>
   </section>
 </main>
 
 <footer>
-  Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Detection is supplementary and can miss hazards; "No hazards" does not mean the scene is safe. Pillar is the weakest class and is often missed. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Distance is an estimate from box size, not measured metres. Depth, when enabled, is relative, not metres. Far detections, side objects and low-confidence general detections are shown as ignored and are not spoken. Other common objects are labelled Object by a general detector; objects outside its coverage can still be missed. Cloud mode uploads camera frames.
+  Supplementary hazard awareness only: detection can miss hazards and "No hazards" does not mean the scene is safe.
+  Distance is an estimate from box size, not measured metres.
+  <details><summary>All limitations</summary>
+  Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Pillar is the weakest class and is often missed. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Depth, when enabled, is relative, not metres. Far detections, side objects and low-confidence general detections are shown as ignored and are not spoken. Other common objects are labelled Object by a general detector; objects outside its coverage can still be missed. Cloud mode uploads camera frames.
+  </details>
 </footer>
+</div>
 
 <script src="/static/shortcuts.js"></script>
 <script>
   const debug = new URLSearchParams(location.search).get("debug") === "1";
-  const alertBanner = document.getElementById("alert-banner");
-  const fpsBadge = document.getElementById("fps-badge");
-  const objectAlerts = document.getElementById("object-alerts");
-  const ignoredList = document.getElementById("ignored-list");
-  const ignoredSummary = document.getElementById("ignored-summary");
-  const modelStatus = document.getElementById("model-status");
-  const pipelineStatus = document.getElementById("pipeline-status");
-  const video = document.getElementById("video");
-  const videoOverlay = document.getElementById("video-overlay");
-  if (debug) {
-    video.src = "/video_feed?debug=1";
-    document.getElementById("ignored").open = true;
+  const $ = id => document.getElementById(id);
+  const alertBanner = $("alert-banner"), alertText = $("alert-text"), levelChip = $("level-chip");
+  const fpsBadge = $("fps-badge"), video = $("video"), videoOverlay = $("video-overlay");
+  const objectAlerts = $("object-alerts"), ignoredList = $("ignored-list"), ignoredSummary = $("ignored-summary");
+  const modelStatus = $("model-status"), pipelineStatus = $("pipeline-status"), messages = $("messages");
+  const modeBadge = $("mode-badge"), retryCloud = $("retry-cloud");
+  const modeButtons = {local: $("mode-local"), cloud: $("mode-cloud")};
+  const pauseButton = $("pause"), muteButton = $("mute"), rate = $("rate"), rateValue = $("rate-value");
+  const lastSpoken = $("last-spoken"), legend = $("legend"), spokenLog = $("spoken-log");
+  const uploadInput = $("upload"), sampleSelect = $("sample"), speakResult = $("speak-result");
+  const viewBadge = $("view-badge"), viewText = $("view-text");
+  const liveSrc = debug ? "/video_feed?debug=1" : "/video_feed";
+  const MAX_UPLOAD = 10 * 1024 * 1024;
+  if (debug) { video.src = liveSrc; $("ignored").open = true; }
+
+  let latest = null;        // Last /status response.
+  let analysis = null;      // Last /analyze result while the analysis view is shown.
+  let actionMessage = null; // Result of the last button press, shown until the next one.
+  let bandLabels = {"near": "Warning", "mid-close": "Caution", "mid": "Note"};
+
+  const BAND_LEVEL = {"near": "level-warning", "mid-close": "level-caution", "mid": "level-note"};
+  const REASON_TEXT = {"far": "far", "side": "at the side", "low_confidence": "low confidence"};
+  const POSITION_TEXT = {"left": "left", "center": "ahead", "right": "right"};
+
+  function span(cls, text) {
+    const el = document.createElement("span");
+    el.className = cls;
+    el.textContent = text;
+    return el;
   }
 
-  const modeBadge = document.getElementById("mode-badge");
-  const modeButtons = {local: document.getElementById("mode-local"), cloud: document.getElementById("mode-cloud")};
-  const retryCloud = document.getElementById("retry-cloud");
-  const messages = document.getElementById("messages");
-  let actionMessage = null;  // Result of the last button press, shown until the next one.
-
+  // Requests ---------------------------------------------------------------
   async function post(url, body) {
     const res = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json"},
                                   body: JSON.stringify(body)});
@@ -336,27 +308,21 @@
     pollStatus();
     return res.ok;
   }
+  const setMode = backend => post("/mode", {backend});
+  const control = body => post("/control", body);
 
-  function setMode(backend) { return post("/mode", {backend}); }
   modeButtons.local.addEventListener("click", () => setMode("local"));
   modeButtons.cloud.addEventListener("click", () => setMode("cloud"));
   retryCloud.addEventListener("click", () => setMode("cloud"));
-
-  const pauseButton = document.getElementById("pause");
-  const muteButton = document.getElementById("mute");
-  const rate = document.getElementById("rate");
-  const rateValue = document.getElementById("rate-value");
-  const lastSpoken = document.getElementById("last-spoken");
-  let latest = null;  // Last /status response.
-
-  function control(body) { return post("/control", body); }
   pauseButton.addEventListener("click", () => control({paused: !(latest && latest.paused)}));
   muteButton.addEventListener("click", () => control({muted: !(latest && latest.muted)}));
   rate.addEventListener("input", () => { rateValue.textContent = rate.value; });
   rate.addEventListener("change", () => control({rate: Number(rate.value)}));
-  document.getElementById("test-voice").addEventListener("click", () => control({action: "test_voice"}));
-  document.getElementById("replay").addEventListener("click", () => control({action: "replay_last"}));
+  $("test-voice").addEventListener("click", () => control({action: "test_voice"}));
+  $("replay").addEventListener("click", () => control({action: "replay_last"}));
+  $("clear-log").addEventListener("click", () => control({action: "clear_log"}));
 
+  // Keyboard shortcuts (decision U6), ignored while a form control has focus.
   document.addEventListener("keydown", event => {
     const action = shortcutFor(event);
     if (!action || !latest) return;
@@ -368,16 +334,18 @@
     }
   });
 
-  // Image analysis: the result replaces the live view until "Back to live".
-  const MAX_UPLOAD = 10 * 1024 * 1024;
-  const uploadInput = document.getElementById("upload");
-  const sampleSelect = document.getElementById("sample");
-  const speakResult = document.getElementById("speak-result");
-  const viewBadge = document.getElementById("view-badge");
-  const viewText = document.getElementById("view-text");
-  const liveSrc = debug ? "/video_feed?debug=1" : "/video_feed";
-  let analysis = null;
+  // The legend comes from the config (severity order), never from this page.
+  fetch("/config").then(r => r.json()).then(config => {
+    bandLabels = config.band_labels || bandLabels;
+    legend.replaceChildren(...config.priority.map(label => {
+      const li = document.createElement("li");
+      li.dataset.class = label;
+      li.textContent = label;
+      return li;
+    }));
+  }).catch(() => {});
 
+  // Image analysis: the result replaces the live view until "Back to live".
   async function analyze(form) {
     form.append("speak", speakResult.checked ? "1" : "0");
     if (debug) form.append("debug", "1");
@@ -394,7 +362,6 @@
     }
     pollStatus();
   }
-
   uploadInput.addEventListener("change", () => {
     const file = uploadInput.files[0];
     uploadInput.value = "";
@@ -408,13 +375,13 @@
     form.append("image", file);
     analyze(form);
   });
-  document.getElementById("analyze-sample").addEventListener("click", () => {
+  $("analyze-sample").addEventListener("click", () => {
     if (!sampleSelect.value) return;
     const form = new FormData();
     form.append("sample", sampleSelect.value);
     analyze(form);
   });
-  document.getElementById("back-live").addEventListener("click", () => {
+  $("back-live").addEventListener("click", () => {
     analysis = null;
     video.src = liveSrc;
     video.alt = "Live annotated camera feed";
@@ -430,20 +397,7 @@
     }));
   }).catch(() => {});
 
-  function renderControls(data) {
-    pauseButton.setAttribute("aria-pressed", String(!!data.paused));
-    pauseButton.firstChild.textContent = data.paused ? "Resume " : "Pause ";
-    muteButton.setAttribute("aria-pressed", String(!!data.muted));
-    muteButton.firstChild.textContent = data.muted ? "Unmute " : "Mute ";
-    rate.min = data.speech_rate_min; rate.max = data.speech_rate_max;
-    if (document.activeElement !== rate) { rate.value = data.speech_rate; rateValue.textContent = data.speech_rate; }
-    const speechOff = !data.speech_enabled;
-    for (const id of ["test-voice", "replay"]) document.getElementById(id).disabled = speechOff || data.muted;
-    document.getElementById("replay").disabled ||= !data.last_spoken;
-    lastSpoken.textContent = speechOff ? "Speech is off (started with --no-tts)." :
-      data.last_spoken ? `Last spoken: ${data.last_spoken}` : "Nothing spoken yet";
-  }
-
+  // Rendering --------------------------------------------------------------
   function renderMode(data) {
     modeBadge.textContent = data.mode_label || data.backend;
     modeBadge.className = "mode-badge " + data.mode;
@@ -458,9 +412,7 @@
 
   function renderMessages(data) {
     const items = [...(data.health || [])];
-    if (data.mode === "cloud") {
-      items.push({severity: "info", message: "Cloud mode: camera frames are sent to the server."});
-    }
+    if (data.mode === "cloud") items.push({severity: "info", message: "Cloud mode: camera frames are sent to the server."});
     if (actionMessage) items.unshift(actionMessage);
     messages.replaceChildren(...items.map(h => {
       const div = document.createElement("div");
@@ -470,23 +422,20 @@
     }));
   }
 
-  const alertText = document.getElementById("alert-text");
-  const levelChip = document.getElementById("level-chip");
-  const legend = document.getElementById("legend");
-  const spokenLog = document.getElementById("spoken-log");
-  let bandLabels = {"near": "Warning", "mid-close": "Caution", "mid": "Note"};
-
-  // The legend comes from the config (severity order), never from this page.
-  fetch("/config").then(r => r.json()).then(config => {
-    bandLabels = config.band_labels || bandLabels;
-    legend.replaceChildren(...config.priority.map(label => {
-      const li = document.createElement("li");
-      li.dataset.class = label;
-      li.textContent = label;
-      return li;
-    }));
-  }).catch(() => {});
-  document.getElementById("clear-log").addEventListener("click", () => control({action: "clear_log"}));
+  function renderControls(data) {
+    pauseButton.setAttribute("aria-pressed", String(!!data.paused));
+    pauseButton.firstChild.textContent = data.paused ? "Resume " : "Pause ";
+    muteButton.setAttribute("aria-pressed", String(!!data.muted));
+    muteButton.firstChild.textContent = data.muted ? "Unmute " : "Mute ";
+    rate.min = data.speech_rate_min; rate.max = data.speech_rate_max;
+    if (document.activeElement !== rate) { rate.value = data.speech_rate; rateValue.textContent = data.speech_rate; }
+    const speechOff = !data.speech_enabled;
+    $("test-voice").disabled = speechOff || data.muted;
+    $("replay").disabled = speechOff || data.muted || !data.last_spoken;
+    lastSpoken.textContent = speechOff ? "Speech is off (started with --no-tts)." :
+      data.muted ? "Speech is muted." :
+      data.last_spoken ? `Last spoken: ${data.last_spoken}` : "Nothing spoken yet";
+  }
 
   function renderLegend(topClass) {
     for (const li of legend.children) {
@@ -505,17 +454,12 @@
     }
     spokenLog.replaceChildren(...entries.map(e => {
       const li = document.createElement("li");
-      const time = new Date(e.time * 1000).toLocaleTimeString([], {hour12: false});
-      li.appendChild(span("time", time));
+      li.appendChild(span("time", new Date(e.time * 1000).toLocaleTimeString([], {hour12: false})));
       li.appendChild(span("phrase", e.phrase));
       li.appendChild(span("backend", e.backend + (e.kind && e.kind !== "alert" ? `, ${e.kind}` : "")));
       return li;
     }));
   }
-
-  const BAND_LEVEL = {"near": "level-warning", "mid-close": "level-caution", "mid": "level-note"};
-  const REASON_TEXT = {"far": "far", "side": "at the side", "low_confidence": "low confidence"};
-  const POSITION_TEXT = {"left": "left", "center": "ahead", "right": "right"};
 
   function levelClassFor(alert, band) {
     if (!alert) return "level-clear";
@@ -529,14 +473,7 @@
     return !!selected && d.gated && d.class === selected.class && d.position === selected.position;
   }
 
-  function span(cls, text) {
-    const el = document.createElement("span");
-    el.className = cls;
-    el.textContent = text;
-    return el;
-  }
-
-  function row(d, selected) {
+  function row(d, selected, muted) {
     const li = document.createElement("li");
     const name = d.class + (d.source === "general" && d.class !== "Object" ? " (general model)" : "");
     li.appendChild(span("name", name));
@@ -551,7 +488,7 @@
     }
     if (isSpoken(d, selected)) {
       li.classList.add("spoken");
-      li.appendChild(span("spoken-tag", "spoken"));
+      li.appendChild(span("spoken-tag", muted ? "selected (muted)" : "spoken"));
     }
     return li;
   }
@@ -565,6 +502,7 @@
       renderMode(data);
       renderControls(data);
       renderMessages(data);
+      renderLog(data.spoken_log);
       // In analysis view the banner and lists describe the analysed image.
       const view = analysis ? {...data, alert: analysis.alert, alerts: analysis.alerts,
                                detections: analysis.detections, selected: analysis.selected,
@@ -592,18 +530,18 @@
       levelChip.hidden = !level;
       levelChip.textContent = level;
       renderLegend(!problem && top ? top.class : null);
-      renderLog(data.spoken_log);
       video.style.opacity = problem ? "0.15" : "1";
       videoOverlay.hidden = !blocking;
       videoOverlay.textContent = blocking ? blocking.message : "";
 
       const timing = view.round_trip_ms ?? view.latency_ms;
-      modelStatus.textContent = `${view.backend}: ${view.model}` + (timing == null ? "" : ` · ${timing.toFixed(1)} ms${data.round_trip_ms == null ? " inference" : " round trip"}`);
+      modelStatus.textContent = `${view.backend}: ${view.model}` + (timing == null ? "" :
+        ` · ${timing.toFixed(1)} ms${view.round_trip_ms == null ? " inference" : " round trip"}`);
       const gate = data.gate_enabled === false ? "alert gate off" :
                    "alert gate on" + (data.gate_calibrated ? "" : " (uncalibrated sizes)");
       pipelineStatus.textContent = [gate, data.depth_enabled ? "depth on" : "depth off",
                                     data.tts_enabled ? (data.muted ? "speech muted" : "speech on") : "speech off",
-                                    debug ? "debug view" : null].filter(Boolean).join(" · ");
+                                    data.paused ? "paused" : null, debug ? "debug view" : null].filter(Boolean).join(" · ");
 
       objectAlerts.replaceChildren();
       if (problem) {
@@ -613,16 +551,15 @@
         li.textContent = "No hazards";
         objectAlerts.appendChild(li);
       } else {
-        for (const d of gated) objectAlerts.appendChild(row(d, view.selected));
+        for (const d of gated) objectAlerts.appendChild(row(d, view.selected, data.muted && !analysis));
       }
       ignoredList.replaceChildren(...ignored.map(d => row(d, null)));
       ignoredSummary.textContent = `Ignored detections (${ignored.length})`;
     } catch (e) {
-      messages.replaceChildren();
       const div = document.createElement("div");
       div.className = "message error";
       div.textContent = "The VisionAid app is not responding. Check that it is still running.";
-      messages.appendChild(div);
+      messages.replaceChildren(div);
       alertText.textContent = "Service unavailable";
       levelChip.hidden = true;
       alertBanner.className = "alert-banner level-warning";
