@@ -423,3 +423,70 @@ large enough). No Pillar box does not mean there is no obstacle.
 
 Checked with headless Chrome against the Phase A clip: banner `Warning, Stair ahead`,
 the stair box drawn magenta with a `SPOKEN` tag, and the list row marked "spoken".
+
+## Phase F: local versus cloud consistency
+
+```
+python scripts/replay_alerts.py --source artifacts/golden_clip.mp4 --stride 5 \
+  --output artifacts/replay_local.jsonl
+python scripts/replay_alerts.py --source artifacts/golden_clip.mp4 --stride 5 \
+  --backend cloud --endpoint http://127.0.0.1:9100 --output artifacts/replay_cloud.jsonl
+python scripts/replay_alerts.py --compare artifacts/replay_local.jsonl \
+  artifacts/replay_cloud.jsonl --output artifacts/replay_compare.md
+```
+
+`scripts/replay_alerts.py` uses the same `SceneDetector` and `AlertPolicy` as the
+web app, processes every frame in order (every 5th here, 80 frames, 0.5 s apart)
+on a simulated clock and never plays audio, so the two runs line up frame by frame.
+
+Frames: local 80, cloud 80, compared 80
+
+Detections per class (all):
+| Class | local | cloud |
+|---|---:|---:|
+| Escalator | 4 | 8 |
+| Object | 36 | 36 |
+| People | 40 | 48 |
+| People (general) | 35 | 31 |
+| Pillar | 0 | 4 |
+| Stair | 32 | 32 |
+| Wet Floor Sign | 4 | 4 |
+
+Gated detections per class:
+| Class | local | cloud |
+|---|---:|---:|
+| Escalator | 4 | 4 |
+| Object | 4 | 4 |
+| People | 4 | 8 |
+| Pillar | 0 | 4 |
+| Stair | 32 | 32 |
+
+Timing (local): latency_ms mean 89, median 78
+Timing (cloud): latency_ms mean 207, median 197; round_trip_ms mean 144, median 141
+latency_ms includes the local general model; round_trip_ms is the cloud HTTP request alone.
+
+Banner differs on 8 of 80 frames; spoken phrase differs on 2 frames.
+Banner differs although both gated the same (class, position, band) set: 0 frames []
+Gate re-check on local: all frames reproduce
+Gate re-check on cloud: all frames reproduce
+
+| Frame | Time | local banner | cloud banner | local spoken | cloud spoken |
+|---:|---:|---|---|---|---|
+| 0 | 0.0 | - | Caution, Pillar ahead | - | Caution, Pillar ahead |
+| 5 | 0.5 | - | Caution, Pillar ahead | - | - |
+| 10 | 1.0 | - | Caution, Pillar ahead | - | - |
+| 15 | 1.5 | - | Caution, Pillar ahead | - | - |
+| 100 | 10.0 | - | Caution, People ahead | - | Caution, People ahead |
+| 105 | 10.5 | - | Caution, People ahead | - | - |
+| 110 | 11.0 | - | Caution, People ahead | - | - |
+| 115 | 11.5 | - | Caution, People ahead | - | - |
+
+**Verdict.** 72 of 80 frames give the same banner. All 8 differences come from
+different detections: on the first image the cloud model finds a Pillar the local
+model misses, and on another image it finds a person local misses. These are
+expected model differences (see the Pillar comparison in Phase D). No frame
+differs where both backends gated the same (class, position, band) set, and
+re-running the gate on each file's recorded detections reproduces every frame. No
+gate-caused differences were found. Cloud adds about 60 ms per frame over HTTP
+on this machine (round trip 141 ms median against local trained-plus-general
+78 ms), and cloud mode also runs the general model locally.
