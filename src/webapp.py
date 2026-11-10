@@ -7,6 +7,7 @@ second, and stays on local until a successful "Retry cloud" (decision U2).
 """
 import argparse
 import base64
+from collections import deque
 import copy
 import io
 import math
@@ -49,7 +50,15 @@ HEALTH_MESSAGES = {
 RATE_MIN, RATE_MAX, RATE_DEFAULT = 120, 260, 180
 TEST_PHRASE = "VisionAid voice test"
 CONTROL_KEYS = ("paused", "muted", "rate", "action")
-ACTIONS = ("test_voice", "replay_last")
+ACTIONS = ("test_voice", "replay_last", "clear_log")
+SPOKEN_LOG_SIZE = 10
+BAND_LABELS = {"near": "Warning", "mid-close": "Caution", "mid": "Note"}
+
+
+def priority_order(severity):
+    """Classes from the most to the least severe, then generic Objects, which any
+    trained hazard outranks. Built from the config so the page never hard-codes it."""
+    return sorted(severity, key=lambda label: -severity[label]) + ["Object"]
 
 
 # Image analysis (decision U4): JPEG or PNG, at most 10 MB, never written to disk.
@@ -195,6 +204,7 @@ class PipelineState:
         self.muted = False
         self.speech_rate = RATE_DEFAULT
         self.last_spoken = None
+        self.spoken_log = deque(maxlen=SPOKEN_LOG_SIZE)  # memory only, newest first
         self._paused_shown = False
         if self.speaker is not None:
             self.speaker.rate = RATE_DEFAULT
@@ -347,7 +357,8 @@ class PipelineState:
         """Caller holds the lock."""
         return {"paused": self.paused, "muted": self.muted, "speech_rate": self.speech_rate,
                 "speech_rate_min": RATE_MIN, "speech_rate_max": RATE_MAX,
-                "speech_enabled": self.speaker is not None, "last_spoken": self.last_spoken}
+                "speech_enabled": self.speaker is not None, "last_spoken": self.last_spoken,
+                "spoken_log": list(self.spoken_log)}
 
     def control_state(self) -> dict:
         with self._lock:
@@ -392,7 +403,10 @@ class PipelineState:
             speaker.rate = self.speech_rate
             if stop_speech:
                 speaker.stop()  # mute and pause silence the current phrase at once
-        if action is not None:
+        if action == "clear_log":
+            with self._lock:
+                self.spoken_log.clear()
+        elif action is not None:
             self._speech_action(action)
         return self.control_state()
 
@@ -414,6 +428,7 @@ class PipelineState:
                 return False
             if kind == "alert":
                 self.last_spoken = text
+            self.spoken_log.appendleft({"time": time.time(), "phrase": text, "backend": self.mode, "kind": kind})
             speaker = self.speaker
         speaker.say(text)
         return True
@@ -655,6 +670,14 @@ def create_app(state: PipelineState) -> Flask:
     @app.errorhandler(413)
     def too_large(_):
         return jsonify(error="The image is larger than 10 MB."), 413
+
+    @app.get("/config")
+    def config():
+        """What the page needs to draw the legend and controls, from the config."""
+        return jsonify(priority=priority_order(state.settings["severity"]), band_labels=BAND_LABELS,
+                       speech_rate_min=RATE_MIN, speech_rate_max=RATE_MAX, speech_rate_default=RATE_DEFAULT,
+                       shortcuts={"Space": "pause", "M": "mute", "C": "mode"},
+                       max_upload_bytes=MAX_UPLOAD_BYTES)
 
     @app.get("/samples")
     def samples():

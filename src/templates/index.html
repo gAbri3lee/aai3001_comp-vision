@@ -181,6 +181,24 @@
     background: var(--caution); color: #1a1205; font-weight: 700;
   }
   h2.section { margin-top: 16px; }
+  .level-chip {
+    display: inline-block; margin-right: 10px; padding: 1px 8px; border-radius: 6px;
+    font-size: 0.8em; letter-spacing: 0.08em; text-transform: uppercase; border: 2px solid currentColor;
+  }
+  .level-chip[hidden] { display: none; }
+  .legend-wrap { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.85rem; }
+  .legend-title { color: var(--muted); }
+  ol.legend { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; counter-reset: rank; }
+  ol.legend li {
+    counter-increment: rank; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--panel-border); color: var(--muted);
+  }
+  ol.legend li::before { content: counter(rank) ". "; }
+  ol.legend li.current { color: var(--text); border: 2px solid var(--text); font-weight: 700; text-decoration: underline; }
+  .log-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  ol.log { list-style: none; margin: 6px 0 0; padding: 0; font-size: 0.85rem; max-height: 9.5em; overflow-y: auto; }
+  ol.log li { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--panel-border); }
+  ol.log .time { color: var(--muted); font-variant-numeric: tabular-nums; }
+  ol.log .backend { color: var(--muted); margin-left: auto; }
   .analyze { display: grid; gap: 8px; font-size: 0.9rem; }
   .analyze select { font: inherit; color: var(--text); background: #222b42; border: 1px solid var(--panel-border);
                     border-radius: 8px; padding: 5px 8px; max-width: 100%; }
@@ -235,7 +253,13 @@
       <span id="view-text">Showing an analysed image</span>
       <button type="button" id="back-live">Back to live</button>
     </div>
-    <div class="alert-banner level-clear" id="alert-banner" aria-live="assertive">No hazards</div>
+    <div class="alert-banner level-clear" id="alert-banner" role="status" aria-live="assertive" aria-atomic="true">
+      <span class="level-chip" id="level-chip" hidden></span><span id="alert-text">No hazards</span>
+    </div>
+    <div class="legend-wrap">
+      <span class="legend-title" id="legend-title">Priority, highest first:</span>
+      <ol class="legend" id="legend" aria-labelledby="legend-title"></ol>
+    </div>
   </section>
 
   <section class="panel">
@@ -257,6 +281,12 @@
       </div>
       <div class="status-line" id="last-spoken">Nothing spoken yet</div>
     </div>
+    <h2 class="section">Spoken log</h2>
+    <div class="log-head">
+      <span class="status-line">Last 10 phrases, newest first. Memory only.</span>
+      <button type="button" id="clear-log">Clear</button>
+    </div>
+    <ol class="log" id="spoken-log" aria-live="off"></ol>
     <h2 class="section">Analyse an image</h2>
     <div class="analyze">
       <label for="upload">Image file: JPEG or PNG, up to 10 MB. It is not stored.</label>
@@ -440,6 +470,49 @@
     }));
   }
 
+  const alertText = document.getElementById("alert-text");
+  const levelChip = document.getElementById("level-chip");
+  const legend = document.getElementById("legend");
+  const spokenLog = document.getElementById("spoken-log");
+  let bandLabels = {"near": "Warning", "mid-close": "Caution", "mid": "Note"};
+
+  // The legend comes from the config (severity order), never from this page.
+  fetch("/config").then(r => r.json()).then(config => {
+    bandLabels = config.band_labels || bandLabels;
+    legend.replaceChildren(...config.priority.map(label => {
+      const li = document.createElement("li");
+      li.dataset.class = label;
+      li.textContent = label;
+      return li;
+    }));
+  }).catch(() => {});
+  document.getElementById("clear-log").addEventListener("click", () => control({action: "clear_log"}));
+
+  function renderLegend(topClass) {
+    for (const li of legend.children) {
+      const current = li.dataset.class === topClass;
+      li.classList.toggle("current", current);
+      if (current) li.setAttribute("aria-current", "true"); else li.removeAttribute("aria-current");
+    }
+  }
+
+  function renderLog(entries) {
+    if (!entries || !entries.length) {
+      const li = document.createElement("li");
+      li.textContent = "Nothing spoken yet";
+      spokenLog.replaceChildren(li);
+      return;
+    }
+    spokenLog.replaceChildren(...entries.map(e => {
+      const li = document.createElement("li");
+      const time = new Date(e.time * 1000).toLocaleTimeString([], {hour12: false});
+      li.appendChild(span("time", time));
+      li.appendChild(span("phrase", e.phrase));
+      li.appendChild(span("backend", e.backend + (e.kind && e.kind !== "alert" ? `, ${e.kind}` : "")));
+      return li;
+    }));
+  }
+
   const BAND_LEVEL = {"near": "level-warning", "mid-close": "level-caution", "mid": "level-note"};
   const REASON_TEXT = {"far": "far", "side": "at the side", "low_confidence": "low confidence"};
   const POSITION_TEXT = {"left": "left", "center": "ahead", "right": "right"};
@@ -511,8 +584,15 @@
       // A camera or video problem replaces the live banner: "No hazards" would be misleading.
       const blocking = analysis ? null : (data.health || []).find(h => h.severity === "error");
       const problem = blocking ? blocking.message : view.error;
-      alertBanner.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") || view.alert || "No hazards";
+      alertText.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") || view.alert || "No hazards";
       alertBanner.className = "alert-banner " + (problem ? "level-warning" : levelClassFor(view.alert, top && top.band));
+      // The level is written out, never shown by colour alone.
+      const word = view.alert && ["Warning", "Caution", "Note"].find(w => view.alert.startsWith(w));
+      const level = problem ? "Problem" : view.alert ? (top && bandLabels[top.band]) || word || "Alert" : "";
+      levelChip.hidden = !level;
+      levelChip.textContent = level;
+      renderLegend(!problem && top ? top.class : null);
+      renderLog(data.spoken_log);
       video.style.opacity = problem ? "0.15" : "1";
       videoOverlay.hidden = !blocking;
       videoOverlay.textContent = blocking ? blocking.message : "";
@@ -543,7 +623,8 @@
       div.className = "message error";
       div.textContent = "The VisionAid app is not responding. Check that it is still running.";
       messages.appendChild(div);
-      alertBanner.textContent = "Service unavailable";
+      alertText.textContent = "Service unavailable";
+      levelChip.hidden = true;
       alertBanner.className = "alert-banner level-warning";
       video.style.opacity = "0.15";
       modelStatus.textContent = "Unavailable";
