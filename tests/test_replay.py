@@ -19,5 +19,6 @@ def record(gated, reason, band):
 
 def test_gate_recheck_accepts_true_output_and_flags_tampered_output():
     gate, severity = CONFIG['alert_gate'], CONFIG['severity']
-    assert replay.regate_mismatches([record(True, None, 'near')  # 288 px of 720 = 0.40 >= near 0.35], gate, severity) == []
+    # 288 px of 720 is 0.40, at or above the Stair near size 0.35.
+    assert replay.regate_mismatches([record(True, None, 'near')], gate, severity) == []
     assert replay.regate_mismatches([record(False, 'far', 'far')], gate, severity) == [0]
