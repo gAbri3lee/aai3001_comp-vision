@@ -449,27 +449,25 @@ audible speech, the app's additional general-object detector and browser renderi
 Report these timings separately from detector-only latency. T4 notebook timings do not
 promise laptop performance. See `docs/VERIFICATION.md` for the measured results.
 
-## Training record and limitations
+## Training Data
 
-The five training notebooks are the updated Roboflow work. Saved results report
-YOLOv8n mAP50 0.659 / safety recall 0.716 and RF-DETR mAP50 0.739 / safety recall
-0.767. Train/valid/test counts are 8247/925/920, scene split fingerprint
-`49601080aac1f838190341d331785578`. Notebook outputs are preserved. Embedded API-key
-assignments have been removed; **rotate the exposed key in Roboflow** and use an
-environment variable or Kaggle secret. Old Git/Kaggle history may still contain it.
+The five training notebooks contain the latest Roboflow training work, with their original outputs preserved. 
+The saved results show an mAP50 of 0.659 and safety recall of 0.716 for YOLOv8n, 
+compared with 0.739 and 0.767 for RF-DETR. 
+The dataset contains 8,247 training images, 925 validation images and 920 test images.
+Its scene-split fingerprint is `49601080aac1f838190341d331785578`.
 
-Training is kept in the five-class notebooks. The former dataset-builder and
-training CLI files have been removed, together with their unused legacy FiftyOne
-dependency manifest. The `scripts/` folder retains detector verification, export
-and benchmarking tools. Dataset-validation logic and its automated tests remain
-available for checking notebook-prepared splits; they do not train models.
+To obtain your own API key, sign in to Roboflow, select your workspace, and open Settings → API Keys. 
+Click Generate New Key, enter a descriptive name, and select Create API Key. 
+Store the key in an environment variable or a Kaggle secret named ROBOFLOW_API_KEY, rather than writing it directly into a notebook.
 
-The handover's test-only YAML must not be used for training: its three split
-entries all point to test images. Use the notebook's prepared scene split for any
-future training. `test.py` is an unrelated historical sensor plotting experiment;
-current automated tests live in `tests/`.
+The notebooks contain all **model training for the 5 finalised classes and document the performance of both YOLO and RF-DETR models.**
 
-### Pillar detection: what to expect
+The scripts/ folder contains tools for verifying detector outputs, exporting models and measuring performance in local and cloud deployments. Dataset-validation code and automated tests check that the splits prepared by the notebooks are correctly structured and separated. These supporting tools do not train models.
+
+For future training, use the scene-based split prepared in the notebooks. Do not use the handover’s test-only YAML file for training: its training, validation and test entries all point to the test images. The root-level test.py is an older sensor-plotting experiment unrelated to the current pipeline. Current automated tests are in `tests/`.
+
+### Pillar detection: Limitations (Weakest Class)
 
 **Pillar is supported, but it is the weakest class and detection is unreliable.**
 Pointing the camera at a pillar runs hazard detection automatically. If the
@@ -486,10 +484,12 @@ images:
 | RF-DETR Nano | 0.40 | 29.4% |
 
 Recall measures how many labelled pillar objects were found on that test set.
-These percentages are **not the probability of detecting a particular pillar in
-your room**. Both models missed many pillars, and repeated video frames do not
-guarantee detection: the model may consistently miss the same pillar from a
-particular viewpoint.
+
+YOLOv8n detected about 17% of the labelled pillars, while RF-DETR Nano detected about 29%. 
+These figures describe performance on this test set, they are not the **probability of detecting a particular pillar**.
+
+Both models missed many pillars. Keeping a pillar in view for longer does not guarantee detection, 
+because the model may continue to miss it from the same angle.
 
 For a practical check, use good lighting, keep the pillar clearly visible, and
 try different camera angles and distances. **No Pillar box means the model has
@@ -497,10 +497,9 @@ not detected it; it does not mean there is no obstacle or that the scene is safe
 
 ### Other limitations
 
-Stair direction is unavailable. Wet Floor Sign
+Stair direction is unavailable and not part of the model training. Wet Floor Sign
 means a sign was detected, not that floor wetness was measured. MiDaS proximity is
 relative, not metres; an empty detection list does not prove a scene is safe.
 The additional general detector recognises common COCO objects, not arbitrary
 unknown objects, brands or currency denominations. Generic notices do not prove
-that every obstacle was found. OCR, item classification and microphone commands
-are no longer part of the runtime.
+that every obstacle was found. 
