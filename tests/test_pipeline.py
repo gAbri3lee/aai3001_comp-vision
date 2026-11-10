@@ -80,6 +80,8 @@ class PipelineTests(unittest.TestCase):
         state.mode, state.detectors = 'local', {'local': object()}
         state.backend_settings = {'local': {'model': 'yolov8n'}}
         state.fallback_active, state.last_error, state._hold_until = False, '', None
+        state.capture, state.camera_missing, state.source_ended, state.pipeline_stopped = None, False, False, False
+        state.args.no_tts, state.speaker, state.speech_error = True, None, None
         state.status = {'fps': 8., 'alert': 'Stair ahead', 'detections': [{'class_id': 3}],
                         'error': '', 'latency_ms': 10., 'round_trip_ms': 20.}
         status = state.get_status()

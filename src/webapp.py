@@ -29,6 +29,22 @@ MODEL_NAMES = {"local": "YOLOv8n", "cloud": "RF-DETR Nano"}
 # After a cloud failure the last good result stays on screen at most this long.
 FALLBACK_HOLD_SECONDS = 1.0
 
+# Plain messages for problems while running (Phase 2 of the second hand-over).
+HEALTH_MESSAGES = {
+    "camera_missing": ("error", "Camera not found. Check the connection."),
+    "cloud_unreachable": ("warning", "Cloud unreachable, using local."),
+    "general_unavailable": ("warning", "Extra object detection is off."),
+    "speech_unavailable": ("warning", "Speech is unavailable. Alerts show on screen only."),
+    "no_video": ("error", "No video. Waiting for camera."),
+    "source_ended": ("info", "The video file has ended. Restart the app to play it again."),
+    "pipeline_stopped": ("error", "Processing stopped. Restart the app."),
+}
+
+
+def health_entry(code):
+    severity, message = HEALTH_MESSAGES[code]
+    return {"code": code, "severity": severity, "message": message}
+
 
 class ModeUnavailable(RuntimeError):
     """The requested mode cannot be used right now (no endpoint, or health failed)."""
@@ -74,6 +90,9 @@ class PipelineState:
     """Owns the background capture/inference loop and exposes thread-safe
     reads for Flask's request handlers (which run on separate threads)."""
 
+    CAMERA_RETRY_SECONDS = 2.0  # A missing or lost camera is reopened this often.
+    NO_VIDEO_SECONDS = 3.0      # No frame for this long: clear results, show a message.
+
     def __init__(self, args):
         self.args = args
         # Validates the command line exactly as before (for example --model with cloud).
@@ -94,7 +113,14 @@ class PipelineState:
         if not args.no_tts:
             from tts import Speaker
         self.depth_estimator = None if args.no_depth else DepthEstimator()
-        self.speaker = None if args.no_tts else Speaker()
+        self.speaker = None
+        self.speech_error = None
+        if not args.no_tts:
+            try:
+                self.speaker = Speaker()
+            except Exception as exc:
+                # Alerts still show on screen; the page says speech is unavailable.
+                self.speech_error = f"Speech unavailable: {exc}"
         self.policy = AlertPolicy(self.settings['alert_gate'], self.settings['severity'])
         # Optional distance estimate for the debug panel only (never spoken).
         self.calibration = distance.load_calibration()
@@ -116,8 +142,20 @@ class PipelineState:
 
         self._stop = threading.Event()
 
-        source = int(args.source) if str(args.source).isdigit() else args.source
-        self.capture = LatestFrameCapture(source)
+        self._source = int(args.source) if str(args.source).isdigit() else args.source
+        self._is_camera = isinstance(self._source, int)
+        self.capture = None
+        self.camera_missing = False
+        self.source_ended = False
+        self.pipeline_stopped = False
+        self._next_camera_try = 0.
+        self._last_frame_at = time.monotonic()
+        try:
+            self.capture = LatestFrameCapture(self._source)
+        except Exception:
+            if not self._is_camera:
+                raise  # A missing video file is a startup configuration error.
+            self._camera_lost()
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
 
@@ -183,23 +221,39 @@ class PipelineState:
 
     def get_jpeg(self, debug=False):
         with self._lock:
-            if self._frame_is_stale() or self._hold_expired():
+            if self._frame_is_stale() or self._hold_expired() or self.camera_missing or self._no_video():
                 return None
             return self._latest_debug_jpeg if debug else self._latest_jpeg
 
+    def _no_video(self):
+        """Caller holds the lock. The camera is open but has sent nothing for a while."""
+        return (self.capture is not None and not self.source_ended and not self.pipeline_stopped
+                and time.monotonic() - self._last_frame_at > self.NO_VIDEO_SECONDS)
+
     def _health(self):
         """Caller holds the lock. Plain messages for problems while running."""
-        health = []
+        codes = []
+        if self.pipeline_stopped:
+            codes.append("pipeline_stopped")
+        if self.camera_missing:
+            codes.append("camera_missing")
+        elif self._no_video():
+            codes.append("no_video")
+        if self.source_ended:
+            codes.append("source_ended")
         if self.fallback_active:
-            health.append({"code": "cloud_unreachable", "severity": "warning",
-                           "message": "Cloud unreachable, using local."})
-        return health
+            codes.append("cloud_unreachable")
+        if getattr(self.detectors[self.mode], "general_error", None):
+            codes.append("general_unavailable")
+        if not self.args.no_tts and (self.speech_error or getattr(self.speaker, "error", None)):
+            codes.append("speech_unavailable")
+        return [health_entry(code) for code in codes]
 
     def get_status(self) -> dict:
         with self._lock:
             status = dict(self.status)
             status.update(self._mode_fields())
-            if self._hold_expired():
+            if self._hold_expired() or self.camera_missing or self._no_video():
                 status.update(EMPTY_RESULT)
             elif self._frame_is_stale():
                 status.update(EMPTY_RESULT, error="Frame is stale; waiting for fresh inference")
@@ -218,7 +272,36 @@ class PipelineState:
     def stop(self):
         self._stop.set()
         self._thread.join(timeout=self.args.timeout + 3)
-        self.capture.release()
+        if self.capture is not None:
+            self.capture.release()
+
+    # Camera ---------------------------------------------------------------
+
+    def _camera_lost(self):
+        """Forget the camera and its results; the loop reopens it later."""
+        if self.capture is not None:
+            self.capture.release()
+        with self._lock:
+            self.capture = None
+            self.camera_missing = True
+            self.status.update(EMPTY_RESULT)
+            self._latest_jpeg = self._latest_debug_jpeg = None
+            self._frame_captured_at = None
+        self._next_camera_try = time.monotonic() + self.CAMERA_RETRY_SECONDS
+
+    def _try_open_camera(self):
+        if time.monotonic() < self._next_camera_try:
+            return False
+        try:
+            capture = LatestFrameCapture(self._source)
+        except Exception:
+            self._next_camera_try = time.monotonic() + self.CAMERA_RETRY_SECONDS
+            return False
+        with self._lock:
+            self.capture = capture
+            self.camera_missing = False
+            self._last_frame_at = time.monotonic()
+        return True
 
     # Background loop ------------------------------------------------------
 
@@ -226,17 +309,26 @@ class PipelineState:
         try:
             prev_time = time.monotonic()
             while not self._stop.is_set():
+                if self.capture is None:
+                    if not self._try_open_camera():
+                        self._stop.wait(0.05)
+                    continue
                 ok, frame, captured_at = self.capture.read()
                 if not ok:
                     if self.capture.finished:
+                        if self._is_camera:
+                            self._camera_lost()  # Unplugged: keep the page up and retry.
+                            continue
                         with self._lock:
                             self.status.update(EMPTY_RESULT, error="Camera/source ended")
+                            self.source_ended = True
                             self._latest_jpeg = self._latest_debug_jpeg = None
                             self._frame_captured_at = None
                         break
                     self._stop.wait(0.01)
                     continue
                 with self._lock:
+                    self._last_frame_at = time.monotonic()
                     mode = self.mode
                     if self._reset_policy:
                         self.policy.reset()
@@ -304,8 +396,10 @@ class PipelineState:
         except Exception as exc:
             with self._lock:
                 self.status['error'] = f'Pipeline stopped: {exc}'
+                self.pipeline_stopped = True
         finally:
-            self.capture.release()
+            if self.capture is not None:
+                self.capture.release()
             with self._lock:
                 self.status.update(EMPTY_RESULT)
                 if not self.status['error']:

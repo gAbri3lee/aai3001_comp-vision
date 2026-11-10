@@ -7,7 +7,11 @@ At most one phrase waits while another plays. A newer phrase replaces the
 waiting one, a phrase that is playing is never interrupted, and a waiting phrase
 that has become too old by the time its turn comes is dropped, because the
 hazard it describes may no longer be in view.
+
+`error` is None while speech works. It holds the reason when the speech command
+is missing or the last phrase failed, so the page can say alerts are on screen only.
 """
+import os
 import logging
 import subprocess
 import sys
@@ -30,6 +34,9 @@ class Speaker:
         self._pending: tuple[str, float] | None = None
         self._engine = None
         self.dropped = 0
+        self.error = None
+        if sys.platform == 'darwin' and not os.path.exists('/usr/bin/say'):
+            self.error = 'Speech command /usr/bin/say not found'
         self._thread = threading.Thread(target=self._run, daemon=True)
         if start:
             self._thread.start()
@@ -70,7 +77,9 @@ class Speaker:
                     self._engine.setProperty('rate', self._rate)
                 self._engine.say(text)
                 self._engine.runAndWait()
+            self.error = None
         except Exception as exc:
+            self.error = str(getattr(exc, 'stderr', None) or exc) or type(exc).__name__
             # Report playback failures and keep the next hazard audible.
             logger.error('Speech playback failed: %s',
                          getattr(exc, 'stderr', None) or str(exc), exc_info=True)

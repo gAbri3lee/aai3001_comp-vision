@@ -81,11 +81,12 @@ def running(detectors, *argv, speaker=None, capture=Capture):
     """Start PipelineState with fake detectors (keyed by backend) and yield (state, client)."""
     from webapp import PipelineState, create_app
     tts = SimpleNamespace(Speaker=lambda: speaker)
+    # Patches stay active: the loop reopens a lost camera through LatestFrameCapture.
     with patch('webapp.create_detector', side_effect=lambda settings, **kw: detectors[settings['backend']]), \
          patch('webapp.LatestFrameCapture', capture), \
          patch.dict('sys.modules', {'tts': tts}):
         state = PipelineState(make_args(*argv, tts=speaker is not None))
-    try:
-        yield state, create_app(state).test_client()
-    finally:
-        state.stop()
+        try:
+            yield state, create_app(state).test_client()
+        finally:
+            state.stop()

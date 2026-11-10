@@ -64,6 +64,16 @@ class SpeakerTests(unittest.TestCase):
                     self.drain(speaker)
         self.assertEqual(played, ['Object detected ahead'])
         self.assertIn('Audio unavailable', '\n'.join(logs.output))
+        self.assertIsNone(speaker.error)  # the later success cleared it
+
+    def test_failure_sets_error_for_the_page(self):
+        speaker = self.speaker()
+        with patch.object(sys, 'platform', 'darwin'), \
+             patch('subprocess.run', side_effect=FileNotFoundError('/usr/bin/say')), \
+             self.assertLogs('tts', level='ERROR'):
+            speaker.say('Warning, Stair ahead')
+            self.drain(speaker)
+        self.assertIn('say', speaker.error)
 
     def test_other_platforms_keep_pyttsx3_hazard_speech(self):
         speaker = self.speaker()

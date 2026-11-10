@@ -85,6 +85,12 @@
     font-size: 0.75rem;
     color: var(--muted);
   }
+  .video-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 16px; font-size: 1.4rem; font-weight: 700;
+    background: rgba(8, 11, 18, 0.82); color: var(--text);
+  }
+  .video-overlay[hidden] { display: none; }
   .alert-banner {
     margin-top: 14px;
     padding: 14px 16px;
@@ -197,6 +203,7 @@
     <div class="video-wrap">
       <img id="video" src="/video_feed" alt="Live annotated camera feed">
       <div class="fps-badge" id="fps-badge">-- FPS</div>
+      <div class="video-overlay" id="video-overlay" hidden></div>
     </div>
     <div class="alert-banner level-clear" id="alert-banner" aria-live="assertive">No hazards</div>
   </section>
@@ -227,6 +234,7 @@
   const modelStatus = document.getElementById("model-status");
   const pipelineStatus = document.getElementById("pipeline-status");
   const video = document.getElementById("video");
+  const videoOverlay = document.getElementById("video-overlay");
   if (debug) {
     video.src = "/video_feed?debug=1";
     document.getElementById("ignored").open = true;
@@ -335,9 +343,14 @@
       const ignored = detections.filter(d => !d.gated);
       const top = gated.find(d => d.phrase === data.alert);
 
-      alertBanner.textContent = data.error || data.alert || "No hazards";
-      alertBanner.className = "alert-banner " + (data.error ? "level-warning" : levelClassFor(data.alert, top && top.band));
-      video.style.opacity = data.error ? "0.15" : "1";
+      // A camera or video problem replaces the banner: "No hazards" would be misleading.
+      const blocking = (data.health || []).find(h => h.severity === "error");
+      const problem = blocking ? blocking.message : data.error;
+      alertBanner.textContent = problem || data.alert || "No hazards";
+      alertBanner.className = "alert-banner " + (problem ? "level-warning" : levelClassFor(data.alert, top && top.band));
+      video.style.opacity = problem ? "0.15" : "1";
+      videoOverlay.hidden = !blocking;
+      videoOverlay.textContent = blocking ? blocking.message : "";
 
       const timing = data.round_trip_ms ?? data.latency_ms;
       modelStatus.textContent = `${data.backend}: ${data.model}` + (timing == null ? "" : ` · ${timing.toFixed(1)} ms${data.round_trip_ms == null ? " inference" : " round trip"}`);
@@ -348,8 +361,8 @@
                                     debug ? "debug view" : null].filter(Boolean).join(" · ");
 
       objectAlerts.replaceChildren();
-      if (data.error) {
-        objectAlerts.appendChild(span("meta", data.error));
+      if (problem) {
+        objectAlerts.appendChild(span("meta", problem));
       } else if (!gated.length) {
         const li = document.createElement("li");
         li.textContent = "No hazards";
@@ -360,6 +373,11 @@
       ignoredList.replaceChildren(...ignored.map(d => row(d, null)));
       ignoredSummary.textContent = `Ignored detections (${ignored.length})`;
     } catch (e) {
+      messages.replaceChildren();
+      const div = document.createElement("div");
+      div.className = "message error";
+      div.textContent = "The VisionAid app is not responding. Check that it is still running.";
+      messages.appendChild(div);
       alertBanner.textContent = "Service unavailable";
       alertBanner.className = "alert-banner level-warning";
       video.style.opacity = "0.15";
