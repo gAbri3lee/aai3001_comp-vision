@@ -11,7 +11,7 @@ from scene_detector import SceneDetector as create_detector
 from detection import annotate
 from capture import LatestFrameCapture
 
-from decision_engine import AlertCooldown, build_hazards, phrase_for
+from decision_engine import AlertCooldown, assess, phrase_for
 
 class PipelineState:
     """Owns the background capture/inference loop and exposes thread-safe
@@ -27,7 +27,7 @@ class PipelineState:
             from tts import Speaker
         self.depth_estimator = None if args.no_depth else DepthEstimator()
         self.speaker = None if args.no_tts else Speaker()
-        self.cooldown = AlertCooldown()
+        self.cooldown = AlertCooldown.from_gate(self.settings['alert_gate'])
         self._lock = threading.Lock()
         self._latest_jpeg = None
         self._frame_captured_at = None
@@ -89,7 +89,9 @@ class PipelineState:
                     depth_map = self.depth_estimator.predict(frame) if self.depth_estimator is not None and batch.detections else None
                     if time.monotonic() - captured_at > self.args.max_frame_age:
                         raise DetectorError('Inference result is stale; discarded')
-                    hazards = build_hazards(batch.detections, depth_map, frame.shape[1], self.settings['severity'])
+                    hazards = assess(batch.detections, (frame.shape[1], frame.shape[0]),
+                                     self.settings['alert_gate'], self.settings['severity'], depth_map)
+                    hazards = [hazard for hazard in hazards if hazard.gated]
                     annotated = annotate(frame, batch.detections)
                     for hazard in hazards:
                         if hazard.proximity is not None:

@@ -53,3 +53,26 @@ def test_empty_general_predictions_do_not_invent_an_object():
         batch = SceneDetector({'device': 'cpu'}).predict(SimpleNamespace(shape=(60, 100, 3)))
     assert batch.detections == ()
     assert batch.round_trip_ms == 15
+
+
+def test_unmatched_coco_person_becomes_general_people():
+    from scene_detector import SceneDetector
+    named = Detection(3, 'Stair', .8, (0, 30, 40, 60))
+
+    class Trained:
+        def predict(self, frame):
+            return DetectionBatch((named,), 10, 'yolov8n')
+
+    class General:
+        def predict(self, frame, **kwargs):
+            # A person the trained model missed, and a chair (COCO 56).
+            rows = [[50, 5, 70, 55, .7, 0], [75, 20, 95, 50, .6, 56]]
+            return [SimpleNamespace(boxes=SimpleNamespace(data=SimpleNamespace(
+                cpu=lambda: SimpleNamespace(numpy=lambda: rows))))]
+
+    with patch('scene_detector.create_detector', return_value=Trained()), \
+         patch('scene_detector.load_general_model', return_value=General()):
+        batch = SceneDetector({'device': 'cpu'}).predict(SimpleNamespace(shape=(60, 100, 3)))
+    assert batch.detections == (named, Detection(-1, 'People', .7, (50., 5., 70., 55.)),
+                                Detection(-1, 'Object', .6, (75., 20., 95., 50.)))
+    assert batch.detections[1].to_dict()['class_id'] == -1

@@ -101,5 +101,24 @@
     "Wet Floor Sign": 0.8,
     "Pillar": 0.7,
     "People": 0.5
+  },
+  "alert_gate": {
+    "enabled": true,
+    "calibrated": false,
+    "size_metric": "box_height_over_frame_height",
+    "centre_third": [0.3333, 0.6667],
+    "side_multiplier": 1.5,
+    "min_size": {
+      "Stair": 0.20, "Escalator": 0.25, "Wet Floor Sign": 0.15,
+      "Pillar": 0.35, "People": 0.40, "Object": 0.35
+    },
+    "near_size": {
+      "Stair": 0.35, "Escalator": 0.45, "Wet Floor Sign": 0.28,
+      "Pillar": 0.60, "People": 0.60, "Object": 0.55
+    },
+    "object_min_confidence": 0.5,
+    "cooldown_seconds": {"trained": 4.0, "Object": 8.0},
+    "proximity_jump_to_realert": 0.15,
+    "known_heights_m": {"People": 1.7, "Wet Floor Sign": 0.65}
   }
 }

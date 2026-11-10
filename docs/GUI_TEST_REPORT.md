@@ -137,3 +137,50 @@ Phase H handles all of these leftovers.
 
 Live camera view, audible speech, how alerts feel while walking and the tape-measure
 distance test. See `docs/MANUAL_TEST_SHEET.md`.
+
+## Phase B: alert gate
+
+The gate lives in `src/decision_engine.py` as the pure function `assess()`. The web
+app, the OpenCV demos (through `PipelineState`) and `scripts/benchmark_pipeline.py`
+all call it, and so does the replay tool added in Phase F. Local and cloud
+detections go through the same function. The settings are in
+`visionaid_config.json` under `alert_gate` and are validated at start-up.
+`--no-gate` restores the old announce-everything behaviour for comparison.
+
+Rules, applied to every detection in this order:
+
+1. A general-model detection (`class_id` -1) below `object_min_confidence` (0.5)
+   is ignored as `low_confidence`.
+2. `size` = box height / frame height. Below the class `min_size` the hazard is
+   `far` and is never spoken.
+3. Left or right third: Objects are always ignored (`side`). Trained classes need
+   `size >= min_size x 1.5`.
+4. Band from `size / near_size`: 1.0 or more is near ("Warning"), 0.6 or more is
+   mid-close ("Caution"), otherwise mid ("Note"). With depth enabled, the band
+   comes from depth only (decision D8: never mixed with box size).
+5. Ranking: hazards that pass come first, any trained class before any Object,
+   then `severity x (0.5 + 0.5 x proximity)`, where proximity is `min(1, size / near_size)`
+   without depth.
+
+A COCO person that no trained box overlaps (IoU < 0.5) becomes a `People`
+detection with `class_id` -1 and `source: general` (D5). The cooldown key is now
+`(label, position, band)`, 4 s for trained hazards and 8 s for general detections.
+A hazard whose proximity rises by more than 0.15 re-alerts early.
+
+Effect on the Phase A clip (local, 30 polls): background people at 0.39 to 0.40
+confidence and side objects are no longer spoken. The stair image gives
+`Warning, Stair ahead` instead of `Note, Stair ahead; distance unavailable`.
+
+### Where the hand-over and the code disagreed
+
+- The B3 table expects a centred Wet Floor Sign of height 0.20 to say "Note".
+  The B1 rule gives 0.20 / 0.28 = 0.71, which is mid-close ("Caution"). The tests
+  follow the rule and check both sides of the boundary (0.16 is "Note", 0.20 is
+  "Caution").
+- B2 says `scene_detector` should apply the Object confidence floor. It is applied
+  in the gate instead, so low-confidence objects still reach `/status` and the
+  "ignored" list with the reason `low_confidence` (Phase E), and so the rule is
+  backend-independent. The floor also applies to general-model People.
+- With the placeholder sizes, a side People box that passes the side rule
+  (0.40 x 1.5 = 0.60) is already near, so a side person is only ever "Warning".
+  Phase D revisits the sizes.

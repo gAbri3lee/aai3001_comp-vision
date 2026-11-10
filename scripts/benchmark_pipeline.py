@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from config import add_detector_arguments, detector_settings
 from detectors import create_detector
 from detection import annotate
-from decision_engine import build_hazards, phrase_for, AlertCooldown
+from decision_engine import assess, phrase_for, AlertCooldown
 
 
 def main():
@@ -33,15 +33,16 @@ def main():
     paths = sorted(args.images.glob('*.jpg'))
     if not paths:
         parser.error('No JPEG images found')
-    cooldown = AlertCooldown()
+    cooldown = AlertCooldown.from_gate(settings['alert_gate'])
     durations = []
     for i in range(args.frames + 10):
         start = time.perf_counter()
         frame = cv2.imread(str(paths[i % len(paths)]))
         result = detector.predict(frame)
         depth_map = depth.predict(frame) if depth is not None and result.detections else None
-        hazards = build_hazards(result.detections, depth_map, frame.shape[1], settings['severity'])
-        for hazard in hazards:
+        hazards = assess(result.detections, (frame.shape[1], frame.shape[0]), settings['alert_gate'],
+                         settings['severity'], depth_map)
+        for hazard in (h for h in hazards if h.gated):
             if cooldown.should_announce(hazard):
                 phrase_for(hazard)
         annotated = annotate(frame, result.detections)
@@ -49,7 +50,7 @@ def main():
         if i >= 10:
             durations.append(1000 * (time.perf_counter() - start))
     report = dict(platform=platform.platform(), frames=args.frames, warmup_frames=10, depth_enabled=depth is not None,
-                  measured_stages=['image read', 'detection', 'optional depth', 'ranking/cooldown/message', 'annotation', 'JPEG encoding'],
+                  measured_stages=['image read', 'detection', 'optional depth', 'alert gate/ranking/cooldown/message', 'annotation', 'JPEG encoding'],
                   excludes=['physical webcam capture', 'audible speech', 'on-demand OCR/item ID', 'browser rendering'],
                   median_ms=float(np.median(durations)), p95_ms=float(np.percentile(durations, 95)), fps=1000/float(np.mean(durations)))
     args.output.parent.mkdir(parents=True, exist_ok=True)

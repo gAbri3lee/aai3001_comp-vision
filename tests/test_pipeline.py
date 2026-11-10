@@ -43,8 +43,8 @@ class PipelineTests(unittest.TestCase):
                 while not state.get_status()['alert'] and time.monotonic() < deadline: time.sleep(.01)
                 client = create_app(state).test_client()
                 status = client.get('/status').json
-                self.assertIn('Stair ahead', status['alert'])
-                self.assertIn('distance unavailable', status['alert'])
+                # Box height 40 of 60 px, centred: a near stair under the alert gate.
+                self.assertEqual(status['alert'], 'Warning, Stair ahead')
                 self.assertEqual(status['detections'][0]['class_id'], 3)
                 self.assertIsNotNone(state.get_jpeg())
                 self.assertEqual(client.get('/').status_code, 200)
@@ -127,8 +127,8 @@ class PipelineTests(unittest.TestCase):
                         self.assertIn('Object detected ahead', status['alerts'])
                         self.assertEqual(status['detections'][0]['class'], 'Object')
                         if include_named:
-                            self.assertTrue(status['alert'].startswith('Note, Stair'))
-                            self.assertTrue(spoken[0].startswith('Note, Stair'))
+                            self.assertEqual(status['alert'], 'Warning, Stair on your left')
+                            self.assertEqual(spoken[0], 'Warning, Stair on your left')
                         else:
                             self.assertEqual(status['alert'], 'Object detected ahead')
                             self.assertEqual(spoken, ['Object detected ahead'])
