@@ -181,6 +181,16 @@
     background: var(--caution); color: #1a1205; font-weight: 700;
   }
   h2.section { margin-top: 16px; }
+  .analyze { display: grid; gap: 8px; font-size: 0.9rem; }
+  .analyze select { font: inherit; color: var(--text); background: #222b42; border: 1px solid var(--panel-border);
+                    border-radius: 8px; padding: 5px 8px; max-width: 100%; }
+  .analyze input[type="file"] { max-width: 100%; color: var(--text); }
+  .check { display: inline-flex; gap: 8px; align-items: center; }
+  .view-badge {
+    margin-top: 10px; display: flex; gap: 10px; align-items: center; justify-content: space-between;
+    padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--accent); color: #d6e4ff; font-weight: 600;
+  }
+  .view-badge[hidden] { display: none; }
   .speech { display: grid; gap: 8px; font-size: 0.9rem; }
   .speech input[type="range"] { width: 100%; }
   footer {
@@ -221,6 +231,10 @@
       <div class="fps-badge" id="fps-badge">-- FPS</div>
       <div class="video-overlay" id="video-overlay" hidden></div>
     </div>
+    <div class="view-badge" id="view-badge" hidden>
+      <span id="view-text">Showing an analysed image</span>
+      <button type="button" id="back-live">Back to live</button>
+    </div>
     <div class="alert-banner level-clear" id="alert-banner" aria-live="assertive">No hazards</div>
   </section>
 
@@ -242,6 +256,17 @@
         <button type="button" id="replay">Replay last alert</button>
       </div>
       <div class="status-line" id="last-spoken">Nothing spoken yet</div>
+    </div>
+    <h2 class="section">Analyse an image</h2>
+    <div class="analyze">
+      <label for="upload">Image file: JPEG or PNG, up to 10 MB. It is not stored.</label>
+      <input type="file" id="upload" accept="image/jpeg,image/png">
+      <div class="controls">
+        <label for="sample">Sample</label>
+        <select id="sample"><option value="">No samples</option></select>
+        <button type="button" id="analyze-sample">Analyse sample</button>
+      </div>
+      <label class="check"><input type="checkbox" id="speak-result"> Speak result</label>
     </div>
   </section>
 </main>
@@ -312,6 +337,68 @@
       setMode(latest.mode === "cloud" ? "local" : "cloud");
     }
   });
+
+  // Image analysis: the result replaces the live view until "Back to live".
+  const MAX_UPLOAD = 10 * 1024 * 1024;
+  const uploadInput = document.getElementById("upload");
+  const sampleSelect = document.getElementById("sample");
+  const speakResult = document.getElementById("speak-result");
+  const viewBadge = document.getElementById("view-badge");
+  const viewText = document.getElementById("view-text");
+  const liveSrc = debug ? "/video_feed?debug=1" : "/video_feed";
+  let analysis = null;
+
+  async function analyze(form) {
+    form.append("speak", speakResult.checked ? "1" : "0");
+    if (debug) form.append("debug", "1");
+    try {
+      const res = await fetch("/analyze", {method: "POST", body: form});
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Analysis failed");
+      actionMessage = null;
+      analysis = data;
+      video.src = data.image;
+      video.alt = `Analysed image: ${data.source}`;
+    } catch (e) {
+      actionMessage = {severity: "error", message: e.message};
+    }
+    pollStatus();
+  }
+
+  uploadInput.addEventListener("change", () => {
+    const file = uploadInput.files[0];
+    uploadInput.value = "";
+    if (!file) return;
+    if (file.size > MAX_UPLOAD) {
+      actionMessage = {severity: "error", message: "The image is larger than 10 MB."};
+      pollStatus();
+      return;
+    }
+    const form = new FormData();
+    form.append("image", file);
+    analyze(form);
+  });
+  document.getElementById("analyze-sample").addEventListener("click", () => {
+    if (!sampleSelect.value) return;
+    const form = new FormData();
+    form.append("sample", sampleSelect.value);
+    analyze(form);
+  });
+  document.getElementById("back-live").addEventListener("click", () => {
+    analysis = null;
+    video.src = liveSrc;
+    video.alt = "Live annotated camera feed";
+    pollStatus();
+  });
+  fetch("/samples").then(r => r.json()).then(samples => {
+    if (!samples.length) return;
+    sampleSelect.replaceChildren(...samples.map(s => {
+      const option = document.createElement("option");
+      option.value = s.id;
+      option.textContent = s.name;
+      return option;
+    }));
+  }).catch(() => {});
 
   function renderControls(data) {
     pauseButton.setAttribute("aria-pressed", String(!!data.paused));
@@ -405,28 +492,37 @@
       renderMode(data);
       renderControls(data);
       renderMessages(data);
-      fpsBadge.textContent = `${data.fps.toFixed(1)} FPS`;
+      // In analysis view the banner and lists describe the analysed image.
+      const view = analysis ? {...data, alert: analysis.alert, alerts: analysis.alerts,
+                               detections: analysis.detections, selected: analysis.selected,
+                               latency_ms: analysis.latency_ms, round_trip_ms: analysis.round_trip_ms,
+                               model: analysis.model, backend: analysis.mode, error: "", paused: false}
+                            : data;
+      viewBadge.hidden = !analysis;
+      if (analysis) viewText.textContent = `Showing: ${analysis.source === "upload" ? "uploaded image" : analysis.source}` +
+                                           (analysis.spoken ? " (spoken)" : "");
+      fpsBadge.textContent = analysis ? "Image" : `${data.fps.toFixed(1)} FPS`;
 
-      const detections = data.detections || [];
+      const detections = view.detections || [];
       const gated = detections.filter(d => d.gated).sort((a, b) => b.priority - a.priority);
       const ignored = detections.filter(d => !d.gated);
-      const top = gated.find(d => d.phrase === data.alert);
+      const top = gated.find(d => d.phrase === view.alert);
 
-      // A camera or video problem replaces the banner: "No hazards" would be misleading.
-      const blocking = (data.health || []).find(h => h.severity === "error");
-      const problem = blocking ? blocking.message : data.error;
-      alertBanner.textContent = problem || (data.paused ? "Paused. No detection or speech." : "") || data.alert || "No hazards";
-      alertBanner.className = "alert-banner " + (problem ? "level-warning" : levelClassFor(data.alert, top && top.band));
+      // A camera or video problem replaces the live banner: "No hazards" would be misleading.
+      const blocking = analysis ? null : (data.health || []).find(h => h.severity === "error");
+      const problem = blocking ? blocking.message : view.error;
+      alertBanner.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") || view.alert || "No hazards";
+      alertBanner.className = "alert-banner " + (problem ? "level-warning" : levelClassFor(view.alert, top && top.band));
       video.style.opacity = problem ? "0.15" : "1";
       videoOverlay.hidden = !blocking;
       videoOverlay.textContent = blocking ? blocking.message : "";
 
-      const timing = data.round_trip_ms ?? data.latency_ms;
-      modelStatus.textContent = `${data.backend}: ${data.model}` + (timing == null ? "" : ` · ${timing.toFixed(1)} ms${data.round_trip_ms == null ? " inference" : " round trip"}`);
+      const timing = view.round_trip_ms ?? view.latency_ms;
+      modelStatus.textContent = `${view.backend}: ${view.model}` + (timing == null ? "" : ` · ${timing.toFixed(1)} ms${data.round_trip_ms == null ? " inference" : " round trip"}`);
       const gate = data.gate_enabled === false ? "alert gate off" :
                    "alert gate on" + (data.gate_calibrated ? "" : " (uncalibrated sizes)");
       pipelineStatus.textContent = [gate, data.depth_enabled ? "depth on" : "depth off",
-                                    data.tts_enabled ? "speech on" : "speech off",
+                                    data.tts_enabled ? (data.muted ? "speech muted" : "speech on") : "speech off",
                                     debug ? "debug view" : null].filter(Boolean).join(" · ");
 
       objectAlerts.replaceChildren();
@@ -437,7 +533,7 @@
         li.textContent = "No hazards";
         objectAlerts.appendChild(li);
       } else {
-        for (const d of gated) objectAlerts.appendChild(row(d, data.selected));
+        for (const d of gated) objectAlerts.appendChild(row(d, view.selected));
       }
       ignoredList.replaceChildren(...ignored.map(d => row(d, null)));
       ignoredSummary.textContent = `Ignored detections (${ignored.length})`;

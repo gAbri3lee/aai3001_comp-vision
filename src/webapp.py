@@ -6,14 +6,17 @@ timeout or error falls back to local, keeps the last good result for at most one
 second, and stays on local until a successful "Retry cloud" (decision U2).
 """
 import argparse
+import base64
 import copy
+import io
 import math
 import threading
 import time
 
 import cv2
+import numpy as np
 from flask import Flask, Response, jsonify, render_template, request
-from config import add_detector_arguments, detector_settings
+from config import add_detector_arguments, detector_settings, resolve_path
 from detectors import DetectorError
 from scene_detector import SceneDetector as create_detector
 from detection import annotate_hazards
@@ -47,6 +50,61 @@ RATE_MIN, RATE_MAX, RATE_DEFAULT = 120, 260, 180
 TEST_PHRASE = "VisionAid voice test"
 CONTROL_KEYS = ("paused", "muted", "rate", "action")
 ACTIONS = ("test_voice", "replay_last")
+
+
+# Image analysis (decision U4): JPEG or PNG, at most 10 MB, never written to disk.
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_UPLOAD_PIXELS = 40_000_000
+SAMPLE_DIRS = ("demo", "golden/images")
+SAMPLE_SUFFIXES = (".jpg", ".jpeg", ".png")
+
+
+class UploadError(ValueError):
+    def __init__(self, message, status=400):
+        super().__init__(message)
+        self.status = status
+
+
+def decode_upload(data: bytes):
+    """Validate type, size and dimensions, then decode to a BGR frame."""
+    from PIL import Image, UnidentifiedImageError
+    if not data:
+        raise UploadError("The file is empty.")
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise UploadError("The image is larger than 10 MB.", 413)
+    try:
+        image = Image.open(io.BytesIO(data))
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombError):
+        raise UploadError("Upload a JPEG or PNG image.", 415)
+    with image:
+        if image.format not in ("JPEG", "PNG"):
+            raise UploadError("Upload a JPEG or PNG image.", 415)
+        width, height = image.size
+        if width * height > MAX_UPLOAD_PIXELS:
+            raise UploadError("The image has too many pixels.")
+        try:
+            # A full decode catches truncated or damaged files that OpenCV would
+            # silently return as a partial picture.
+            image.load()
+        except (OSError, SyntaxError, ValueError, Image.DecompressionBombError):
+            raise UploadError("Could not read this image. The file may be damaged.")
+    # OpenCV decodes the pixels, exactly as the live camera path and golden checks do.
+    frame = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_COLOR)
+    if frame is None:
+        raise UploadError("Could not read this image. The file may be damaged.")
+    return frame
+
+
+def find_samples():
+    """Sample images offered on the page: demo/ if it has images, else golden/images.
+    Clients choose by id only, never by path."""
+    for folder in SAMPLE_DIRS:
+        path = resolve_path(folder)
+        if path.is_dir():
+            images = sorted(p for p in path.iterdir() if p.suffix.lower() in SAMPLE_SUFFIXES)
+            if images:
+                return {f"sample-{i}": image for i, image in enumerate(images, 1)}
+    return {}
 
 
 class ControlConflict(RuntimeError):
@@ -144,6 +202,9 @@ class PipelineState:
         # Optional distance estimate for the debug panel only (never spoken).
         self.calibration = distance.load_calibration()
         self._lock = threading.Lock()
+        # One inference at a time across the live loop and image analysis.
+        self._detect_lock = threading.Lock()
+        self.samples = find_samples()
         self._latest_jpeg = None
         self._latest_debug_jpeg = None
         self._frame_captured_at = None
@@ -374,6 +435,34 @@ class PipelineState:
                 self._latest_jpeg = self._latest_debug_jpeg = buffer.tobytes()
                 self._frame_captured_at = None  # a paused frame is never "stale"
 
+    # Image analysis -----------------------------------------------------
+
+    def analyze(self, frame, source, speak=False, debug=False) -> dict:
+        """Run one image through the live path: the active detector, decide() and
+        annotate(). A fresh AlertPolicy gives analysis its own cooldown state, so it
+        never disturbs the live loop and always selects the top gated hazard."""
+        with self._lock:
+            mode = self.mode
+            model = self._mode_fields()["model"]
+        policy = AlertPolicy(self.settings['alert_gate'], self.settings['severity'])
+        with self._detect_lock:
+            batch = self.detectors[mode].predict(frame)
+            result = decide(frame, batch, policy, self.depth_estimator)
+        normal, debug_image = annotate(frame, result)
+        ok, buffer = cv2.imencode(".jpg", debug_image if debug else normal)
+        if not ok:
+            raise RuntimeError("Could not encode the annotated image")
+        hazards = sorted(result.hazards, key=lambda h: h.index)
+        spoken = bool(speak and result.speak and self._speak(result.speak, kind="upload"))
+        return {"source": source, "mode": mode, "model": model,
+                "width": int(frame.shape[1]), "height": int(frame.shape[0]),
+                "alert": result.banner, "alerts": result.alerts,
+                "selected": _selected_dict(result.selected),
+                "detections": [self._detection_dict(h, frame.shape[0]) for h in hazards],
+                "latency_ms": batch.latency_ms, "round_trip_ms": batch.round_trip_ms,
+                "spoken": spoken,
+                "image": "data:image/jpeg;base64," + base64.b64encode(buffer.tobytes()).decode("ascii")}
+
     def _detection_dict(self, hazard, frame_height):
         item = hazard.to_dict()
         if self.calibration is not None and hazard.label in self.settings['alert_gate']['known_heights_m']:
@@ -462,7 +551,8 @@ class PipelineState:
                         raise StaleFrame(what)
                 try:
                     check_fresh('Captured frame is stale; discarded')
-                    batch = self.detectors[mode].predict(frame)
+                    with self._detect_lock:
+                        batch = self.detectors[mode].predict(frame)
                 except StaleFrame as exc:
                     error = str(exc)
                 except Exception as exc:
@@ -474,8 +564,9 @@ class PipelineState:
                     try:
                         # One decision per frame: banner, list, highlight and speech all
                         # come from these gated hazards (decision D6).
-                        result = decide(frame, batch, self.policy, self.depth_estimator,
-                                        check=lambda: check_fresh('Inference result is stale; discarded'))
+                        with self._detect_lock:
+                            result = decide(frame, batch, self.policy, self.depth_estimator,
+                                            check=lambda: check_fresh('Inference result is stale; discarded'))
                         annotated, debug_annotated = annotate(frame, result)
                         if result.speak is not None and self._speak(result.speak):
                             spoken_at = time.time()
@@ -557,6 +648,42 @@ def create_app(state: PipelineState) -> Flask:
             return jsonify(error=str(exc), **state.control_state()), 409
         except ValueError as exc:
             return jsonify(error=str(exc)), 400
+
+    # Multipart overhead on top of the 10 MB image limit; the exact limit is checked later.
+    app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES + 256 * 1024
+
+    @app.errorhandler(413)
+    def too_large(_):
+        return jsonify(error="The image is larger than 10 MB."), 413
+
+    @app.get("/samples")
+    def samples():
+        return jsonify([{"id": key, "name": f"Sample {i}"}
+                        for i, key in enumerate(state.samples, 1)])
+
+    @app.post("/analyze")
+    def analyze():
+        """Multipart field `image` (JPEG or PNG) or form field `sample` (an id from
+        /samples). Optional `speak=1` and `debug=1`. Nothing is stored."""
+        form = request.form
+        speak = form.get("speak") in ("1", "true", "on")
+        debug = form.get("debug") in ("1", "true", "on")
+        try:
+            if "image" in request.files:
+                frame, source = decode_upload(request.files["image"].read()), "upload"
+            elif form.get("sample"):
+                path = state.samples.get(form["sample"])
+                if path is None:
+                    raise UploadError("Unknown sample.", 404)
+                frame, source = decode_upload(path.read_bytes()), f"Sample {list(state.samples).index(form['sample']) + 1}"
+            else:
+                raise UploadError("Choose an image file or a sample.")
+        except UploadError as exc:
+            return jsonify(error=str(exc)), exc.status
+        try:
+            return jsonify(state.analyze(frame, source, speak=speak, debug=debug))
+        except Exception as exc:
+            return jsonify(error=f"Analysis failed: {exc}"), 503
 
     @app.post("/mode")
     def mode():
