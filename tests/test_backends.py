@@ -119,6 +119,7 @@ class BackendTests(unittest.TestCase):
         class Source:
             def __init__(self): self.i = 0
             def isOpened(self): return True
+            def get(self, prop): return 0  # unknown FPS: no pacing
             def read(self):
                 self.i += 1
                 if self.i > 4: return False, None
