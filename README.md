@@ -34,10 +34,10 @@ Each time you open a new Terminal, activate the existing environment:
 source .venv/bin/activate
 ```
 
-The prompt will usually show `(.venv)`. Subsequent `python` commands then use the
+This creates a virtual environment `(.venv)`. Subsequent `python` commands then use the
 project's environment. An environment created by `uv` may not include pip; if a
 package-install command reports `No module named pip`, use
-`uv pip install --python .venv/bin/python -r <requirements-file>` instead, replacing
+`uv pip install --python .venv/bin/python -r requirements.txt` instead, replacing
 `<requirements-file>` with the filename in that command.
 
 The model files must be present at these locations:
@@ -51,11 +51,12 @@ ignores model binaries. They use different loaders and are not interchangeable.
 Configuration/model paths resolve from the project; run the examples from the
 repository root so the relative script paths also work.
 
-### 2. Open the browser web app
+### 2. Open the browser web app (GUI)
 
-For a first interactive test, start the web app with depth and microphone voice
-commands disabled. Camera detection, spoken output, Scan text and Identify item
-remain enabled. This avoids the slower depth stage on a laptop CPU:
+For a first interactive test, start the web app with depth disabled. Camera
+object detection and spoken output remain enabled. The legacy `--no-voice`
+option is accepted for compatibility. This avoids the slower depth stage on a
+laptop CPU:
 
 ```sh
 python src/webapp.py --port 5001 --no-depth --no-voice
@@ -63,12 +64,13 @@ python src/webapp.py --port 5001 --no-depth --no-voice
 
 Wait for Terminal to report that the server is running, then open
 **http://127.0.0.1:5001** in your browser. The browser does not open automatically.
-Allow camera access if macOS asks. Initial OCR/item-model downloads can make the
-first launch take longer and require internet access.
+Allow camera access if macOS asks. The general-object model downloads once to
+`models/general/yolov8n.pt` on first use and needs internet for that download.
+Subsequent launches reuse it. It runs locally in both local and cloud modes.
 
 You should see a live camera feed, FPS, the active detector and processing time,
-an alert banner, and the two on-demand buttons. The camera is connected to the
-Python app on this computer. Moving your laptop camera or holding something in
+an alert banner, and a list of current object/location messages. The camera is
+connected to the Python app on this computer. Moving your laptop camera or holding something in
 front of it changes what the app sees.
 
 **Automatic hazard detection needs no click.** When sufficiently confident,
@@ -78,52 +80,42 @@ The highest-priority detection can produce a visual/spoken alert such as
 ahead or right. `No detections` means the model found none; it does not establish
 that the scene is safe. Stale frames or inference errors clear expired results.
 
-### 3. Use Scan text and Identify item
+### 3. Automatic object and location alerts
 
-These buttons use separate models; they are **not restricted to the five hazard
-classes**. Each click processes the current frame once. Point the camera, hold it
-steady, then click. Click again after changing the object or camera position.
+Keep the live feed running; no click is required. Recognised trained detections
+retain their names: **Escalator, People, Pillar, Stair and Wet Floor Sign**.
+The general detector adds **Object** boxes for other common objects, suppressing
+boxes that overlap a trained detection by IoU >=0.5 to avoid duplicate notices.
+The general detector uses confidence >=0.35. An empty frame does not generate
+an invented object alert. In the app's `/status` response, generic detections use
+`class_id: -1` and `class: "Object"`; the cloud `/detect` contract and trained IDs
+0–4 remain unchanged.
 
-| Feature | What you do | What to expect |
-|---|---|---|
-| Automatic hazard detection | Keep the live feed running; no click required. | Boxes for Escalator, People, Pillar, Stair or Wet Floor Sign when detected, plus a prioritised alert. |
-| **Scan text** | Make a printed sign/label clearly visible and click **Scan text**. | EasyOCR (English by default) displays recognised words under **Last text read** and reads them aloud if speech is enabled. If it finds no readable text, the result is `(no text found)`. |
-| **Identify item** | Put one clear object in view and click **Identify item**. | MobileNetV3 displays one predicted ImageNet label and confidence under **Last item identified**, and speaks the label if speech is enabled. |
+| Object position in the camera image | Generic GUI/audio message |
+|---|---|
+| Left third | Object detected on your left |
+| Centre third | Object detected ahead |
+| Right third | Object detected on your right |
 
-Scan text reads words; it does not describe a person or a room. If only your face
-is visible and there is no readable text, it will normally report no text found.
-Keep text large, well-lit and steady; unclear text can be missed or misread.
+The browser's **Detected objects** panel lists the current messages. The banner
+shows the highest-priority message. Audio considers detections in priority order,
+with a cooldown per label and position; a named hazard on cooldown can give way
+to an object notice. Objects at the same position share a generic notice.
+Trained hazard alerts keep their existing wording and relative-depth ranking.
+Generic notices use the wording above whether depth is enabled or disabled.
 
-Identify item uses roughly 1,000 ImageNet categories. It may recognise an object
-such as a chair or table even though those are outside the hazard classes. It
-classifies the **whole frame**, returns one label, and does not draw an item box
-or list every object in a room. A cluttered room may produce an inaccurate label;
-it can also suggest a label when uncertain. It is not trained to identify specific
-brands or currency denominations. An item label does not add a new hazard class. 
+On macOS, spoken alerts use the built-in `say` command and wait for each full
+phrase to finish. Other platforms use `pyttsx3`. Speech runs in a background
+worker, so camera processing continues during playback.
 
-**Hazard detection** runs automatically while the app is active. It looks for
-**Escalator, People, Pillar, Stair and Wet Floor Sign**, draws boxes around detected
-objects, and determines whether each appears on the left, in the centre or on the
-right of the camera image. The highest-priority detection drives the alert, such
-as **"Note, Pillar on your left"** or **"Warning, Stair ahead"**. Alerts are also
-spoken if speech is enabled. You do not need to click Identify item for hazard
-detection to work.
-
-To try **identifying an object outside these five hazard classes**, such as a chair
-or table, place it clearly in the frame and click **Identify item**. Recognition is
-not guaranteed or 100% accurate for objects outside the trained classes. 
-You can also use this button when a hazard-class object is visible;
-it is not restricted to objects outside the five classes.
-
-Moving the camera alone does not rerun either button feature. Only hazard
-detection runs continuously. If microphone voice commands are enabled, saying
-**"vision scan"** is an additional way to trigger Scan text; item identification
-still uses its button.
+The general detector adds processing time and can miss objects or produce false
+positives. A missed trained hazard may receive only a generic Object box if the
+general detector finds it. Neither model detecting anything establishes safety.
 
 ### 4. Try the full pipeline, including depth
 
 Stop the previous web app with Ctrl+C, then use this command to enable all stages
-by default, including relative depth and optional microphone voice commands:
+by default, including relative depth and spoken object alerts:
 
 ```sh
 python src/webapp.py --port 5001
@@ -133,9 +125,8 @@ Open or refresh **http://127.0.0.1:5001**. Detected objects still get boxes, whi
 relative proximity now also affects hazard priority and whether alerts start
 with `Note`, `Caution` or `Warning`. Depth does not provide metres or distinguish
 stairs going up/down. It can be slow on a CPU; return to `--no-depth` if necessary.
-MiDaS downloads its weights on first use. Microphone commands need the optional
-voice dependencies below; if the microphone/PyAudio is unavailable, use the
-Scan text button instead. Add `--no-tts` if you do not want spoken output.
+MiDaS downloads its weights on first use. Add `--no-tts` if you do not want
+spoken output. Microphone input is no longer used.
 
 The app's default port is 5000 when `--port` is omitted. These examples use 5001
 to avoid common macOS AirPlay conflicts. The web app runs locally; this command
@@ -149,8 +140,8 @@ This command opens the **detection-only OpenCV window**, rather than a browser:
 python src/webcam_hazard_demo.py
 ```
 
-Expect the live feed, boxes, class labels, confidence and FPS. Depth, speech, OCR
-and item identification are disabled in this demo. Press **q** in its window to
+Expect the live feed, boxes, class labels, confidence and FPS. Depth and speech
+are disabled in this demo. Press **q** in its window to
 close it. Use this when you want to check camera/model detection alone.
 
 This command opens the **full-pipeline OpenCV window**:
@@ -160,9 +151,8 @@ python src/live_pipeline_demo.py
 ```
 
 Expect camera boxes, relative-depth-based hazard ranking and spoken alerts.
-Press **o** for on-demand OCR, or say "vision scan" if voice input is available.
-Item identification is disabled in this desktop demo. Press **q** to close it.
-This uses the same processing pipeline as the web app, without its browser buttons.
+Press **q** to close it. The OCR key and microphone trigger have been removed.
+This uses the same object detection and audio pipeline as the web app.
 
 Camera index 0 is the default. Use `--source 1` to try another camera or
 `--source /path/to/video.mp4` for recorded input. `--model`, `--conf`, `--imgsz`
@@ -179,9 +169,10 @@ python src/webapp.py --port 5001 --no-depth --no-tts --no-ocr --no-voice --no-pr
 ```
 
 At **http://127.0.0.1:5001**, expect live detection boxes and position notices,
-without depth, speech, OCR or item identification. Do not use the two query
-buttons in this mode: their processing features are disabled. This test uses the
-supplied detector weights and avoids auxiliary-model downloads.
+without depth or speech. The query buttons have been removed. Legacy
+`--no-ocr`, `--no-voice`, `--no-product-id` and `--mic-index` options are accepted
+for compatibility and have no effect. The general-object model still runs and
+may download its weights on first use.
 
 To enable optional microphone input, first install PortAudio system libraries
 for your operating system, then install the microphone Python dependency:
@@ -190,10 +181,9 @@ for your operating system, then install the microphone Python dependency:
 python -m pip install -r requirements-voice.txt
 ```
 
-This installs PyAudio; it does not start the app. On the next launch without
-`--no-voice`, an available microphone can listen for "vision scan". Speech
-recognition needs internet access. Missing microphone support does not prevent
-camera detection or button-based OCR.
+This installs PyAudio; it does not start the app. The installation commands are
+retained for existing environments, but microphone input and the "vision scan"
+trigger are no longer used. Spoken alerts require no microphone.
 
 EasyOCR can install `opencv-python-headless` alongside the GUI build. If a desktop
 OpenCV window reports that GUI support is unavailable, run these repair commands
@@ -210,9 +200,9 @@ are troubleshooting commands, not a step to repeat on every launch.
 
 ## Cloud detector
 
-Cloud mode changes the object detector to RF-DETR. The camera, browser, depth,
-OCR and speech remain on the local computer; JPEG camera frames go to the
-configured service. There is no automatic switch between local and cloud modes.
+Cloud mode changes the trained object detector to RF-DETR. The camera, browser,
+general-object detector, depth and speech remain local; JPEG camera frames go to
+the configured service. There is no automatic switch between local and cloud modes.
 This repository prepares the service but does not provision public hosting.
 
 ### Build and start the service
@@ -455,8 +445,8 @@ python scripts/benchmark_pipeline.py --images golden/images --frames 50 \
 Expect a JSON report with median/p95 processing time and FPS, saved to
 `artifacts/pipeline_cpu.json`. It uses 10 warm-up frames plus 50 measured frames;
 add `--no-depth` to compare without depth. It excludes physical camera capture,
-audible speech, on-demand OCR/item identification and browser rendering. Report
-these timings separately from detector-only latency. T4 notebook timings do not
+audible speech, the app's additional general-object detector and browser rendering.
+Report these timings separately from detector-only latency. T4 notebook timings do not
 promise laptop performance. See `docs/VERIFICATION.md` for the measured results.
 
 ## Training record and limitations
@@ -482,11 +472,10 @@ current automated tests live in `tests/`.
 ### Pillar detection: what to expect
 
 **Pillar is supported, but it is the weakest class and detection is unreliable.**
-Pointing the camera at a pillar runs hazard detection automatically; you do not
-need to click **Identify item**. If the detector recognises it with sufficient
-confidence, a **Pillar** bounding box appears. It can then contribute to the
-prioritised visual/audio hazard alert. The Identify item button uses a separate
-generic classifier and does not trigger the five-class hazard detector.
+Pointing the camera at a pillar runs hazard detection automatically. If the
+detector recognises it with sufficient confidence, a **Pillar** bounding box
+appears and can contribute to the prioritised visual/audio hazard alert.
+A generic **Object** detection does not establish that a pillar was recognised.
 
 The saved test results contain 153 labelled pillar objects across the 920 test
 images:
@@ -511,5 +500,7 @@ not detected it; it does not mean there is no obstacle or that the scene is safe
 Stair direction is unavailable. Wet Floor Sign
 means a sign was detected, not that floor wetness was measured. MiDaS proximity is
 relative, not metres; an empty detection list does not prove a scene is safe.
-On-demand OCR is synchronous and targets short signs; voice recognition needs
-internet; item ID is an ImageNet classifier, not trained currency recognition.
+The additional general detector recognises common COCO objects, not arbitrary
+unknown objects, brands or currency denominations. Generic notices do not prove
+that every obstacle was found. OCR, item classification and microphone commands
+are no longer part of the runtime.

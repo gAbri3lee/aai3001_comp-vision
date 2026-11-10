@@ -14,7 +14,7 @@ class PipelineTests(unittest.TestCase):
         parser = argparse.ArgumentParser()
         add_detector_arguments(parser)
         args = parser.parse_args([])
-        for name in ['depth', 'tts', 'ocr', 'voice', 'product_id']:
+        for name in ['depth', 'tts']:
             setattr(args, 'no_' + name, True)
         args.source, args.mic_index = 0, None
 
@@ -57,27 +57,8 @@ class PipelineTests(unittest.TestCase):
                 self.assertIn('unavailable', status['error'])
                 self.assertIsNone(status['latency_ms'])
                 detector.failed = False
-                class BrokenOcr:
-                    def read(self, frame): raise RuntimeError('OCR failed')
-                state.ocr_reader = BrokenOcr()
-                state.request_ocr()
-                deadline = time.monotonic() + 1
-                while 'unavailable' not in state.get_status().get('ocr_text', '') and time.monotonic() < deadline:
-                    time.sleep(.01)
-                self.assertTrue(state._thread.is_alive())
-                self.assertIn('unavailable', state.get_status()['ocr_text'])
-                class BrokenProduct:
-                    def identify(self, frame, topk=1): raise RuntimeError('Item ID failed')
-                state.product_identifier = BrokenProduct()
-                state.request_product_id()
-                deadline = time.monotonic() + 1
-                while 'unavailable' not in state.get_status().get('product_text', '') and time.monotonic() < deadline:
-                    time.sleep(.01)
-                self.assertTrue(state._thread.is_alive())
-                self.assertIn('unavailable', state.get_status()['product_text'])
                 # Local inference must not speak a frame the UI has already expired.
                 from types import SimpleNamespace
-                state.ocr_reader = state.product_identifier = None
                 state.capture.age = 10.
                 deadline = time.monotonic() + 1
                 while 'stale' not in state.get_status()['error'] and time.monotonic() < deadline:
@@ -101,34 +82,60 @@ class PipelineTests(unittest.TestCase):
         status = state.get_status()
         self.assertEqual(status['detections'], [])
         self.assertEqual(status['alert'], '')
+        self.assertEqual(status['alerts'], [])
         self.assertIn('stale', status['error'])
         self.assertIsNone(state.get_jpeg())
 
-    def test_unavailable_microphone_does_not_prevent_hazard_pipeline_startup(self):
+    def test_unknown_object_reaches_gui_and_audio_without_query_features(self):
         from types import SimpleNamespace
-        import threading
         parser = argparse.ArgumentParser()
         add_detector_arguments(parser)
         args = parser.parse_args([])
-        args.no_depth = args.no_tts = args.no_product_id = True
-        args.no_ocr = args.no_voice = False
-        args.source, args.mic_index = 0, None
+        args.no_depth = True
+        args.no_tts = False
+        args.source = 0
+
         class Capture:
             finished = False
             def __init__(self, source): pass
             def read(self):
                 time.sleep(.01)
-                return False, None, None
+                return True, np.zeros((60, 100, 3), dtype=np.uint8), time.monotonic()
             def release(self): pass
-        def unavailable_voice(**kwargs):
-            raise OSError('No microphone or PyAudio installed')
-        with patch('webapp.create_detector', return_value=object()), patch('webapp.LatestFrameCapture', Capture), \
-             patch.dict('sys.modules', {'voice_trigger': SimpleNamespace(VoiceTrigger=unavailable_voice),
-                                       'ocr': SimpleNamespace(OcrReader=lambda: object())}):
-            state = PipelineState(args)
-            try:
-                self.assertTrue(state._thread.is_alive())
-                self.assertFalse(state.get_status()['voice_available'])
-                self.assertIsNone(state.voice_trigger)
-            finally:
-                state.stop()
+
+        for include_named in (False, True):
+            with self.subTest(include_named=include_named):
+                spoken = []
+                class Predictor:
+                    def predict(self, frame):
+                        detections = (Detection(-1, 'Object', .8, (40, 10, 60, 50)),)
+                        if include_named:
+                            detections += (Detection(3, 'Stair', .8, (0, 10, 20, 50)),)
+                        return DetectionBatch(detections, 10, 'scene')
+
+                with patch('webapp.create_detector', return_value=Predictor()), \
+                     patch('webapp.LatestFrameCapture', Capture), \
+                     patch.dict('sys.modules', {'tts': SimpleNamespace(Speaker=lambda: SimpleNamespace(say=spoken.append))}):
+                    state = PipelineState(args)
+                    try:
+                        deadline = time.monotonic() + 2
+                        while 'Object detected ahead' not in spoken and time.monotonic() < deadline:
+                            time.sleep(.01)
+                        client = create_app(state).test_client()
+                        status = client.get('/status').json
+                        self.assertIn('Object detected ahead', spoken)
+                        self.assertIn('Object detected ahead', status['alerts'])
+                        self.assertEqual(status['detections'][0]['class'], 'Object')
+                        if include_named:
+                            self.assertTrue(status['alert'].startswith('Note, Stair'))
+                            self.assertTrue(spoken[0].startswith('Note, Stair'))
+                        else:
+                            self.assertEqual(status['alert'], 'Object detected ahead')
+                            self.assertEqual(spoken, ['Object detected ahead'])
+                        page = client.get('/').get_data(as_text=True)
+                        self.assertNotIn('Scan text', page)
+                        self.assertNotIn('Identify item', page)
+                        self.assertEqual(client.post('/scan_text').status_code, 404)
+                        self.assertEqual(client.post('/identify_item').status_code, 404)
+                    finally:
+                        state.stop()

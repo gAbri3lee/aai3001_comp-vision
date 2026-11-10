@@ -107,36 +107,6 @@
     letter-spacing: 0.06em;
     color: var(--muted);
   }
-  .actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
-  button.action {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.05s;
-  }
-  button.action:active { transform: scale(0.98); }
-  button.action:disabled { opacity: 0.5; cursor: default; }
-  button.action small {
-    font-weight: 400;
-    font-size: 0.75rem;
-    opacity: 0.85;
-  }
-  button.secondary { background: #2a3352; }
-
   .result-card {
     background: #0f1526;
     border: 1px solid var(--panel-border);
@@ -169,7 +139,7 @@
     <h1>VisionAid</h1>
     <div class="tagline">Hazard-detection vision assistant — live demo console</div>
   </div>
-  <div class="tagline">This is the operator/demo view. The real user-facing output is audio only.</div>
+  <div class="tagline">This is the operator/demo view. Alerts are shown here and spoken when audio is enabled.</div>
 </header>
 
 <main>
@@ -183,42 +153,21 @@
 
   <section class="panel">
     <div class="result-card"><span class="label">Active detector</span><span id="model-status">Starting…</span></div>
-    <h2>On-demand queries</h2>
-    <div class="actions">
-      <button class="action" id="btn-scan">
-        Scan text
-        <small>or say &ldquo;vision scan&rdquo;</small>
-      </button>
-      <button class="action secondary" id="btn-identify">
-        Identify item
-        <small>generic object classifier</small>
-      </button>
-    </div>
-
-    <div class="result-card">
-      <span class="label">Last text read</span>
-      <span id="ocr-text">—</span>
-    </div>
-    <div class="result-card">
-      <span class="label">Last item identified</span>
-      <span id="product-text">—</span>
-    </div>
+    <h2>Detected objects</h2>
+    <ul id="object-alerts" aria-live="polite"><li>No detections</li></ul>
   </section>
 </main>
 
 <footer>
-  Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Detection is supplementary and can miss hazards. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Depth is relative, not metres. Item ID remains a generic ImageNet classifier. Cloud mode uploads camera frames.
+  Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Detection is supplementary and can miss hazards. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Depth is relative, not metres. Other common objects are labelled Object by a general detector; objects outside its coverage can still be missed. Cloud mode uploads camera frames.
 </footer>
 
 <script>
   const alertBanner = document.getElementById("alert-banner");
   const fpsBadge = document.getElementById("fps-badge");
-  const ocrText = document.getElementById("ocr-text");
-  const productText = document.getElementById("product-text");
+  const objectAlerts = document.getElementById("object-alerts");
   const modelStatus = document.getElementById("model-status");
   const video = document.querySelector(".video-wrap img");
-  const btnScan = document.getElementById("btn-scan");
-  const btnIdentify = document.getElementById("btn-identify");
 
   function levelClassFor(alert) {
     if (!alert) return "level-clear";
@@ -237,34 +186,24 @@
       alertBanner.textContent = data.error || data.alert || "No detections";
       video.style.opacity = data.error ? "0.15" : "1";
       const timing = data.round_trip_ms ?? data.latency_ms;
-      document.querySelector("#btn-scan small").textContent = data.voice_available ? 'or say “vision scan”' : "Use this button to read text";
       modelStatus.textContent = `${data.backend}: ${data.model}` + (timing == null ? "" : ` · ${timing.toFixed(1)} ms${data.round_trip_ms == null ? " inference" : " round trip"}`);
       alertBanner.className = "alert-banner " + levelClassFor(data.alert);
 
-      ocrText.textContent = data.ocr_text || "—";
-      productText.textContent = data.product_text || "—";
+      objectAlerts.replaceChildren();
+      const messages = data.error ? [data.error] : (data.alerts.length ? data.alerts : ["No detections"]);
+      for (const message of messages) {
+        const item = document.createElement("li");
+        item.textContent = message;
+        objectAlerts.appendChild(item);
+      }
     } catch (e) {
       alertBanner.textContent = "Service unavailable";
       alertBanner.className = "alert-banner level-warning";
       video.style.opacity = "0.15";
       modelStatus.textContent = "Unavailable";
+      objectAlerts.textContent = "Service unavailable";
     }
   }
-
-  function fireAction(button, url, busyLabel) {
-    const original = button.innerHTML;
-    button.disabled = true;
-    button.textContent = busyLabel;
-    fetch(url, { method: "POST" }).finally(() => {
-      setTimeout(() => {
-        button.disabled = false;
-        button.innerHTML = original;
-      }, 2500);
-    });
-  }
-
-  btnScan.addEventListener("click", () => fireAction(btnScan, "/scan_text", "Scanning..."));
-  btnIdentify.addEventListener("click", () => fireAction(btnIdentify, "/identify_item", "Identifying..."));
 
   setInterval(pollStatus, 500);
   pollStatus();

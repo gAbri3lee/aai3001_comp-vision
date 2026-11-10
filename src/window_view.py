@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 
-def run_window(state, title, ocr_enabled=False):
+def run_window(state, title):
     try:
         while True:
             status = state.get_status()
@@ -20,8 +20,6 @@ def run_window(state, title, ocr_enabled=False):
             key = cv2.waitKey(10) & 0xff
             if key == ord('q') or (state.capture.finished and not state._thread.is_alive()):
                 break
-            if key == ord('o') and ocr_enabled:
-                state.request_ocr()
             time.sleep(.01)
     finally:
         state.stop()

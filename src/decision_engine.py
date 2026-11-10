@@ -43,15 +43,19 @@ def build_hazards(detections, depth_map, frame_width: int, severity=None) -> lis
             from depth import box_proximity
             proximity = box_proximity(depth_map, xyxy)
         position = _position_bucket(((xyxy[0] + xyxy[2]) / 2) / frame_width)
-        priority = severity[label] * (0.5 + 0.5 * (proximity if proximity is not None else 0.0))
+        weight = 0.3 if label == 'Object' else severity[label]
+        priority = weight * (0.5 + 0.5 * (proximity if proximity is not None else 0.0))
         hazards.append(Hazard(label, proximity, position, priority, tuple(xyxy)))
     return sorted(hazards, key=lambda h: h.priority, reverse=True)
 
 
 def phrase_for(hazard) -> str:
     position = "ahead" if hazard.position == "center" else f"on your {hazard.position}"
+    if hazard.label == 'Object':
+        return f"Object detected {position}"
     if hazard.proximity is None:
-        return f"Note, {hazard.label} {position}; distance unavailable"
+        suffix = "" if hazard.label == 'People' else "; distance unavailable"
+        return f"Note, {hazard.label} {position}{suffix}"
     urgency = "Warning" if hazard.proximity > 0.7 else "Caution" if hazard.proximity > 0.4 else "Note"
     return f"{urgency}, {hazard.label} {position}"
 

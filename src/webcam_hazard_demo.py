@@ -10,7 +10,7 @@ def parse_args():
     parser.add_argument('--source', default=0, help='Camera index or video path')
     add_detector_arguments(parser)
     parser.add_argument('--hazard-only', action='store_true', help='Compatibility flag: all five configured classes are hazards')
-    parser.set_defaults(no_depth=True, no_tts=True, no_ocr=True, no_voice=True, no_product_id=True, mic_index=None)
+    parser.set_defaults(no_depth=True, no_tts=True)
     return parser.parse_args()
 
 

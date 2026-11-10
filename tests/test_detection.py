@@ -77,3 +77,26 @@ class DetectionTests(unittest.TestCase):
         self.assertEqual([h.position for h in hazards], ['left', 'center', 'right'])
         self.assertAlmostEqual(hazards[0].priority, .9)
         self.assertTrue(phrase_for(hazards[1]).startswith('Warning'))
+
+    def test_unidentified_objects_announce_their_relative_position(self):
+        for x, expected in [(0, 'Object detected on your left'),
+                            (45, 'Object detected ahead'),
+                            (90, 'Object detected on your right')]:
+            with self.subTest(position=expected):
+                detection = Detection(-1, 'Object', .8, (x, 0, x + 10, 10))
+                hazard = build_hazards([detection], None, 100)[0]
+                self.assertEqual(phrase_for(hazard), expected)
+                self.assertTrue(AlertCooldown().should_announce(hazard))
+
+    def test_named_hazards_keep_priority_over_distant_generic_objects(self):
+        detections = [Detection(-1, 'Object', .9, (0, 0, 10, 10)),
+                      Detection(3, 'Stair', .8, (45, 0, 55, 10))]
+        hazards = build_hazards(detections, None, 100)
+        self.assertEqual([h.label for h in hazards], ['Stair', 'Object'])
+
+    def test_generic_notice_keeps_its_wording_with_depth(self):
+        import numpy as np
+        detection = Detection(-1, 'Object', .9, (45, 0, 55, 10))
+        hazard = build_hazards([detection], np.full((10, 100), .9), 100)[0]
+        self.assertAlmostEqual(hazard.proximity, .9)
+        self.assertEqual(phrase_for(hazard), 'Object detected ahead')

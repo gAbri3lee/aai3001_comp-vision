@@ -9,16 +9,17 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', default=0)
     add_detector_arguments(parser)
-    for feature in ['depth', 'tts', 'ocr', 'voice']:
+    for feature in ['depth', 'tts']:
         parser.add_argument('--no-' + feature, action='store_true')
-    parser.add_argument('--mic-index', type=int, default=None)
-    parser.set_defaults(no_product_id=True)
+    for flag in ('--no-ocr', '--no-voice', '--no-product-id'):
+        parser.add_argument(flag, action='store_true', help=argparse.SUPPRESS)
+    parser.add_argument('--mic-index', type=int, default=None, help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    run_window(PipelineState(args), 'VisionAid - Full Pipeline', ocr_enabled=not args.no_ocr)
+    run_window(PipelineState(args), 'VisionAid - Full Pipeline')
 
 
 if __name__ == '__main__':
