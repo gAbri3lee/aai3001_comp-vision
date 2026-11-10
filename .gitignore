@@ -6,3 +6,12 @@ venv/
 runs/
 data/
 *.log
+
+# Deployment weights, exports and verification artifacts
+*.pth
+*.onnx
+*.engine
+*_openvino_model/
+.pytest_cache/
+artifacts/
+.env

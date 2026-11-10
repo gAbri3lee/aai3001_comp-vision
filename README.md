@@ -1,59 +1,515 @@
 # VisionAid
 
-A hazard-detection AI vision assistant for AAI3001 (SIT) — a software-only computer vision / deep learning project, framed conceptually as a wearable device attachment for visually impaired users. There is no physical hardware build; see [CLAUDE.md](CLAUDE.md) for full project context, scope decisions, and rubric alignment.
+AAI3001 software prototype for hazard detection. The trained Roboflow v4 models
+recognise five classes: **Escalator, People, Pillar, Stair and Wet Floor Sign**, in
+that class-ID order. The supplied weights are already trained; running the app
+or its verification tools does not retrain them.
 
-## Setup
+## Local setup and launch
 
+Run the commands below in Terminal from the repository folder: the folder
+containing this README, `src/` and `visionaid_config.json`. Press **Ctrl+C** to stop
+the application from running.
+
+### 1. Prepare the Python environment
+
+If this checkout already has a working `.venv` with the dependencies installed,
+skip the first-time setup block. For a fresh checkout, install Python 3.12 first.
+The following commands create a project environment, activate it, and install the
+local app's Python packages:
+
+```sh
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
-pip install -r requirements.txt
+
+Expect package-installation output and a return to the Terminal prompt when it
+finishes. This does not start the camera, open the GUI, or train a model. If
+`python3.12` is not found, install or select Python 3.12 before continuing.
+
+Each time you open a new Terminal, activate the existing environment:
+
+```sh
+source .venv/bin/activate
 ```
 
-`easyocr`'s dependencies pull in `opencv-python-headless`, which overwrites the GUI-enabled `opencv-python` build and breaks the live preview windows. If that happens, fix it with:
+The prompt will usually show `(.venv)`. Subsequent `python` commands then use the
+project's environment. An environment created by `uv` may not include pip; if a
+package-install command reports `No module named pip`, use
+`uv pip install --python .venv/bin/python -r <requirements-file>` instead, replacing
+`<requirements-file>` with the filename in that command.
 
+The model files must be present at these locations:
+
+- `models/local/yolov8n_v4.pt`: default local YOLOv8n, confidence 0.35, input 640.
+- `models/cloud/rfdetr-nano_v4.pth`: RF-DETR service weights, confidence 0.40, input 384.
+
+They have been copied from the supplied handover bundle in this checkout. In a
+fresh clone, copy them from that bundle into the same locations; Git deliberately
+ignores model binaries. They use different loaders and are not interchangeable.
+Configuration/model paths resolve from the project; run the examples from the
+repository root so the relative script paths also work.
+
+### 2. Open the browser web app
+
+For a first interactive test, start the web app with depth and microphone voice
+commands disabled. Camera detection, spoken output, Scan text and Identify item
+remain enabled. This avoids the slower depth stage on a laptop CPU:
+
+```sh
+python src/webapp.py --port 5001 --no-depth --no-voice
 ```
-pip uninstall -y opencv-python-headless opencv-python
-pip install --force-reinstall --no-deps opencv-python
+
+Wait for Terminal to report that the server is running, then open
+**http://127.0.0.1:5001** in your browser. The browser does not open automatically.
+Allow camera access if macOS asks. Initial OCR/item-model downloads can make the
+first launch take longer and require internet access.
+
+You should see a live camera feed, FPS, the active detector and processing time,
+an alert banner, and the two on-demand buttons. The camera is connected to the
+Python app on this computer. Moving your laptop camera or holding something in
+front of it changes what the app sees.
+
+**Automatic hazard detection needs no click.** When sufficiently confident,
+it draws boxes with a class name and confidence for the five trained classes.
+The highest-priority detection can produce a visual/spoken alert such as
+`Note, Stair ahead; distance unavailable`. No-depth mode still reports left,
+ahead or right. `No detections` means the model found none; it does not establish
+that the scene is safe. Stale frames or inference errors clear expired results.
+
+### 3. Use Scan text and Identify item
+
+These buttons use separate models; they are **not restricted to the five hazard
+classes**. Each click processes the current frame once. Point the camera, hold it
+steady, then click. Click again after changing the object or camera position.
+
+| Feature | What you do | What to expect |
+|---|---|---|
+| Automatic hazard detection | Keep the live feed running; no click required. | Boxes for Escalator, People, Pillar, Stair or Wet Floor Sign when detected, plus a prioritised alert. |
+| **Scan text** | Make a printed sign/label clearly visible and click **Scan text**. | EasyOCR (English by default) displays recognised words under **Last text read** and reads them aloud if speech is enabled. If it finds no readable text, the result is `(no text found)`. |
+| **Identify item** | Put one clear object in view and click **Identify item**. | MobileNetV3 displays one predicted ImageNet label and confidence under **Last item identified**, and speaks the label if speech is enabled. |
+
+Scan text reads words; it does not describe a person or a room. If only your face
+is visible and there is no readable text, it will normally report no text found.
+Keep text large, well-lit and steady; unclear text can be missed or misread.
+
+Identify item uses roughly 1,000 ImageNet categories. It may recognise an object
+such as a chair or table even though those are outside the hazard classes. It
+classifies the **whole frame**, returns one label, and does not draw an item box
+or list every object in a room. A cluttered room may produce an inaccurate label;
+it can also suggest a label when uncertain. It is not trained to identify specific
+brands or currency denominations. An item label does not add a new hazard class. 
+
+**Hazard detection** runs automatically while the app is active. It looks for
+**Escalator, People, Pillar, Stair and Wet Floor Sign**, draws boxes around detected
+objects, and determines whether each appears on the left, in the centre or on the
+right of the camera image. The highest-priority detection drives the alert, such
+as **"Note, Pillar on your left"** or **"Warning, Stair ahead"**. Alerts are also
+spoken if speech is enabled. You do not need to click Identify item for hazard
+detection to work.
+
+To try **identifying an object outside these five hazard classes**, such as a chair
+or table, place it clearly in the frame and click **Identify item**. Recognition is
+not guaranteed or 100% accurate for objects outside the trained classes. 
+You can also use this button when a hazard-class object is visible;
+it is not restricted to objects outside the five classes.
+
+Moving the camera alone does not rerun either button feature. Only hazard
+detection runs continuously. If microphone voice commands are enabled, saying
+**"vision scan"** is an additional way to trigger Scan text; item identification
+still uses its button.
+
+### 4. Try the full pipeline, including depth
+
+Stop the previous web app with Ctrl+C, then use this command to enable all stages
+by default, including relative depth and optional microphone voice commands:
+
+```sh
+python src/webapp.py --port 5001
 ```
 
-## Dataset & training
+Open or refresh **http://127.0.0.1:5001**. Detected objects still get boxes, while
+relative proximity now also affects hazard priority and whether alerts start
+with `Note`, `Caution` or `Warning`. Depth does not provide metres or distinguish
+stairs going up/down. It can be slow on a CPU; return to `--no-depth` if necessary.
+MiDaS downloads its weights on first use. Microphone commands need the optional
+voice dependencies below; if the microphone/PyAudio is unavailable, use the
+Scan text button instead. Add `--no-tts` if you do not want spoken output.
 
-The detector is fine-tuned YOLOv8n, trained on a curated Open Images V7 subset for 16 hazard classes (person, vehicles, traffic furniture, bags, pets, etc.) — see [CLAUDE.md](CLAUDE.md) for full details and metrics. The trained checkpoint (`models/hazard_yolov8n.pt`) is the default model for every demo below.
+The app's default port is 5000 when `--port` is omitted. These examples use 5001
+to avoid common macOS AirPlay conflicts. The web app runs locally; this command
+does not publish a website on the internet.
 
-To rebuild the dataset or retrain from scratch:
-```
-python scripts/build_hazard_dataset.py --per-class 130
-python scripts/train_hazard_model.py --epochs 40
-```
+### 5. Optional desktop camera windows
 
-## Running the demos
+This command opens the **detection-only OpenCV window**, rather than a browser:
 
-All demos use a laptop webcam and the fine-tuned hazard checkpoint by default.
-
-**Web UI (recommended)** — the real demo interface: detection + depth + hazard ranking + spoken alerts, plus buttons for on-demand OCR and item identification, all in a browser:
-```
-python src/webapp.py
-```
-Then open http://127.0.0.1:5000. Click "Scan text" or say **"vision scan"** to read nearby text; click "Identify item" for a generic object classification.
-
-**Detection only** — simplest sanity check, no browser needed:
-```
+```sh
 python src/webcam_hazard_demo.py
 ```
 
-**Full pipeline, OpenCV window** — same pipeline as the web UI but in a local debug window instead of a browser (useful for quick iteration):
-```
+Expect the live feed, boxes, class labels, confidence and FPS. Depth, speech, OCR
+and item identification are disabled in this demo. Press **q** in its window to
+close it. Use this when you want to check camera/model detection alone.
+
+This command opens the **full-pipeline OpenCV window**:
+
+```sh
 python src/live_pipeline_demo.py
 ```
-Press `q` to quit; `o` or saying "vision scan" triggers OCR.
 
-Useful flags on both `webapp.py` and `live_pipeline_demo.py`: `--no-depth`, `--no-tts`, `--no-ocr`, `--no-voice`, `--no-product-id` (webapp only) to disable individual stages; `--conf`, `--imgsz`, `--source`, `--model` to tune detection.
+Expect camera boxes, relative-depth-based hazard ranking and spoken alerts.
+Press **o** for on-demand OCR, or say "vision scan" if voice input is available.
+Item identification is disabled in this desktop demo. Press **q** to close it.
+This uses the same processing pipeline as the web app, without its browser buttons.
 
-## Known limitations (prototype stage)
+Camera index 0 is the default. Use `--source 1` to try another camera or
+`--source /path/to/video.mp4` for recorded input. `--model`, `--conf`, `--imgsz`
+and `--device` override local detector settings in all demos. Shared defaults are
+in `visionaid_config.json`.
 
-- CPU-only inference: expect roughly 10-15 FPS for the full pipeline on a typical laptop.
-- OCR runs synchronously and briefly freezes the video feed while reading; scoped for short signs/labels, not dense documents.
-- The voice trigger needs internet access (cloud speech recognition, not an on-device wake-word engine) and a working microphone.
-- Depth is monocular and relative (0-1 proximity within a frame), not calibrated metric distance.
-- The hazard detector is a real fine-tune but a first baseline (40 CPU epochs, ~2000 curated third-person images, mAP50 0.495) — not yet trained on first-person/glasses-perspective photos.
-- Item identification is a generic ImageNet classifier (MobileNetV3), not a currency/product-trained one.
-- The Flask app runs locally only — cloud deployment isn't set up yet.
+### 6. Minimal web test and optional dependencies
+
+If the full app fails during auxiliary-model setup, this command starts only
+camera-based hazard detection in the browser:
+
+```sh
+python src/webapp.py --port 5001 --no-depth --no-tts --no-ocr --no-voice --no-product-id
+```
+
+At **http://127.0.0.1:5001**, expect live detection boxes and position notices,
+without depth, speech, OCR or item identification. Do not use the two query
+buttons in this mode: their processing features are disabled. This test uses the
+supplied detector weights and avoids auxiliary-model downloads.
+
+To enable optional microphone input, first install PortAudio system libraries
+for your operating system, then install the microphone Python dependency:
+
+```sh
+python -m pip install -r requirements-voice.txt
+```
+
+This installs PyAudio; it does not start the app. On the next launch without
+`--no-voice`, an available microphone can listen for "vision scan". Speech
+recognition needs internet access. Missing microphone support does not prevent
+camera detection or button-based OCR.
+
+EasyOCR can install `opencv-python-headless` alongside the GUI build. If a desktop
+OpenCV window reports that GUI support is unavailable, run these repair commands
+inside the activated environment:
+
+```sh
+python -m pip uninstall -y opencv-python-headless opencv-python
+python -m pip install --no-deps 'opencv-python>=4.7,<4.12'
+```
+
+The first command removes conflicting OpenCV packages; the second reinstalls the
+GUI-enabled build. Expect installation output, then retry the desktop demo. These
+are troubleshooting commands, not a step to repeat on every launch.
+
+## Cloud detector
+
+Cloud mode changes the object detector to RF-DETR. The camera, browser, depth,
+OCR and speech remain on the local computer; JPEG camera frames go to the
+configured service. There is no automatic switch between local and cloud modes.
+This repository prepares the service but does not provision public hosting.
+
+### Build and start the service
+
+With Docker installed and running, build the service image from the repository
+root. This packages RF-DETR and its separate Linux dependencies:
+
+```sh
+docker build -f cloud/Dockerfile -t visionaid-rfdetr .
+```
+
+Expect dependency downloads and Docker build logs, ending in a successful image
+build. This can take several minutes. It does not start the service or the GUI.
+The image uses RF-DETR 1.11.2, CPU PyTorch 2.9 and Transformers 5.1; the available
+Intel macOS PyTorch 2.2 runtime cannot run that RF-DETR environment directly.
+
+Start the service and make the supplied cloud checkpoint available read-only:
+
+```sh
+docker run --rm -p 127.0.0.1:9000:9000 \
+  -v "$PWD/models/cloud:/app/models/cloud:ro" visionaid-rfdetr
+```
+
+Expect server/model-loading logs in this Terminal. Leave it running. It serves
+inference on **http://127.0.0.1:9000**, but has no browser camera GUI of its own.
+The first model load can take a while. Ctrl+C stops this container.
+
+In another Terminal, check whether the model has finished loading:
+
+```sh
+curl http://127.0.0.1:9000/health
+```
+
+A ready service returns JSON with `status: "ready"`, model `rfdetr-nano`, the five
+class names, input size 384 and class thresholds. If it is still loading, wait
+and retry; an open port alone does not establish that the model is ready.
+
+### Connect the web app to the service
+
+Activate the local Python environment in another Terminal, stop any previous
+web app on port 5001, and start the cloud-connected GUI:
+
+```sh
+python src/webapp.py --port 5001 --backend cloud \
+  --endpoint http://127.0.0.1:9000 --no-depth --no-voice
+```
+
+Open **http://127.0.0.1:5001**. Expect the same camera feed and buttons, now showing
+cloud/RF-DETR as the active detector and round-trip processing time. The frame
+is uploaded to the service for detection. An unavailable/slow service produces
+an error and expired detections are cleared. Both the service Terminal and GUI
+Terminal must remain running. This example tests the cloud-service architecture
+on one computer; a real remote deployment needs its own host and endpoint.
+
+The image defaults to CPU. On a Linux NVIDIA host, build with
+`--build-arg TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128` and run with
+`--gpus all -e VISIONAID_DEVICE=cuda`, with container GPU support installed.
+For a public detector endpoint, configure the host's HTTPS/access control.
+Do not expose the local Flask camera GUI as a multiuser cloud application.
+
+### Detection response for developers
+
+`POST /detect` accepts a JPEG body with `Content-Type: image/jpeg`. The following
+is an illustrative response for a 1280×720 frame; the numbers are examples, not
+promised confidence or speed:
+
+```json
+{
+  "detections": [
+    {
+      "class_id": 3,
+      "class": "Stair",
+      "confidence": 0.82,
+      "box_xyxy": [120, 340, 610, 720]
+    }
+  ],
+  "latency_ms": 22.8,
+  "model": "rfdetr-nano"
+}
+```
+
+This describes one detected stair region. Class ID 3 maps to Stair. The four box
+coordinates are left, top, right and bottom in original-frame pixels.
+`latency_ms` measures server inference; the local client adds `round_trip_ms`,
+including JPEG encoding, upload and download. An empty `detections` list means no
+objects passed the selected threshold.
+
+The default request deadline and maximum frame age are three seconds, controlled
+by `--timeout` and `--max-frame-age`. Only one request is in flight; capture keeps
+the newest frame. `--conf` explicitly overrides cloud thresholds through the API;
+otherwise validated defaults apply. Model/input-size overrides are local: set
+cloud weights and resolution on the service through its config/environment.
+
+## Verification and export
+
+These commands are developer checks. They do not need the live camera and do not
+train the models. Use the activated Python environment and repository root.
+
+### Run the automated tests
+
+If the test/export tools are not already installed, install their dependencies:
+
+```sh
+python -m pip install -r requirements-test.txt
+```
+
+Expect package-installation output. This adds pytest, COCO evaluation and ONNX
+tools; it does not run any checks yet.
+
+Run the automated regression tests:
+
+```sh
+python -m pytest -q
+```
+
+Expect a pass/fail summary in Terminal. These cover configuration, detection
+records, app/backend behaviour, evaluation and dataset validation. Hardware camera,
+microphone and audible-speech checks still need a manual test.
+
+### Check the 20 reference images
+
+Run the local detector on the supplied golden images and compare the outputs
+against the original reference detections. This also measures 50 warmed frames:
+
+```sh
+python scripts/verify_detector.py --images golden/images \
+  --reference golden/expected/local_yolov8n.json --frames 50 \
+  --output artifacts/local_golden.json
+```
+
+Expect a JSON summary containing `golden.passed`, box-match counts and detector
+latency/FPS. Predictions are saved to `artifacts/local_golden.json`; the summary
+is saved to `artifacts/local_golden.report.json`. The 20 images are copies from
+the handover bundle, used for verification rather than new training data.
+
+To compare an existing predictions file without running inference again:
+
+```sh
+python golden/check_golden.py golden/expected/local_yolov8n.json artifacts/local_golden.json
+```
+
+Expect `passed: true` when the image names and detections meet the parity rules.
+A failure returns a nonzero exit code. The exact image set must match, at least
+95% of reference boxes must match class and IoU >=0.9, and extra boxes must be no
+more than max(2, 5% of reference count). Pillar mapping also has a dedicated test
+because the local golden references contain no Pillar detections.
+
+With the RF-DETR service running, perform the equivalent HTTP check using its
+reference outputs. The longer deadline below is for this offline CPU check:
+
+```sh
+python scripts/verify_detector.py --runtime cloud \
+  --endpoint http://127.0.0.1:9000 --timeout 60 --max-frame-age 60 \
+  --images golden/images --reference golden/expected/cloud_rfdetr-nano.json \
+  --frames 50 --output artifacts/cloud_golden.json
+```
+
+Expect an RF-DETR parity summary and measured round-trip timings. Predictions and
+its `.report.json` summary are saved under `artifacts/`. This sends the test
+images to the endpoint; it does not start the camera or GUI.
+
+### Evaluate all 920 test images
+
+Replace `/path/to/visionaid_pt` with the extracted handover folder. The first line
+sets that location for this Terminal; the second command evaluates local YOLOv8n
+on all test images, including 92 backgrounds without label files:
+
+```sh
+BUNDLE=/path/to/visionaid_pt
+python scripts/verify_detector.py --images "$BUNDLE/test_set/test/images" \
+  --evaluate --frames 0 --output artifacts/local_test.json
+```
+
+Expect progress messages followed by mAP50, mAP50–95, precision, recall and safety
+recall. Results are written to `artifacts/local_test.json` and
+`artifacts/local_test.report.json`. `--frames 0` disables the extra timing
+benchmark; it does not skip evaluation images. This uses the notebook-style COCO
+AP evaluator at confidence >=0.001 and the existing validation-selected alert
+threshold. Test images never select a new threshold. Keep these metrics labelled
+separately from Ultralytics `.val()` results.
+
+To evaluate the RF-DETR checkpoint directly in Linux, use the already-built
+service image. Keep `BUNDLE` set above. The command creates an output folder,
+starts a temporary container, installs its evaluation dependency, and runs the
+same 920-image check. Checkpoint, script and dataset mounts are read-only:
+
+```sh
+mkdir -p artifacts
+docker run --rm -e OMP_NUM_THREADS=2 -e MKL_NUM_THREADS=2 \
+  -v "$PWD/models/cloud:/app/models/cloud:ro" \
+  -v "$PWD/scripts:/app/scripts:ro" \
+  -v "$PWD/artifacts:/artifacts" \
+  -v "$BUNDLE/test_set:/data:ro" \
+  --entrypoint sh visionaid-rfdetr -c \
+  'pip install --no-cache-dir pycocotools && python /app/scripts/verify_detector.py --runtime rfdetr --images /data/test/images --evaluate --frames 0 --output /artifacts/cloud_test.json'
+```
+
+Expect container logs, image-count progress and RF-DETR accuracy metrics. The
+outputs are saved on your computer as `artifacts/cloud_test.json` and
+`artifacts/cloud_test.report.json`; the container exits afterwards. CPU evaluation
+can be slow. This is a direct checkpoint check, so it excludes HTTP/network time.
+
+### Export and check ONNX
+
+First establish the local `.pt` baseline using the full-set command above. Then
+export those existing weights to FP32 ONNX, without retraining:
+
+```sh
+python scripts/export_detector.py
+```
+
+Expect export logs and a new `models/local/yolov8n_v4.onnx` file, using batch one
+and input size 640. The app still defaults to `.pt`; exporting does not switch it.
+
+Evaluate the export against the same test set and measure 50 warmed frames:
+
+```sh
+python scripts/verify_detector.py --model models/local/yolov8n_v4.onnx \
+  --images "$BUNDLE/test_set/test/images" --evaluate --frames 50 \
+  --output artifacts/onnx_test.json
+```
+
+Expect ONNX accuracy and timing results in Terminal and the output/report JSON
+files under `artifacts/`. Compare them with the `.pt` baseline. Keep `.pt` as the
+default until the export passes golden parity, loses no more than 0.01 mAP50 with
+the same evaluator, and improves measured speed on the deployment device.
+INT8 is deferred: the handover YAML points train/val/test at test images and must
+not be used for calibration. Obtain separate representative calibration data first.
+
+### Measure the continuous processing loop
+
+This runs recorded images through detection, optional depth, hazard ranking,
+annotation and JPEG encoding to measure their combined processing cost:
+
+```sh
+python scripts/benchmark_pipeline.py --images golden/images --frames 50 \
+  --output artifacts/pipeline_cpu.json
+```
+
+Expect a JSON report with median/p95 processing time and FPS, saved to
+`artifacts/pipeline_cpu.json`. It uses 10 warm-up frames plus 50 measured frames;
+add `--no-depth` to compare without depth. It excludes physical camera capture,
+audible speech, on-demand OCR/item identification and browser rendering. Report
+these timings separately from detector-only latency. T4 notebook timings do not
+promise laptop performance. See `docs/VERIFICATION.md` for the measured results.
+
+## Training record and limitations
+
+The five training notebooks are the updated Roboflow work. Saved results report
+YOLOv8n mAP50 0.659 / safety recall 0.716 and RF-DETR mAP50 0.739 / safety recall
+0.767. Train/valid/test counts are 8247/925/920, scene split fingerprint
+`49601080aac1f838190341d331785578`. Notebook outputs are preserved. Embedded API-key
+assignments have been removed; **rotate the exposed key in Roboflow** and use an
+environment variable or Kaggle secret. Old Git/Kaggle history may still contain it.
+
+Training is kept in the five-class notebooks. The former dataset-builder and
+training CLI files have been removed, together with their unused legacy FiftyOne
+dependency manifest. The `scripts/` folder retains detector verification, export
+and benchmarking tools. Dataset-validation logic and its automated tests remain
+available for checking notebook-prepared splits; they do not train models.
+
+The handover's test-only YAML must not be used for training: its three split
+entries all point to test images. Use the notebook's prepared scene split for any
+future training. `test.py` is an unrelated historical sensor plotting experiment;
+current automated tests live in `tests/`.
+
+### Pillar detection: what to expect
+
+**Pillar is supported, but it is the weakest class and detection is unreliable.**
+Pointing the camera at a pillar runs hazard detection automatically; you do not
+need to click **Identify item**. If the detector recognises it with sufficient
+confidence, a **Pillar** bounding box appears. It can then contribute to the
+prioritised visual/audio hazard alert. The Identify item button uses a separate
+generic classifier and does not trigger the five-class hazard detector.
+
+The saved test results contain 153 labelled pillar objects across the 920 test
+images:
+
+| Detector | Validated confidence threshold | Pillar recall |
+|---|---:|---:|
+| Local YOLOv8n | 0.35 | 17.0% |
+| RF-DETR Nano | 0.40 | 29.4% |
+
+Recall measures how many labelled pillar objects were found on that test set.
+These percentages are **not the probability of detecting a particular pillar in
+your room**. Both models missed many pillars, and repeated video frames do not
+guarantee detection: the model may consistently miss the same pillar from a
+particular viewpoint.
+
+For a practical check, use good lighting, keep the pillar clearly visible, and
+try different camera angles and distances. **No Pillar box means the model has
+not detected it; it does not mean there is no obstacle or that the scene is safe.**
+
+### Other limitations
+
+Stair direction is unavailable. Wet Floor Sign
+means a sign was detected, not that floor wetness was measured. MiDaS proximity is
+relative, not metres; an empty detection list does not prove a scene is safe.
+On-demand OCR is synchronous and targets short signs; voice recognition needs
+internet; item ID is an ImageNet classifier, not trained currency recognition.

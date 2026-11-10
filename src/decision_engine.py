@@ -7,18 +7,10 @@ hazard isn't re-announced every frame.
 import time
 from dataclasses import dataclass
 
-from depth import box_proximity
+from config import load_config
 
-# Rough severity weights: moving/vehicular hazards outrank static furniture.
-# Placeholder tuned for COCO classes; revisit once real hazard classes exist.
-SEVERITY = {
-    "car": 1.0, "bus": 1.0, "truck": 1.0, "motorcycle": 0.9, "bicycle": 0.8,
-    "person": 0.6, "dog": 0.5,
-    "traffic light": 0.4, "stop sign": 0.4, "fire hydrant": 0.3,
-    "bench": 0.2, "chair": 0.2, "couch": 0.2, "potted plant": 0.15,
-    "backpack": 0.15, "suitcase": 0.15,
-}
-DEFAULT_SEVERITY = 0.3
+# Application heuristics; these are not learned model scores.
+SEVERITY = load_config()["severity"]
 
 COOLDOWN_SECONDS = 4.0
 PROXIMITY_JUMP_TO_REALERT = 0.15
@@ -27,7 +19,7 @@ PROXIMITY_JUMP_TO_REALERT = 0.15
 @dataclass
 class Hazard:
     label: str
-    proximity: float  # 0-1, higher = closer
+    proximity: float | None  # Relative 0-1, or unavailable without depth
     position: str      # "left" / "center" / "right"
     priority: float
     xyxy: tuple
@@ -41,23 +33,27 @@ def _position_bucket(x_center_norm: float) -> str:
     return "center"
 
 
-def build_hazards(results, depth_map, frame_width: int) -> list[Hazard]:
+def build_hazards(detections, depth_map, frame_width: int, severity=None) -> list[Hazard]:
+    severity = SEVERITY if severity is None else severity
     hazards = []
-    names = results.names
-    for box in results.boxes:
-        # Lowercased so this works whether the loaded model's class names
-        # are COCO-style lowercase (placeholder yolov8n.pt) or Title Case
-        # (the Open Images-trained hazard checkpoint) — keeps SEVERITY keys
-        # stable across a model swap instead of needing to duplicate them.
-        label = names[int(box.cls)].lower()
-        xyxy = box.xyxy[0].tolist()
-        proximity = box_proximity(depth_map, xyxy)
-        x_center_norm = ((xyxy[0] + xyxy[2]) / 2) / frame_width
-        position = _position_bucket(x_center_norm)
-        severity = SEVERITY.get(label, DEFAULT_SEVERITY)
-        priority = severity * (0.5 + 0.5 * proximity)
+    for detection in detections:
+        label, xyxy = detection.label, detection.box_xyxy
+        proximity = None
+        if depth_map is not None:
+            from depth import box_proximity
+            proximity = box_proximity(depth_map, xyxy)
+        position = _position_bucket(((xyxy[0] + xyxy[2]) / 2) / frame_width)
+        priority = severity[label] * (0.5 + 0.5 * (proximity if proximity is not None else 0.0))
         hazards.append(Hazard(label, proximity, position, priority, tuple(xyxy)))
     return sorted(hazards, key=lambda h: h.priority, reverse=True)
+
+
+def phrase_for(hazard) -> str:
+    position = "ahead" if hazard.position == "center" else f"on your {hazard.position}"
+    if hazard.proximity is None:
+        return f"Note, {hazard.label} {position}; distance unavailable"
+    urgency = "Warning" if hazard.proximity > 0.7 else "Caution" if hazard.proximity > 0.4 else "Note"
+    return f"{urgency}, {hazard.label} {position}"
 
 
 class AlertCooldown:
@@ -71,13 +67,14 @@ class AlertCooldown:
 
     def should_announce(self, hazard: Hazard) -> bool:
         key = (hazard.label, hazard.position)
-        now = time.time()
+        now = time.monotonic()
         last = self._last.get(key)
         if last is None:
             self._last[key] = (now, hazard.proximity)
             return True
         last_time, last_proximity = last
-        got_closer = hazard.proximity - last_proximity > PROXIMITY_JUMP_TO_REALERT
+        got_closer = (hazard.proximity is not None and last_proximity is not None
+                      and hazard.proximity - last_proximity > PROXIMITY_JUMP_TO_REALERT)
         if now - last_time > self.cooldown_seconds or got_closer:
             self._last[key] = (now, hazard.proximity)
             return True

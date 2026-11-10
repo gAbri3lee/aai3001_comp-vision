@@ -1,0 +1,434 @@
+{
+ "11_mp4-154_jpg.rf.3bfa0b4b5c3f5fd4acc3145e21f206a7.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 2,
+    "class": "Pillar",
+    "confidence": 0.7815,
+    "box_xyxy": [
+     238.4,
+     139.9,
+     367.2,
+     372.5
+    ]
+   }
+  ]
+ },
+ "11_mp4-394_jpg.rf.07c2ca4b27d4ab7b451e785deb3ca104.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": []
+ },
+ "6684e708-9e43-4977-9209-c3097ea05d37_mp4-0002_jpg.rf.91549dbf92174b709906246e0c156e55.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": []
+ },
+ "761978429_726407_mp4-0052_jpg.rf.d81c43982f7bf704d73006ba4092440c.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 0,
+    "class": "Escalator",
+    "confidence": 0.8998,
+    "box_xyxy": [
+     142.5,
+     163.1,
+     498.7,
+     639.4
+    ]
+   }
+  ]
+ },
+ "764212632_214446_mp4-0002_jpg.rf.dbce3ada2bafd7361f47ed08453c10b5.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.4097,
+    "box_xyxy": [
+     141.9,
+     0.0,
+     257.5,
+     346.7
+    ]
+   }
+  ]
+ },
+ "764212632_214446_mp4-0037_jpg.rf.07998d443fffc3c10723b0ec4a540dd5.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.8009,
+    "box_xyxy": [
+     206.2,
+     0.5,
+     379.4,
+     342.4
+    ]
+   }
+  ]
+ },
+ "IMG_4112_MOV-0011_jpg.rf.8e0bb02b891108f830ffa940f888cca2.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.4274,
+    "box_xyxy": [
+     310.5,
+     222.9,
+     331.3,
+     286.9
+    ]
+   }
+  ]
+ },
+ "IMG_4112_MOV-0013_jpg.rf.e752832b9305f9b3f13c2987e11d51bc.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": []
+ },
+ "IMG_4112_MOV-0062_jpg.rf.52f376aa14e922f4b8095aac93971574.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.6862,
+    "box_xyxy": [
+     177.1,
+     264.8,
+     223.9,
+     392.6
+    ]
+   },
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.5926,
+    "box_xyxy": [
+     237.4,
+     273.0,
+     276.1,
+     393.2
+    ]
+   },
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.5459,
+    "box_xyxy": [
+     289.0,
+     275.5,
+     326.8,
+     380.1
+    ]
+   }
+  ]
+ },
+ "IMG_4112_MOV-0078_jpg.rf.f86ca3f1724d9778e8d2bb94a3d9e200.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.7925,
+    "box_xyxy": [
+     317.3,
+     273.0,
+     377.4,
+     449.4
+    ]
+   }
+  ]
+ },
+ "IMG_5024_MOV-0005_jpg.rf.afa3e4e10176ccc9eb84c2939a5a83d1.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 3,
+    "class": "Stair",
+    "confidence": 0.9772,
+    "box_xyxy": [
+     140.5,
+     1.7,
+     500.0,
+     639.9
+    ]
+   }
+  ]
+ },
+ "IMG_5024_MOV-0031_jpg.rf.1b54e6a9e0df0d2fc1d73fa7501b340d.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.8246,
+    "box_xyxy": [
+     215.8,
+     0.4,
+     344.7,
+     319.1
+    ]
+   }
+  ]
+ },
+ "IMG_5027_MOV-0004_jpg.rf.3918c88f476bc451865be61321cac3ce.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 3,
+    "class": "Stair",
+    "confidence": 0.9355,
+    "box_xyxy": [
+     141.1,
+     297.9,
+     498.9,
+     638.2
+    ]
+   },
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.6249,
+    "box_xyxy": [
+     267.8,
+     137.8,
+     293.0,
+     199.0
+    ]
+   },
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.4364,
+    "box_xyxy": [
+     291.0,
+     145.9,
+     311.8,
+     197.9
+    ]
+   },
+   {
+    "class_id": 3,
+    "class": "Stair",
+    "confidence": 0.4124,
+    "box_xyxy": [
+     185.2,
+     208.5,
+     370.4,
+     273.8
+    ]
+   }
+  ]
+ },
+ "IMG_5027_MOV-0016_jpg.rf.70ab49c82bc6a493657f4d9878c123d0.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 3,
+    "class": "Stair",
+    "confidence": 0.9495,
+    "box_xyxy": [
+     139.6,
+     325.6,
+     498.4,
+     639.9
+    ]
+   },
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.6985,
+    "box_xyxy": [
+     423.9,
+     0.0,
+     486.1,
+     83.9
+    ]
+   },
+   {
+    "class_id": 0,
+    "class": "Escalator",
+    "confidence": 0.6466,
+    "box_xyxy": [
+     390.4,
+     65.1,
+     499.9,
+     259.9
+    ]
+   },
+   {
+    "class_id": 1,
+    "class": "People",
+    "confidence": 0.5554,
+    "box_xyxy": [
+     343.1,
+     0.4,
+     391.1,
+     55.4
+    ]
+   }
+  ]
+ },
+ "IMG_9518_MOV-0010_jpg.rf.8d132efc9703fcc09f20a28e22b41dcc.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 3,
+    "class": "Stair",
+    "confidence": 0.4737,
+    "box_xyxy": [
+     138.9,
+     367.3,
+     374.5,
+     597.9
+    ]
+   }
+  ]
+ },
+ "IMG_9690_MOV-0011_jpg.rf.da92702e9443d34cd83cdbd5b14f9ec7.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 3,
+    "class": "Stair",
+    "confidence": 0.8717,
+    "box_xyxy": [
+     140.7,
+     202.9,
+     498.5,
+     639.9
+    ]
+   }
+  ]
+ },
+ "IMG_9937_MOV-0003_jpg.rf.9f735624e0e973000bf8c7c3f2bafe64.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 3,
+    "class": "Stair",
+    "confidence": 0.8871,
+    "box_xyxy": [
+     141.3,
+     274.9,
+     499.3,
+     639.7
+    ]
+   }
+  ]
+ },
+ "VID_20260108_094455_mp4-0017_jpg.rf.795f482efe7e54a831d441f75c60c9b1.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 3,
+    "class": "Stair",
+    "confidence": 0.9728,
+    "box_xyxy": [
+     140.5,
+     0.3,
+     499.4,
+     640.0
+    ]
+   }
+  ]
+ },
+ "VID_20260108_094455_mp4-0045_jpg.rf.d81c2f362577d6a2e8bc951786de1ada.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 3,
+    "class": "Stair",
+    "confidence": 0.9422,
+    "box_xyxy": [
+     141.9,
+     256.0,
+     499.1,
+     639.6
+    ]
+   }
+  ]
+ },
+ "vlc-record-2026-04-06-15h00m29s-rtsp___192-168-137-100_554_Streaming_Channels_101-_13832_jpg.rf.a759fac3d91b1855b56f2d9e1bda8cdb.jpg": {
+  "image_size": [
+   640,
+   640
+  ],
+  "detections": [
+   {
+    "class_id": 4,
+    "class": "Wet Floor Sign",
+    "confidence": 0.9178,
+    "box_xyxy": [
+     567.0,
+     376.6,
+     613.5,
+     456.5
+    ]
+   }
+  ]
+ }
+}

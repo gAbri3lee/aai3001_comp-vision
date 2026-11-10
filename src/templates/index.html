@@ -178,10 +178,11 @@
       <img src="/video_feed" alt="Live annotated camera feed">
       <div class="fps-badge" id="fps-badge">-- FPS</div>
     </div>
-    <div class="alert-banner level-clear" id="alert-banner">No hazards detected</div>
+    <div class="alert-banner level-clear" id="alert-banner">No detections</div>
   </section>
 
   <section class="panel">
+    <div class="result-card"><span class="label">Active detector</span><span id="model-status">Starting…</span></div>
     <h2>On-demand queries</h2>
     <div class="actions">
       <button class="action" id="btn-scan">
@@ -206,7 +207,7 @@
 </main>
 
 <footer>
-  Placeholder pretrained models — detection is not yet fine-tuned on a real hazard dataset, and item ID is a generic ImageNet classifier, not a currency-trained one.
+  Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Detection is supplementary and can miss hazards. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Depth is relative, not metres. Item ID remains a generic ImageNet classifier. Cloud mode uploads camera frames.
 </footer>
 
 <script>
@@ -214,6 +215,8 @@
   const fpsBadge = document.getElementById("fps-badge");
   const ocrText = document.getElementById("ocr-text");
   const productText = document.getElementById("product-text");
+  const modelStatus = document.getElementById("model-status");
+  const video = document.querySelector(".video-wrap img");
   const btnScan = document.getElementById("btn-scan");
   const btnIdentify = document.getElementById("btn-identify");
 
@@ -227,16 +230,24 @@
   async function pollStatus() {
     try {
       const res = await fetch("/status");
+      if (!res.ok) throw new Error("Status unavailable");
       const data = await res.json();
       fpsBadge.textContent = `${data.fps.toFixed(1)} FPS`;
 
-      alertBanner.textContent = data.alert || "No hazards detected";
+      alertBanner.textContent = data.error || data.alert || "No detections";
+      video.style.opacity = data.error ? "0.15" : "1";
+      const timing = data.round_trip_ms ?? data.latency_ms;
+      document.querySelector("#btn-scan small").textContent = data.voice_available ? 'or say “vision scan”' : "Use this button to read text";
+      modelStatus.textContent = `${data.backend}: ${data.model}` + (timing == null ? "" : ` · ${timing.toFixed(1)} ms${data.round_trip_ms == null ? " inference" : " round trip"}`);
       alertBanner.className = "alert-banner " + levelClassFor(data.alert);
 
       ocrText.textContent = data.ocr_text || "—";
       productText.textContent = data.product_text || "—";
     } catch (e) {
-      // Server not reachable yet; ignore and retry on the next tick.
+      alertBanner.textContent = "Service unavailable";
+      alertBanner.className = "alert-banner level-warning";
+      video.style.opacity = "0.15";
+      modelStatus.textContent = "Unavailable";
     }
   }
 

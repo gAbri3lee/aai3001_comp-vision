@@ -1,21 +1,16 @@
-ultralytics
-opencv-python
+# Local app only. RF-DETR has a separate environment: cloud/requirements.txt.
+ultralytics==8.4.183
+# Intel macOS's last torch wheel is 2.2.2; it needs NumPy 1.x.
+numpy<2; platform_system == "Darwin" and platform_machine == "x86_64"
+opencv-python>=4.7,<4.12; platform_system == "Darwin" and platform_machine == "x86_64"
+opencv-python>=4.7; platform_system != "Darwin" or platform_machine != "x86_64"
 torch
 torchvision
 timm
 pyttsx3
 SpeechRecognition
-pyaudio
+# Optional microphone input: install requirements-voice.txt after PortAudio system libraries.
 easyocr
-flask
-
-# Only needed to rebuild/regenerate the dataset (scripts/build_hazard_dataset.py),
-# not for running the demos/webapp.
-fiftyone
-
-# NOTE: easyocr/scikit-image/fiftyone all pull in opencv-python-headless,
-# which silently overwrites the GUI build of opencv-python and breaks
-# cv2.imshow. If you reinstall from scratch, install requirements first,
-# then run:
-#   pip uninstall -y opencv-python-headless opencv-python
-#   pip install --force-reinstall --no-deps opencv-python
+flask>=3.1,<4
+requests>=2.31,<3
+PyYAML>=6,<7

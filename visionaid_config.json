@@ -1,0 +1,105 @@
+{
+  "project": "VisionAid",
+  "dataset": {
+    "roboflow_project": "version2-nvt5l",
+    "version": 4,
+    "split_fingerprint": "49601080aac1f838190341d331785578"
+  },
+  "classes": [
+    "Escalator",
+    "People",
+    "Pillar",
+    "Stair",
+    "Wet Floor Sign"
+  ],
+  "safety_classes": [
+    "Stair",
+    "Escalator",
+    "Wet Floor Sign"
+  ],
+  "alert_priority": [
+    "Stair",
+    "Escalator",
+    "Wet Floor Sign",
+    "Pillar",
+    "People"
+  ],
+  "output_format": {
+    "detections": "list sorted by confidence",
+    "fields": {
+      "class_id": "int, index into classes",
+      "class": "str",
+      "confidence": "float 0-1",
+      "box_xyxy": "[x1, y1, x2, y2] in pixels of the ORIGINAL image"
+    }
+  },
+  "local": {
+    "model": "yolov8n",
+    "file": "models/local/yolov8n_v4.pt",
+    "library": "ultralytics==8.4.183",
+    "input_size": 640,
+    "colour_order": "BGR numpy array or a file path",
+    "nms_iou": 0.7,
+    "class_thresholds": {
+      "Escalator": 0.35,
+      "People": 0.35,
+      "Pillar": 0.35,
+      "Stair": 0.35,
+      "Wet Floor Sign": 0.35
+    },
+    "expected": {
+      "test_map50": 0.6585,
+      "test_map50_95": 0.4194,
+      "test_safety_recall": 0.7155,
+      "t4_gpu_ms": 9.8,
+      "kaggle_cpu_ms": 65,
+      "per_class_recall": {
+        "Escalator": 0.899,
+        "People": 0.582,
+        "Pillar": 0.17,
+        "Stair": 0.688,
+        "Wet Floor Sign": 0.56
+      }
+    },
+    "ultralytics_val_test_baseline": {
+      "map50": 0.6617,
+      "map50_95": 0.4177
+    }
+  },
+  "cloud": {
+    "model": "rfdetr-nano",
+    "file": "models/cloud/rfdetr-nano_v4.pth",
+    "library": "rfdetr==1.11.2",
+    "input_size": 384,
+    "colour_order": "RGB PIL image",
+    "nms": "none (DETR)",
+    "class_thresholds": {
+      "Escalator": 0.4,
+      "People": 0.4,
+      "Pillar": 0.4,
+      "Stair": 0.4,
+      "Wet Floor Sign": 0.4
+    },
+    "expected": {
+      "test_map50": 0.7395,
+      "test_map50_95": 0.4471,
+      "test_safety_recall": 0.7671,
+      "t4_gpu_ms": 22.8,
+      "kaggle_cpu_ms": 221,
+      "per_class_recall": {
+        "Escalator": 0.848,
+        "People": 0.694,
+        "Pillar": 0.294,
+        "Stair": 0.729,
+        "Wet Floor Sign": 0.724
+      }
+    }
+  },
+  "severity": {
+    "Stair": 1.0,
+    "Escalator": 0.9,
+    "Wet Floor Sign": 0.8,
+    "Pillar": 0.7,
+    "People": 0.5
+  }
+}

@@ -16,32 +16,12 @@ import time
 
 import cv2
 from flask import Flask, Response, jsonify, render_template
-from ultralytics import YOLO
+from config import add_detector_arguments, detector_settings
+from detectors import create_detector, DetectorError
+from detection import annotate
+from capture import LatestFrameCapture
 
-from decision_engine import AlertCooldown, build_hazards
-from depth import DepthEstimator
-from ocr import OcrReader
-from product_id import ProductIdentifier
-from tts import Speaker
-from voice_trigger import VoiceTrigger
-
-HAZARD_CLASSES = {
-    "person", "bicycle", "car", "motorcycle", "bus", "truck",
-    "traffic light", "fire hydrant", "stop sign", "bench", "chair",
-    "dog", "backpack", "suitcase", "potted plant", "couch",
-}
-
-
-def phrase_for(hazard) -> str:
-    if hazard.proximity > 0.7:
-        urgency = "Warning"
-    elif hazard.proximity > 0.4:
-        urgency = "Caution"
-    else:
-        urgency = "Note"
-    position = "ahead" if hazard.position == "center" else f"on your {hazard.position}"
-    return f"{urgency}, {hazard.label} {position}"
-
+from decision_engine import AlertCooldown, build_hazards, phrase_for
 
 class PipelineState:
     """Owns the background capture/inference loop and exposes thread-safe
@@ -49,7 +29,16 @@ class PipelineState:
 
     def __init__(self, args):
         self.args = args
-        self.detector = YOLO(args.model)
+        self.settings = detector_settings(args)
+        self.detector = create_detector(self.settings)
+        if not args.no_depth:
+            from depth import DepthEstimator
+        if not args.no_tts:
+            from tts import Speaker
+        if not args.no_ocr:
+            from ocr import OcrReader
+        if not args.no_product_id:
+            from product_id import ProductIdentifier
         self.depth_estimator = None if args.no_depth else DepthEstimator()
         self.speaker = None if args.no_tts else Speaker()
         self.cooldown = AlertCooldown()
@@ -59,16 +48,26 @@ class PipelineState:
         self.voice_trigger = None
         if self.ocr_reader is not None and not args.no_voice:
             print("Starting voice trigger (needs internet + a working microphone)...")
-            self.voice_trigger = VoiceTrigger(mic_index=args.mic_index)
+            try:
+                from voice_trigger import VoiceTrigger
+                self.voice_trigger = VoiceTrigger(mic_index=args.mic_index)
+            except Exception as exc:
+                print(f"Voice commands unavailable; use the Scan text button: {exc}")
 
         self._lock = threading.Lock()
         self._latest_jpeg = None
-        self.status = {"fps": 0.0, "alert": "", "ocr_text": "", "product_text": ""}
+        self._frame_captured_at = None
+        self.status = {"fps": 0.0, "alert": "", "ocr_text": "", "product_text": "",
+                       "model": self.settings["model"], "backend": args.backend, "error": "",
+                       "latency_ms": None, "round_trip_ms": None, "detections": [],
+                       "voice_available": self.voice_trigger is not None}
 
         self._ocr_request = threading.Event()
         self._product_request = threading.Event()
         self._stop = threading.Event()
 
+        source = int(args.source) if str(args.source).isdigit() else args.source
+        self.capture = LatestFrameCapture(source)
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
 
@@ -78,83 +77,125 @@ class PipelineState:
     def request_product_id(self):
         self._product_request.set()
 
+    def _frame_is_stale(self):
+        return (self._frame_captured_at is not None and
+                time.monotonic() - self._frame_captured_at > self.args.max_frame_age)
+
     def get_jpeg(self):
         with self._lock:
-            return self._latest_jpeg
+            return None if self._frame_is_stale() else self._latest_jpeg
 
     def get_status(self) -> dict:
         with self._lock:
-            return dict(self.status)
+            status = dict(self.status)
+            if self._frame_is_stale():
+                status.update(alert="", detections=[], fps=0., latency_ms=None, round_trip_ms=None,
+                              error="Frame is stale; waiting for fresh inference")
+            return status
 
     def stop(self):
         self._stop.set()
         if self.voice_trigger is not None:
             self.voice_trigger.stop()
+        self._thread.join(timeout=self.args.timeout + 3)
+        self.capture.release()
 
     def _loop(self):
-        source = int(self.args.source) if str(self.args.source).isdigit() else self.args.source
-        cap = cv2.VideoCapture(source)
-        if not cap.isOpened():
-            raise RuntimeError(f"Could not open camera/source: {self.args.source}")
+        try:
+            prev_time = time.monotonic()
+            while not self._stop.is_set():
+                ok, frame, captured_at = self.capture.read()
+                if not ok:
+                    if self.capture.finished:
+                        with self._lock:
+                            self.status.update(alert="", detections=[], fps=0., latency_ms=None, round_trip_ms=None, error="Camera/source ended")
+                            self._latest_jpeg = None
+                            self._frame_captured_at = None
+                        break
+                    self._stop.wait(0.01)
+                    continue
+                alert_text = ""
+                error = ""
+                batch = None
+                annotated = frame.copy()
+                try:
+                    if time.monotonic() - captured_at > self.args.max_frame_age:
+                        raise DetectorError('Captured frame is stale; discarded')
+                    batch = self.detector.predict(frame)
+                    depth_map = self.depth_estimator.predict(frame) if self.depth_estimator is not None and batch.detections else None
+                    if time.monotonic() - captured_at > self.args.max_frame_age:
+                        raise DetectorError('Inference result is stale; discarded')
+                    hazards = build_hazards(batch.detections, depth_map, frame.shape[1], self.settings['severity'])
+                    annotated = annotate(frame, batch.detections)
+                    for hazard in hazards:
+                        if hazard.proximity is not None:
+                            x1, y1 = int(hazard.xyxy[0]), int(hazard.xyxy[1])
+                            cv2.putText(annotated, f"{hazard.proximity:.2f}", (x1, max(y1 - 10, 15)),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 200, 255), 2)
+                    if hazards:
+                        top = hazards[0]
+                        alert_text = phrase_for(top)
+                        if self.speaker is not None and self.cooldown.should_announce(top):
+                            self.speaker.say(alert_text)
+                except Exception as exc:
+                    # Never retain prior boxes/alerts after an inference failure.
+                    error = str(exc)
+                    batch = None
+                    annotated = frame.copy()
 
-        prev_time = time.time()
-        while not self._stop.is_set():
-            ok, frame = cap.read()
-            if not ok:
-                time.sleep(0.05)
-                continue
+                voice_triggered = self.voice_trigger is not None and self.voice_trigger.consume_trigger()
+                if self.ocr_reader is not None and (self._ocr_request.is_set() or voice_triggered):
+                    self._ocr_request.clear()
+                    try:
+                        text = self.ocr_reader.read(frame)
+                        ocr_text = text if text else "(no text found)"
+                    except Exception as exc:
+                        text = ""
+                        ocr_text = f"OCR unavailable: {exc}"
+                    with self._lock:
+                        self.status["ocr_text"] = ocr_text
+                    if self.speaker is not None:
+                        self.speaker.say(f"It says: {ocr_text}" if text else "No text found")
 
-            results = self.detector.predict(frame, conf=self.args.conf, imgsz=self.args.imgsz, verbose=False)[0]
-            names = results.names
-            keep = [i for i, box in enumerate(results.boxes) if names[int(box.cls)].lower() in HAZARD_CLASSES]
-            results = results[keep]
-            annotated = results.plot()
+                if self.product_identifier is not None and self._product_request.is_set():
+                    self._product_request.clear()
+                    try:
+                        label, conf = self.product_identifier.identify(frame, topk=1)[0]
+                        product_text = f"{label} ({conf * 100:.0f}%)"
+                    except Exception as exc:
+                        label = ""
+                        product_text = f"Item identification unavailable: {exc}"
+                    with self._lock:
+                        self.status["product_text"] = product_text
+                    if self.speaker is not None and label:
+                        self.speaker.say(f"This looks like {label}")
 
-            alert_text = ""
-            if self.depth_estimator is not None and len(results.boxes) > 0:
-                depth_map = self.depth_estimator.predict(frame)
-                hazards = build_hazards(results, depth_map, frame.shape[1])
-                for hazard in hazards:
-                    x1, y1 = int(hazard.xyxy[0]), int(hazard.xyxy[1])
-                    cv2.putText(annotated, f"{hazard.proximity:.2f}", (x1, max(y1 - 10, 15)),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 200, 255), 2)
-                if hazards:
-                    top = hazards[0]
-                    alert_text = phrase_for(top)
-                    if self.speaker is not None and self.cooldown.should_announce(top):
-                        self.speaker.say(alert_text)
+                now = time.monotonic()
+                fps = 1.0 / max(now - prev_time, 1e-6)
+                prev_time = now
 
-            voice_triggered = self.voice_trigger is not None and self.voice_trigger.consume_trigger()
-            if self.ocr_reader is not None and (self._ocr_request.is_set() or voice_triggered):
-                self._ocr_request.clear()
-                text = self.ocr_reader.read(frame)
-                ocr_text = text if text else "(no text found)"
+                ok_jpeg, buffer = cv2.imencode(".jpg", annotated)
                 with self._lock:
-                    self.status["ocr_text"] = ocr_text
-                if self.speaker is not None:
-                    self.speaker.say(f"It says: {ocr_text}" if text else "No text found")
-
-            if self.product_identifier is not None and self._product_request.is_set():
-                self._product_request.clear()
-                label, conf = self.product_identifier.identify(frame, topk=1)[0]
-                product_text = f"{label} ({conf * 100:.0f}%)"
-                with self._lock:
-                    self.status["product_text"] = product_text
-                if self.speaker is not None:
-                    self.speaker.say(f"This looks like {label}")
-
-            now = time.time()
-            fps = 1.0 / max(now - prev_time, 1e-6)
-            prev_time = now
-
-            ok_jpeg, buffer = cv2.imencode(".jpg", annotated)
+                    if ok_jpeg:
+                        self._latest_jpeg = buffer.tobytes()
+                        self._frame_captured_at = captured_at
+                    self.status["fps"] = round(fps, 1)
+                    self.status["alert"] = alert_text
+                    self.status["error"] = error
+                    self.status["latency_ms"] = batch.latency_ms if batch else None
+                    self.status["round_trip_ms"] = batch.round_trip_ms if batch else None
+                    self.status["detections"] = [d.to_dict() for d in batch.detections] if batch else []
+        except Exception as exc:
             with self._lock:
-                if ok_jpeg:
-                    self._latest_jpeg = buffer.tobytes()
-                self.status["fps"] = round(fps, 1)
-                self.status["alert"] = alert_text
-
-        cap.release()
+                self.status['error'] = f'Pipeline stopped: {exc}'
+        finally:
+            self.capture.release()
+            with self._lock:
+                self.status.update(alert="", detections=[], fps=0., latency_ms=None, round_trip_ms=None)
+                if not self.status['error']:
+                    self.status['error'] = 'Pipeline stopped'
+                self._latest_jpeg = None
+                self._frame_captured_at = None
 
 
 def create_app(state: PipelineState) -> Flask:
@@ -195,10 +236,7 @@ def create_app(state: PipelineState) -> Flask:
 def parse_args():
     parser = argparse.ArgumentParser(description="VisionAid web UI")
     parser.add_argument("--source", default=0, help="Camera index or video file path")
-    parser.add_argument("--model", default="models/hazard_yolov8n.pt",
-                         help="Path to YOLO weights (.pt); defaults to the fine-tuned hazard checkpoint")
-    parser.add_argument("--conf", type=float, default=0.4, help="Detection confidence threshold")
-    parser.add_argument("--imgsz", type=int, default=640, help="Detection inference image size")
+    add_detector_arguments(parser)
     parser.add_argument("--no-depth", action="store_true", help="Disable depth estimation stage")
     parser.add_argument("--no-tts", action="store_true", help="Disable spoken alerts")
     parser.add_argument("--no-ocr", action="store_true", help="Disable the OCR on-demand stage")
