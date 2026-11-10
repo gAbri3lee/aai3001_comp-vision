@@ -144,6 +144,28 @@
   details.ignored { margin-top: 12px; color: var(--muted); font-size: 0.85rem; }
   details.ignored summary { cursor: pointer; }
   details.ignored li { background: transparent; opacity: 0.8; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .switch { display: inline-flex; border: 1px solid var(--panel-border); border-radius: 8px; overflow: hidden; }
+  .switch button { border: 0; border-radius: 0; }
+  .switch button[aria-pressed="true"] { background: var(--accent); color: #0b1020; font-weight: 700; }
+  button {
+    font: inherit; font-size: 0.9rem; color: var(--text); background: #222b42;
+    border: 1px solid var(--panel-border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+  }
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+  button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+    outline: 3px solid #ffd84d; outline-offset: 2px;
+  }
+  .mode-badge {
+    font-weight: 700; letter-spacing: 0.04em; padding: 4px 10px; border-radius: 8px;
+    border: 1px solid var(--accent); color: #cfe0ff;
+  }
+  .mode-badge.cloud { border-color: var(--caution); color: #ffd9a0; }
+  .messages { max-width: 1080px; margin: 0 auto 12px; display: grid; gap: 6px; }
+  .message { padding: 8px 12px; border-radius: 8px; border: 1px solid; font-size: 0.95rem; }
+  .message.error { border-color: var(--warn); background: #3a1620; color: #ffd0d0; }
+  .message.warning { border-color: var(--caution); background: #3a2c14; color: #ffe2b8; }
+  .message.info { border-color: var(--accent); background: #16223d; color: #d6e4ff; }
   footer {
     max-width: 1080px;
     margin: 20px auto 0;
@@ -158,8 +180,17 @@
     <h1>VisionAid</h1>
     <div class="tagline">Hazard-detection vision assistant: live demo console</div>
   </div>
-  <div class="tagline">This is the operator/demo view. Alerts are shown here and spoken when audio is enabled.</div>
+  <div class="controls" role="group" aria-label="Detector">
+    <span class="mode-badge" id="mode-badge" aria-live="polite">LOCAL</span>
+    <div class="switch" role="group" aria-label="Detector mode">
+      <button type="button" id="mode-local" data-mode="local" aria-pressed="true">Local</button>
+      <button type="button" id="mode-cloud" data-mode="cloud" aria-pressed="false">Cloud</button>
+    </div>
+    <button type="button" id="retry-cloud" hidden>Retry cloud</button>
+  </div>
 </header>
+
+<div class="messages" id="messages" aria-live="polite"></div>
 
 <main>
   <section class="panel">
@@ -199,6 +230,52 @@
   if (debug) {
     video.src = "/video_feed?debug=1";
     document.getElementById("ignored").open = true;
+  }
+
+  const modeBadge = document.getElementById("mode-badge");
+  const modeButtons = {local: document.getElementById("mode-local"), cloud: document.getElementById("mode-cloud")};
+  const retryCloud = document.getElementById("retry-cloud");
+  const messages = document.getElementById("messages");
+  let actionMessage = null;  // Result of the last button press, shown until the next one.
+
+  async function post(url, body) {
+    const res = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json"},
+                                  body: JSON.stringify(body)});
+    const data = await res.json().catch(() => ({}));
+    actionMessage = res.ok ? null : {severity: "error", message: data.error || "Request failed"};
+    pollStatus();
+    return res.ok;
+  }
+
+  function setMode(backend) { return post("/mode", {backend}); }
+  modeButtons.local.addEventListener("click", () => setMode("local"));
+  modeButtons.cloud.addEventListener("click", () => setMode("cloud"));
+  retryCloud.addEventListener("click", () => setMode("cloud"));
+
+  function renderMode(data) {
+    modeBadge.textContent = data.mode_label || data.backend;
+    modeBadge.className = "mode-badge " + data.mode;
+    for (const [mode, button] of Object.entries(modeButtons)) {
+      button.setAttribute("aria-pressed", String(data.mode === mode));
+    }
+    modeButtons.cloud.disabled = !data.cloud_available;
+    modeButtons.cloud.textContent = data.cloud_available ? "Cloud" : "Cloud unavailable";
+    modeButtons.cloud.title = data.cloud_unavailable_reason || "";
+    retryCloud.hidden = !data.fallback_active;
+  }
+
+  function renderMessages(data) {
+    const items = [...(data.health || [])];
+    if (data.mode === "cloud") {
+      items.push({severity: "info", message: "Cloud mode: camera frames are sent to the server."});
+    }
+    if (actionMessage) items.unshift(actionMessage);
+    messages.replaceChildren(...items.map(h => {
+      const div = document.createElement("div");
+      div.className = "message " + h.severity;
+      div.textContent = h.message;
+      return div;
+    }));
   }
 
   const BAND_LEVEL = {"near": "level-warning", "mid-close": "level-caution", "mid": "level-note"};
@@ -249,6 +326,8 @@
       const res = await fetch("/status");
       if (!res.ok) throw new Error("Status unavailable");
       const data = await res.json();
+      renderMode(data);
+      renderMessages(data);
       fpsBadge.textContent = `${data.fps.toFixed(1)} FPS`;
 
       const detections = data.detections || [];

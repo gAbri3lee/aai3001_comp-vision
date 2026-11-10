@@ -5,7 +5,13 @@ detector. Its labels never become trained hazard class IDs or cloud payload IDs.
 Every general detection keeps class_id -1. COCO people are labelled People so the
 alert gate treats them like people; everything else is labelled Object. Any
 general box overlapping a trained box at IoU >= 0.5 is dropped as a duplicate.
+
+The general model is optional at run time. If it cannot be loaded (for example
+the first-run download failed) or a prediction fails, the trained detections are
+still returned and `general_error` says why the extra detections are missing.
+Errors from the trained detector are never swallowed.
 """
+import logging
 from dataclasses import replace
 import time
 
@@ -15,6 +21,8 @@ from detectors import create_detector
 from golden import iou
 
 COCO_PERSON = 0
+_LOAD = object()
+logger = logging.getLogger(__name__)
 
 
 def load_general_model():
@@ -26,17 +34,42 @@ def load_general_model():
 
 
 class SceneDetector:
-    def __init__(self, settings):
+    def __init__(self, settings, general=_LOAD):
+        """`general` shares an already loaded general model between detectors.
+        Pass None to run without one."""
         self.trained = create_detector(settings)
-        self.general = load_general_model()
+        self.general_error = None
+        if general is _LOAD:
+            try:
+                general = load_general_model()
+            except Exception as exc:
+                logger.error('General model unavailable: %s', exc)
+                general, self.general_error = None, f'General model unavailable: {exc}'
+        elif general is None:
+            self.general_error = 'General model unavailable'
+        self.general = general
         self.device = settings['device']
+
+    def health(self):
+        """Check the trained backend without sending a frame (cloud only)."""
+        check = getattr(self.trained, 'health', None)
+        return check() if check is not None else {'status': 'ready'}
 
     def predict(self, frame_bgr):
         batch = self.trained.predict(frame_bgr)
+        if self.general is None:
+            return batch
         start = time.perf_counter()
-        result = self.general.predict(frame_bgr, imgsz=640, conf=.35, iou=.7,
-                                      max_det=100, rect=False, device=self.device,
-                                      verbose=False)[0]
+        try:
+            result = self.general.predict(frame_bgr, imgsz=640, conf=.35, iou=.7,
+                                          max_det=100, rect=False, device=self.device,
+                                          verbose=False)[0]
+        except Exception as exc:
+            # Trained detections still count; only the extra objects are missing.
+            logger.error('General model prediction failed: %s', exc)
+            self.general_error = f'General model failed: {exc}'
+            return batch
+        self.general_error = None
         height, width = frame_bgr.shape[:2]
         objects = []
         for row in result.boxes.data.cpu().numpy():

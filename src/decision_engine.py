@@ -223,6 +223,12 @@ class AlertPolicy:
         self.cooldown = AlertCooldown.from_gate(self.gate, clock)
         self._selected = None
 
+    def reset(self):
+        """Forget every cooldown and the marked hazard, so the next gated hazard is
+        spoken. Used when the detector changes (decision U3); the rules are unchanged."""
+        self.cooldown = AlertCooldown.from_gate(self.gate, self.clock)
+        self._selected = None
+
     def process(self, detections, frame_size, depth_map=None, now=None) -> FrameAlerts:
         now = self.clock() if now is None else now
         hazards = assess(detections, frame_size, self.gate, self.severity, depth_map)

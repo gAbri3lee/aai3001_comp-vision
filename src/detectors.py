@@ -51,6 +51,23 @@ class CloudDetector:
         self.endpoint = endpoint.rstrip('/')
         self.timeout = settings['timeout']
 
+    def health(self):
+        """Check the service without sending a frame. Raises DetectorError unless it
+        is ready and serves the expected model with the canonical class order."""
+        import requests
+        try:
+            # A plain request, not the session: a timed-out /detect may still be using it.
+            response = requests.get(self.endpoint + '/health', timeout=min(self.timeout, 3.0))
+            response.raise_for_status()
+            info = response.json()
+        except (requests.RequestException, ValueError) as exc:
+            raise DetectorError(f'Cloud health check failed: {exc}') from exc
+        if info.get('status') != 'ready' or info.get('model') != 'rfdetr-nano':
+            raise DetectorError('Cloud service is not ready or serves an unexpected model')
+        if info.get('classes') != list(self.settings['classes']):
+            raise DetectorError('Cloud service class order does not match the canonical IDs')
+        return info
+
     def predict(self, frame_bgr):
         import cv2
         import requests

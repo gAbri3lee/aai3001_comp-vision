@@ -77,6 +77,9 @@ class PipelineTests(unittest.TestCase):
         state._latest_jpeg = b'old annotated frame'
         state._frame_captured_at = time.monotonic() - 5
         state.args = argparse.Namespace(max_frame_age=.01)
+        state.mode, state.detectors = 'local', {'local': object()}
+        state.backend_settings = {'local': {'model': 'yolov8n'}}
+        state.fallback_active, state.last_error, state._hold_until = False, '', None
         state.status = {'fps': 8., 'alert': 'Stair ahead', 'detections': [{'class_id': 3}],
                         'error': '', 'latency_ms': 10., 'round_trip_ms': 20.}
         status = state.get_status()
