@@ -51,7 +51,7 @@ def main():
             durations.append(1000 * (time.perf_counter() - start))
     report = dict(platform=platform.platform(), frames=args.frames, warmup_frames=10, depth_enabled=depth is not None,
                   measured_stages=['image read', 'detection', 'optional depth', 'alert gate/ranking/cooldown/message', 'annotation', 'JPEG encoding'],
-                  excludes=['physical webcam capture', 'audible speech', 'on-demand OCR/item ID', 'browser rendering'],
+                  excludes=['physical webcam capture', 'audible speech', 'general COCO object model', 'browser rendering'],
                   median_ms=float(np.median(durations)), p95_ms=float(np.percentile(durations, 95)), fps=1000/float(np.mean(durations)))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2)+'\n')

@@ -490,3 +490,57 @@ re-running the gate on each file's recorded detections reproduces every frame. N
 gate-caused differences were found. Cloud adds about 60 ms per frame over HTTP
 on this machine (round trip 141 ms median against local trained-plus-general
 78 ms), and cloud mode also runs the general model locally.
+
+## Phase H: cleanup and docs
+
+- `CLAUDE.md` rewritten: OCR, voice and item-ID statements removed; the gate,
+  bands, audio policy, general-model People, distance estimate and Roboflow key
+  handling are described.
+- `README.md`: new "Alert gating: what is spoken and why" section, a distance
+  estimate (debug only) note, experimental depth, alert analysis tools, Roboflow
+  key instructions (environment variable or Kaggle secret, `.env` ignored, old key
+  must be revoked by a human), updated Pillar section with the re-measured
+  comparison and what happens on a miss, note on alternative cloud ports, and a
+  note that a hosted version would need browser capture (`getUserMedia`). Dead
+  flags removed from all commands.
+- `requirements.txt`: `easyocr` and `SpeechRecognition` removed (nothing imports
+  them). `timm` (MiDaS) and `pyttsx3` (non-macOS speech) kept with comments.
+  `requirements-voice.txt` and the unrelated root `test.py` deleted.
+- Dead `--no-ocr`, `--no-voice`, `--no-product-id` and `--mic-index` flags removed
+  from `src/webapp.py` and `src/live_pipeline_demo.py`, and `mic_index` from the
+  pipeline test. Both OpenCV demos run through `PipelineState`, so they already use
+  the shared gate and `AlertPolicy`; no logic is duplicated.
+- `docs/VERIFICATION.md` gained a note that it is a dated historical record.
+- `docs/MANUAL_TEST_SHEET.md` added.
+
+The repeat search for the Phase A terms (outside the historical verification
+record and this report) finds only sentences stating that OCR, voice and item
+identification were removed.
+
+## Final checks
+
+```
+python -m pytest -q                      -> 72 passed, 12 subtests passed
+verify_detector.py local golden          -> PASS 20/20, 0 extras
+verify_detector.py cloud golden (HTTP)   -> PASS 24/25, 0 extras
+benchmark_pipeline.py --no-depth         -> median 46.4 ms, 21.1 FPS (excludes the general model)
+```
+
+## Definition of done
+
+| Item | Status |
+|---|---|
+| Baseline report: what passed, failed and was not testable | Done (Phase A) |
+| pytest green with new tests; golden parity unchanged | Done: 72 tests and 12 subtests; 20/20 local, 24/25 cloud |
+| Far or off-path detections not spoken, near ones spoken, same code path for local and cloud | Done (Phases B, C, F) |
+| Banner, highlighted box and spoken phrase refer to the same hazard | Done (Phase C), checked in headless Chrome (Phase E) |
+| Distance as bands; placeholders replaced by data or clearly marked uncalibrated | Bands done. Sizes still placeholders, marked `"calibrated": false` and shown as "uncalibrated sizes" on the page. A data-based proposal waits for Nigel's decision. |
+| GUI_TEST_REPORT, DISTANCE_TEST_SHEET, MANUAL_TEST_SHEET exist | Done |
+| Report answers Gabriel's three questions with data | Done (Phase D: operating range, background person, Pillar comparison) |
+| No leftover OCR, voice, item ID or old-class references; README explains the key | Done (Phase H) |
+| Committed on Gabriel's branch, pulled from his latest push, no force push | Done |
+| Phase G (in-page Local/Cloud toggle) | Not started: optional, waits for Nigel's agreement |
+
+Not testable here (manual): live camera, audible speech, walking feel, tape-measure
+distances, a second device against a hosted endpoint, and revoking the old
+Roboflow key. See `docs/MANUAL_TEST_SHEET.md`.

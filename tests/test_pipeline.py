@@ -16,7 +16,7 @@ class PipelineTests(unittest.TestCase):
         args = parser.parse_args([])
         for name in ['depth', 'tts']:
             setattr(args, 'no_' + name, True)
-        args.source, args.mic_index = 0, None
+        args.source = 0
 
         class Capture:
             finished = False

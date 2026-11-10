@@ -1,2 +1,0 @@
-# Optional microphone input; macOS needs PortAudio system libraries.
-pyaudio

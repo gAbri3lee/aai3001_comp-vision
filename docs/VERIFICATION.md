@@ -1,4 +1,8 @@
-# Verification — 10 November 2026
+# Verification: 10 November 2026
+
+> Historical record of the 10 November integration. Since then OCR, voice input and
+> item identification have been removed, the alert gate and audio changes were
+> added, and the suite has grown. For current results see `docs/GUI_TEST_REPORT.md`.
 
 The implementation uses the supplied checkpoints; no model was retrained.
 The original handover bundle and all saved notebook training outputs are intact.

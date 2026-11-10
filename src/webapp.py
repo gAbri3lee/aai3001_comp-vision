@@ -202,10 +202,6 @@ def parse_args():
     add_detector_arguments(parser)
     parser.add_argument("--no-depth", action="store_true", help="Disable depth estimation stage")
     parser.add_argument("--no-tts", action="store_true", help="Disable spoken alerts")
-    # Accept existing launch commands; the query features have been removed.
-    for flag in ('--no-ocr', '--no-voice', '--no-product-id'):
-        parser.add_argument(flag, action='store_true', help=argparse.SUPPRESS)
-    parser.add_argument('--mic-index', type=int, default=None, help=argparse.SUPPRESS)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=5000)
     return parser.parse_args()

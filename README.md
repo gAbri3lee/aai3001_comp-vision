@@ -54,12 +54,11 @@ repository root so the relative script paths also work.
 ### 2. Open the browser web app (GUI)
 
 For a first interactive test, start the web app with depth disabled. Camera
-object detection and spoken output remain enabled. The legacy `--no-voice`
-option is accepted for compatibility. This avoids the slower depth stage on a
-laptop CPU:
+object detection and spoken output remain enabled. This avoids the slow,
+experimental depth stage on a laptop CPU:
 
 ```sh
-python src/webapp.py --port 5001 --no-depth --no-voice
+python src/webapp.py --port 5001 --no-depth
 ```
 
 Wait for Terminal to report that the server is running, then open
@@ -69,64 +68,103 @@ Allow camera access if macOS asks. The general-object model downloads once to
 Subsequent launches reuse it. It runs locally in both local and cloud modes.
 
 You should see a live camera feed, FPS, the active detector and processing time,
-an alert banner, and a list of current object/location messages. The camera is
+the alert gate, depth and speech state, an alert banner, a list of current hazards
+and a collapsed list of ignored detections. Open **http://127.0.0.1:5001/?debug=1**
+to also see ignored boxes, box sizes and (after calibration) distance estimates. The camera is
 connected to the Python app on this computer. Moving your laptop camera or holding something in
 front of it changes what the app sees.
 
 **Automatic hazard detection needs no click.** When sufficiently confident,
-it draws boxes with a class name and confidence for the five trained classes.
-The highest-priority detection can produce a visual/spoken alert such as
-`Note, Stair ahead; distance unavailable`. No-depth mode still reports left,
-ahead or right. `No detections` means the model found none; it does not establish
-that the scene is safe. Stale frames or inference errors clear expired results.
+it draws boxes with a class name and confidence for the five trained classes,
+coloured by distance band. Detections that pass the alert gate (below) can produce
+a visual/spoken alert such as `Warning, Stair ahead` or `Caution, People on your left`.
+The hazard being spoken is drawn in magenta and marked "spoken" in the list.
+`No hazards` means nothing passed the gate; it does not establish that the scene
+is safe. Stale frames or inference errors clear expired results.
 
 ### 3. Automatic object and location alerts
 
 Keep the live feed running; no click is required. Recognised trained detections
 retain their names: **Escalator, People, Pillar, Stair and Wet Floor Sign**.
-The general detector adds **Object** boxes for other common objects, suppressing
+A second, general COCO model adds boxes for 80 common object types, suppressing
 boxes that overlap a trained detection by IoU >=0.5 to avoid duplicate notices.
-The general detector uses confidence >=0.35. An empty frame does not generate
-an invented object alert. In the app's `/status` response, generic detections use
-`class_id: -1` and `class: "Object"`; the cloud `/detect` contract and trained IDs
-0–4 remain unchanged.
+A COCO person the trained model missed is treated as **People** (marked "general
+model"); everything else is **Object**. It is not an open-world detector. An empty
+frame does not generate an invented object alert. In the app's `/status` response,
+general detections use `class_id: -1` and `source: "general"`; the cloud `/detect`
+contract and trained IDs 0 to 4 remain unchanged.
 
-| Object position in the camera image | Generic GUI/audio message |
-|---|---|
-| Left third | Object detected on your left |
-| Centre third | Object detected ahead |
-| Right third | Object detected on your right |
-
-The browser's **Detected objects** panel lists the current messages. The banner
-shows the highest-priority message. Audio considers detections in priority order,
-with a cooldown per label and position; a named hazard on cooldown can give way
-to an object notice. Objects at the same position share a generic notice.
-Trained hazard alerts keep their existing wording and relative-depth ranking.
-Generic notices use the wording above whether depth is enabled or disabled.
+A generic Object is spoken as **Object detected ahead** only when it is in the
+centre third of the image, at confidence 0.5 or more and large enough (see the
+alert gate). Objects at the sides or far away are listed as ignored, not spoken.
 
 On macOS, spoken alerts use the built-in `say` command and wait for each full
 phrase to finish. Other platforms use `pyttsx3`. Speech runs in a background
-worker, so camera processing continues during playback.
+worker, so camera processing continues during playback. At most one phrase waits
+while another plays: a newer phrase replaces it, and a waiting phrase more than
+1 second old is dropped because the hazard may have gone.
 
 The general detector adds processing time and can miss objects or produce false
 positives. A missed trained hazard may receive only a generic Object box if the
 general detector finds it. Neither model detecting anything establishes safety.
 
+### Alert gating: what is spoken and why
+
+Both models see far more than a walking user needs to hear: the trained model finds
+about 80 percent of people as far as 6 m away, which used to make every background
+person an alert. The **alert gate** decides which detections are spoken. The same
+rules apply to local and cloud mode. Settings are in `visionaid_config.json` under
+`alert_gate`.
+
+| Rule | Effect |
+|---|---|
+| Size = box height / frame height | Stands in for distance. No metres are spoken. |
+| Below the class `min_size` (People 0.40, Stair 0.20, Escalator 0.25, Wet Floor Sign 0.15, Pillar 0.35, Object 0.35) | "far": listed as ignored, never spoken |
+| Left or right third | Spoken only if clearly near (1.5 times `min_size`). Objects at the sides are never spoken. |
+| General-model detection below confidence 0.5 | Ignored as low confidence |
+| Size against the class `near_size` | **Warning** (near), **Caution** (mid-close) or **Note** (mid) |
+| Ranking | Any trained hazard comes before any Object, then by severity and nearness |
+| Cooldown | Per class, position and band: 4 s (8 s for general detections). A hazard that gets clearly closer re-alerts early. A far person never mutes a near one. |
+
+The banner shows the top gated hazard. The speaker says the highest gated hazard
+whose cooldown has expired; that hazard is highlighted on the video and marked
+"spoken". The page's **Ignored detections** list shows everything else with the
+reason (far, at the side, low confidence).
+
+The sizes are **uncalibrated placeholders**: the page shows "uncalibrated sizes"
+until they are confirmed. Test-set data on how recall changes with size, and a
+proposal, are in `docs/GUI_TEST_REPORT.md` (Phase D). Fill in
+`docs/DISTANCE_TEST_SHEET.md` with a tape measure to check them on your camera.
+Add `--no-gate` to any app command to compare with the old behaviour, which
+announced every detection.
+
+**Distance estimate (debug only).** Optionally measure your camera's focal length
+with a person or Wet Floor Sign at a tape-measured distance:
+
+```sh
+python scripts/calibrate_distance.py --camera 0 --class People --distance 3
+```
+
+This saves the git-ignored `camera_calibration.json`. The debug view then shows an
+approximate distance for People and Wet Floor Sign, labelled "estimate". It is
+never spoken, and boxes cut off by the frame edge get no estimate.
+
 ### 4. Try the full pipeline, including depth
 
-Stop the previous web app with Ctrl+C, then use this command to enable all stages
-by default, including relative depth and spoken object alerts:
+Depth is **experimental**. MiDaS_small on a laptop CPU made the full pipeline run
+at about 0.19 FPS in testing, too slow for live use. Stop the previous web app with
+Ctrl+C, then use this command to enable all stages, including relative depth:
 
 ```sh
 python src/webapp.py --port 5001
 ```
 
-Open or refresh **http://127.0.0.1:5001**. Detected objects still get boxes, while
-relative proximity now also affects hazard priority and whether alerts start
-with `Note`, `Caution` or `Warning`. Depth does not provide metres or distinguish
-stairs going up/down. It can be slow on a CPU; return to `--no-depth` if necessary.
-MiDaS downloads its weights on first use. Add `--no-tts` if you do not want
-spoken output. Microphone input is no longer used.
+Open or refresh **http://127.0.0.1:5001**. The alert gate still decides what is
+spoken, but with depth on, relative depth (not box size) sets whether alerts start
+with `Note`, `Caution` or `Warning`. The two are never combined. Depth does not
+provide metres or distinguish stairs going up/down. Return to `--no-depth` if it
+is too slow. MiDaS downloads its weights on first use. Add `--no-tts` if you do
+not want spoken output.
 
 The app's default port is 5000 when `--port` is omitted. These examples use 5001
 to avoid common macOS AirPlay conflicts. The web app runs locally; this command
@@ -151,43 +189,30 @@ python src/live_pipeline_demo.py
 ```
 
 Expect camera boxes, relative-depth-based hazard ranking and spoken alerts.
-Press **q** to close it. The OCR key and microphone trigger have been removed.
-This uses the same object detection and audio pipeline as the web app.
+Press **q** to close it. This uses the same detection, alert gate and audio
+pipeline as the web app.
 
 Camera index 0 is the default. Use `--source 1` to try another camera or
 `--source /path/to/video.mp4` for recorded input. `--model`, `--conf`, `--imgsz`
 and `--device` override local detector settings in all demos. Shared defaults are
 in `visionaid_config.json`.
 
-### 6. Minimal web test and optional dependencies
+### 6. Minimal web test and troubleshooting
 
-If the full app fails during auxiliary-model setup, this command starts only
-camera-based hazard detection in the browser:
-
-```sh
-python src/webapp.py --port 5001 --no-depth --no-tts --no-ocr --no-voice --no-product-id
-```
-
-At **http://127.0.0.1:5001**, expect live detection boxes and position notices,
-without depth or speech. The query buttons have been removed. Legacy
-`--no-ocr`, `--no-voice`, `--no-product-id` and `--mic-index` options are accepted
-for compatibility and have no effect. The general-object model still runs and
-may download its weights on first use.
-
-To enable optional microphone input, first install PortAudio system libraries
-for your operating system, then install the microphone Python dependency:
+This command starts camera-based hazard detection in the browser without depth or
+speech:
 
 ```sh
-python -m pip install -r requirements-voice.txt
+python src/webapp.py --port 5001 --no-depth --no-tts
 ```
 
-This installs PyAudio; it does not start the app. The installation commands are
-retained for existing environments, but microphone input and the "vision scan"
-trigger are no longer used. Spoken alerts require no microphone.
+At **http://127.0.0.1:5001**, expect live detection boxes and gated hazard notices,
+without speech. The general-object model still runs and may download its weights
+on first use. OCR, voice input and item identification have been removed.
 
-EasyOCR can install `opencv-python-headless` alongside the GUI build. If a desktop
-OpenCV window reports that GUI support is unavailable, run these repair commands
-inside the activated environment:
+Another package can install `opencv-python-headless` alongside the GUI build. If a
+desktop OpenCV window reports that GUI support is unavailable, run these repair
+commands inside the activated environment:
 
 ```sh
 python -m pip uninstall -y opencv-python-headless opencv-python
@@ -219,7 +244,9 @@ build. This can take several minutes. It does not start the service or the GUI.
 The image uses RF-DETR 1.11.2, CPU PyTorch 2.9 and Transformers 5.1; the available
 Intel macOS PyTorch 2.2 runtime cannot run that RF-DETR environment directly.
 
-Start the service and make the supplied cloud checkpoint available read-only:
+Start the service and make the supplied cloud checkpoint available read-only.
+If port 9000 is already in use on your computer, change the first `9000` (for
+example `127.0.0.1:9100:9000`) and use that port in the commands below:
 
 ```sh
 docker run --rm -p 127.0.0.1:9000:9000 \
@@ -247,11 +274,11 @@ web app on port 5001, and start the cloud-connected GUI:
 
 ```sh
 python src/webapp.py --port 5001 --backend cloud \
-  --endpoint http://127.0.0.1:9000 --no-depth --no-voice
+  --endpoint http://127.0.0.1:9000 --no-depth
 ```
 
-Open **http://127.0.0.1:5001**. Expect the same camera feed and buttons, now showing
-cloud/RF-DETR as the active detector and round-trip processing time. The frame
+Open **http://127.0.0.1:5001**. Expect the same camera feed and alert gate, now
+showing cloud/RF-DETR as the active detector and round-trip processing time. The frame
 is uploaded to the service for detection. An unavailable/slow service produces
 an error and expired detections are cleared. Both the service Terminal and GUI
 Terminal must remain running. This example tests the cloud-service architecture
@@ -261,7 +288,10 @@ The image defaults to CPU. On a Linux NVIDIA host, build with
 `--build-arg TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128` and run with
 `--gpus all -e VISIONAID_DEVICE=cuda`, with container GPU support installed.
 For a public detector endpoint, configure the host's HTTPS/access control.
-Do not expose the local Flask camera GUI as a multiuser cloud application.
+Do not expose the local Flask camera GUI as a multiuser cloud application: it
+opens the camera of the computer it runs on. A publicly hosted version would need
+browser camera capture (`getUserMedia`) posting frames to the server instead;
+that is not built.
 
 ### Detection response for developers
 
@@ -376,7 +406,7 @@ python scripts/verify_detector.py --images "$BUNDLE/test_set/test/images" \
   --evaluate --frames 0 --output artifacts/local_test.json
 ```
 
-Expect progress messages followed by mAP50, mAP50–95, precision, recall and safety
+Expect progress messages followed by mAP50, mAP50-95, precision, recall and safety
 recall. Results are written to `artifacts/local_test.json` and
 `artifacts/local_test.report.json`. `--frames 0` disables the extra timing
 benchmark; it does not skip evaluation images. This uses the notebook-style COCO
@@ -449,6 +479,29 @@ audible speech, the app's additional general-object detector and browser renderi
 Report these timings separately from detector-only latency. T4 notebook timings do not
 promise laptop performance. See `docs/VERIFICATION.md` for the measured results.
 
+### Alert analysis tools
+
+These use the 920-image test split (`BUNDLE` as above) and, for cloud, the running
+RF-DETR service. They write under `artifacts/`; results are summarised in
+`docs/GUI_TEST_REPORT.md`.
+
+```sh
+python scripts/recall_by_size.py --images "$BUNDLE/test_set/test/images"
+python scripts/compare_pillar.py --images "$BUNDLE/test_set/test/images" \
+  --endpoint http://127.0.0.1:9000
+python scripts/replay_alerts.py --source clip.mp4 --output artifacts/replay_local.jsonl
+python scripts/replay_alerts.py --source clip.mp4 --backend cloud \
+  --endpoint http://127.0.0.1:9000 --output artifacts/replay_cloud.jsonl
+python scripts/replay_alerts.py --compare artifacts/replay_local.jsonl artifacts/replay_cloud.jsonl
+```
+
+`recall_by_size.py` reports recall per class by box size (the operating range) and
+proposes gate sizes without changing the config. `compare_pillar.py` compares
+Pillar recall, precision and false alarms between local and cloud and saves
+example sheets; without `--endpoint` it runs only the local half.
+`replay_alerts.py` runs a video or image folder through the app's detector and
+alert gate frame by frame, without audio, and compares two runs.
+
 ## Training Data
 
 The five training notebooks contain the latest Roboflow training work, with their original outputs preserved. 
@@ -457,15 +510,27 @@ compared with 0.739 and 0.767 for RF-DETR.
 The dataset contains 8,247 training images, 925 validation images and 920 test images.
 Its scene-split fingerprint is `49601080aac1f838190341d331785578`.
 
-To obtain your own API key, sign in to Roboflow, select your workspace, and open Settings → API Keys. 
-Click Generate New Key, enter a descriptive name, and select Create API Key. 
-Store the key in an environment variable or a Kaggle secret named ROBOFLOW_API_KEY, rather than writing it directly into a notebook.
+**Roboflow API key.** Only dataset download in the notebooks needs a key; the app,
+the cloud service and the verification tools do not. Each person generates their
+own private key: sign in to Roboflow, select the workspace, open the workspace
+settings and the API keys page (check Roboflow's current documentation if the menu
+has moved), and generate a new key with a descriptive name. Supply it in one of
+two ways, and never write it into a notebook, script or commit:
+
+- Locally: `export ROBOFLOW_API_KEY=...` in the Terminal before starting Jupyter.
+  If you keep it in a `.env` file, that file is already in `.gitignore`.
+- On Kaggle: add a secret named `ROBOFLOW_API_KEY` (Add-ons, Secrets).
+
+The notebooks read the environment variable first, then the Kaggle secret. An
+older key was committed in earlier notebook versions and remains in git history.
+Removing it from the files does not disable it: a workspace owner must revoke that
+key in Roboflow.
 
 The notebooks contain all **model training for the 5 finalised classes and document the performance of both YOLO and RF-DETR models.**
 
 The scripts/ folder contains tools for verifying detector outputs, exporting models and measuring performance in local and cloud deployments. Dataset-validation code and automated tests check that the splits prepared by the notebooks are correctly structured and separated. These supporting tools do not train models.
 
-For future training, use the scene-based split prepared in the notebooks. Do not use the handover’s test-only YAML file for training: its training, validation and test entries all point to the test images. The root-level test.py is an older sensor-plotting experiment unrelated to the current pipeline. Current automated tests are in `tests/`.
+For future training, use the scene-based split prepared in the notebooks. Do not use the handover's test-only YAML file for training: its training, validation and test entries all point to the test images. Automated tests are in `tests/`.
 
 ### Pillar detection: Limitations (Weakest Class)
 
@@ -491,6 +556,19 @@ These figures describe performance on this test set, they are not the **probabil
 Both models missed many pillars. Keeping a pillar in view for longer does not guarantee detection, 
 because the model may continue to miss it from the same angle.
 
+Re-measured on this branch (`scripts/compare_pillar.py`, all 105 test images with
+a pillar and 815 without): local 17.0 percent recall at 54 percent precision,
+cloud 28.8 percent recall at 52 percent precision over HTTP. Both are best at
+medium sizes (box height 0.30 to 0.60 of the image, about 42 to 63 percent) and
+miss most small, distant pillars and close-up bases cut off by the frame. Some
+misses are thin poles and bollards labelled Pillar where the model boxed a
+neighbouring pole.
+
+**When a pillar is not detected, the app says nothing about it.** The general
+COCO model has no pillar class; it covered only 3 of the 127 local misses with an
+Object box, which is spoken as "Object detected ahead" only if it also passes the
+alert gate.
+
 For a practical check, use good lighting, keep the pillar clearly visible, and
 try different camera angles and distances. **No Pillar box means the model has
 not detected it; it does not mean there is no obstacle or that the scene is safe.**
@@ -498,8 +576,10 @@ not detected it; it does not mean there is no obstacle or that the scene is safe
 ### Other limitations
 
 Stair direction is unavailable and not part of the model training. Wet Floor Sign
-means a sign was detected, not that floor wetness was measured. MiDaS proximity is
-relative, not metres; an empty detection list does not prove a scene is safe.
+means a sign was detected, not that floor wetness was measured. Distance bands come
+from box size and are estimates, not measured metres; the optional debug distance
+is an estimate too and is never spoken. MiDaS proximity is relative, not metres.
+An empty hazard list does not prove a scene is safe.
 The additional general detector recognises common COCO objects, not arbitrary
 unknown objects, brands or currency denominations. Generic notices do not prove
 that every obstacle was found. 

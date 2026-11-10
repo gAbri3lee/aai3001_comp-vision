@@ -6,11 +6,10 @@ opencv-python>=4.7,<4.12; platform_system == "Darwin" and platform_machine == "x
 opencv-python>=4.7; platform_system != "Darwin" or platform_machine != "x86_64"
 torch
 torchvision
+# MiDaS relative depth (optional --depth stage) loads through torch.hub and needs timm.
 timm
+# Spoken alerts on platforms other than macOS (macOS uses the built-in say command).
 pyttsx3
-SpeechRecognition
-# Optional microphone input: install requirements-voice.txt after PortAudio system libraries.
-easyocr
 flask>=3.1,<4
 requests>=2.31,<3
 PyYAML>=6,<7

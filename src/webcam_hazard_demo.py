@@ -1,4 +1,4 @@
-"""Detection-only demo using the trained five-class local or cloud detector."""
+"""Detection view without depth or speech, using the same detector and alert gate as the web UI."""
 import argparse
 from config import add_detector_arguments
 from webapp import PipelineState

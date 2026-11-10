@@ -1,4 +1,4 @@
-"""OpenCV view of the same trained detector/depth/audio pipeline as the web UI."""
+"""OpenCV view of the same detector, alert gate, depth and audio pipeline as the web UI."""
 import argparse
 from config import add_detector_arguments
 from webapp import PipelineState
@@ -11,9 +11,6 @@ def parse_args():
     add_detector_arguments(parser)
     for feature in ['depth', 'tts']:
         parser.add_argument('--no-' + feature, action='store_true')
-    for flag in ('--no-ocr', '--no-voice', '--no-product-id'):
-        parser.add_argument(flag, action='store_true', help=argparse.SUPPRESS)
-    parser.add_argument('--mic-index', type=int, default=None, help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
