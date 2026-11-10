@@ -82,6 +82,46 @@ def make_detection(cid, confidence, box, names, width, height):
     return Detection(cid, names[cid], float(confidence), box)
 
 
+# BGR colours by alert band; the spoken hazard gets its own colour.
+BAND_COLOURS = {'near': (60, 60, 255), 'mid-close': (0, 184, 255), 'mid': (70, 200, 120), None: (70, 200, 120)}
+SPOKEN_COLOUR = (255, 80, 255)
+IGNORED_COLOUR = (130, 130, 130)
+
+
+def annotate_hazards(frame_bgr, hazards, selected=None, debug=False):
+    """Draw gated hazards by band and the spoken hazard in a distinct colour.
+
+    Ignored (far, side, low-confidence) hazards are drawn thin and grey with their
+    reason only when debug is true; otherwise they are not drawn at all.
+    """
+    import cv2
+    frame = frame_bgr.copy()
+    # Draw ignored first and the spoken hazard last, so the highlight stays on top.
+    order = sorted(hazards, key=lambda h: (h.gated, h is selected))
+    for hazard in order:
+        if not hazard.gated and not debug:
+            continue
+        x1, y1, x2, y2 = map(int, hazard.xyxy)
+        name = hazard.label + (' (general)' if hazard.source == 'general' and hazard.label != 'Object' else '')
+        if not hazard.gated:
+            colour, thickness = IGNORED_COLOUR, 1
+            text = f'{name} {hazard.confidence:.2f} ignored: {hazard.reason}'
+        else:
+            spoken = hazard is selected
+            colour = SPOKEN_COLOUR if spoken else BAND_COLOURS.get(hazard.band, BAND_COLOURS[None])
+            thickness = 4 if spoken else 2
+            text = f'{name} {hazard.confidence:.2f}' + (f' {hazard.band}' if hazard.band else '')
+            if spoken:
+                text = 'SPOKEN ' + text
+        if debug and hazard.size is not None:
+            text += f' h={hazard.size:.2f}'
+        cv2.rectangle(frame, (x1, y1), (x2, y2), colour, thickness)
+        # Boxes touching the top edge get their label inside the box.
+        text_y = y1 - 6 if y1 >= 24 else y1 + 18
+        cv2.putText(frame, text, (x1 + 2, text_y), cv2.FONT_HERSHEY_SIMPLEX, .5, colour, 1 if not hazard.gated else 2)
+    return frame
+
+
 def annotate(frame_bgr, detections):
     import cv2
     frame = frame_bgr.copy()

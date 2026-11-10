@@ -184,3 +184,29 @@ confidence and side objects are no longer spoken. The stair image gives
 - With the placeholder sizes, a side People box that passes the side rule
   (0.40 x 1.5 = 0.60) is already near, so a side person is only ever "Warning".
   Phase D revisits the sizes.
+
+## Phase C: audio and banner alignment
+
+- `AlertPolicy.process()` in `src/decision_engine.py` makes one decision per frame
+  (decision D6). The banner is the top gated hazard. The speaker gets the
+  highest-priority gated hazard whose cooldown has expired. The spoken hazard
+  stays marked as `selected` while the same class and position stay in view.
+  Banner, list, highlight and speech all come from the same frame's gated hazards.
+- `src/tts.py` `Speaker`: at most one phrase waits. A newer phrase replaces it, a
+  playing phrase is never interrupted, and a waiting phrase older than
+  `max_pending_age` (default 1.0 s, a constructor argument) is dropped when its
+  turn comes. The old queue dropped the newest phrase instead.
+- `/status` adds `selected` (class, position, band, source, phrase, box),
+  `spoken_at` (Unix time the phrase was handed to the speaker), `gate_enabled`,
+  `gate_calibrated`, `depth_enabled` and `tts_enabled`. Each detection adds
+  `position`, `size`, `band`, `source`, `gated` (true means it passed the gate),
+  `reason` (far, side or low_confidence), `proximity`, `priority` and `phrase`.
+  Detections stay in detector order. The original four fields are unchanged.
+- `/video_feed` draws gated boxes coloured by band (red near, amber mid-close,
+  green mid) and the spoken box in thick magenta with a `SPOKEN` tag.
+  `/video_feed?debug=1` also draws ignored boxes in thin grey with their reason
+  and size.
+
+Known trade-off: a phrase dropped as stale has already used its cooldown, so that
+hazard waits up to 4 s (8 s for Objects) before it is offered again. This only
+happens when the speaker is still busy more than 1 s after the phrase was queued.

@@ -4,14 +4,25 @@ import threading
 import time
 
 import cv2
-from flask import Flask, Response, jsonify, render_template
+from flask import Flask, Response, jsonify, render_template, request
 from config import add_detector_arguments, detector_settings
 from detectors import DetectorError
 from scene_detector import SceneDetector as create_detector
-from detection import annotate
+from detection import annotate_hazards
 from capture import LatestFrameCapture
 
-from decision_engine import AlertCooldown, assess, phrase_for
+from decision_engine import AlertPolicy, phrase_for
+
+# Status fields cleared whenever results expire, fail or the source ends.
+EMPTY_RESULT = dict(alert="", alerts=[], detections=[], selected=None, fps=0.,
+                    latency_ms=None, round_trip_ms=None)
+
+
+def _selected_dict(hazard):
+    if hazard is None:
+        return None
+    return {"class": hazard.label, "position": hazard.position, "band": hazard.band,
+            "source": hazard.source, "phrase": phrase_for(hazard), "box_xyxy": list(hazard.xyxy)}
 
 class PipelineState:
     """Owns the background capture/inference loop and exposes thread-safe
@@ -27,13 +38,17 @@ class PipelineState:
             from tts import Speaker
         self.depth_estimator = None if args.no_depth else DepthEstimator()
         self.speaker = None if args.no_tts else Speaker()
-        self.cooldown = AlertCooldown.from_gate(self.settings['alert_gate'])
+        self.policy = AlertPolicy(self.settings['alert_gate'], self.settings['severity'])
         self._lock = threading.Lock()
         self._latest_jpeg = None
+        self._latest_debug_jpeg = None
         self._frame_captured_at = None
-        self.status = {"fps": 0.0, "alert": "", "alerts": [],
+        gate = self.settings['alert_gate']
+        self.status = {"fps": 0.0, "alert": "", "alerts": [], "selected": None, "spoken_at": None,
                        "model": self.settings["model"] + ' + general-yolov8n', "backend": args.backend, "error": "",
-                       "latency_ms": None, "round_trip_ms": None, "detections": []}
+                       "latency_ms": None, "round_trip_ms": None, "detections": [],
+                       "gate_enabled": gate['enabled'], "gate_calibrated": gate.get('calibrated', False),
+                       "depth_enabled": not args.no_depth, "tts_enabled": not args.no_tts}
 
         self._stop = threading.Event()
 
@@ -46,16 +61,17 @@ class PipelineState:
         return (self._frame_captured_at is not None and
                 time.monotonic() - self._frame_captured_at > self.args.max_frame_age)
 
-    def get_jpeg(self):
+    def get_jpeg(self, debug=False):
         with self._lock:
-            return None if self._frame_is_stale() else self._latest_jpeg
+            if self._frame_is_stale():
+                return None
+            return self._latest_debug_jpeg if debug else self._latest_jpeg
 
     def get_status(self) -> dict:
         with self._lock:
             status = dict(self.status)
             if self._frame_is_stale():
-                status.update(alert="", alerts=[], detections=[], fps=0., latency_ms=None, round_trip_ms=None,
-                              error="Frame is stale; waiting for fresh inference")
+                status.update(EMPTY_RESULT, error="Frame is stale; waiting for fresh inference")
             return status
 
     def stop(self):
@@ -71,17 +87,17 @@ class PipelineState:
                 if not ok:
                     if self.capture.finished:
                         with self._lock:
-                            self.status.update(alert="", alerts=[], detections=[], fps=0., latency_ms=None, round_trip_ms=None, error="Camera/source ended")
-                            self._latest_jpeg = None
+                            self.status.update(EMPTY_RESULT, error="Camera/source ended")
+                            self._latest_jpeg = self._latest_debug_jpeg = None
                             self._frame_captured_at = None
                         break
                     self._stop.wait(0.01)
                     continue
-                alert_text = ""
-                alerts = []
                 error = ""
                 batch = None
-                annotated = frame.copy()
+                result = None
+                spoken_at = None
+                annotated = debug_annotated = frame
                 try:
                     if time.monotonic() - captured_at > self.args.max_frame_age:
                         raise DetectorError('Captured frame is stale; discarded')
@@ -89,59 +105,53 @@ class PipelineState:
                     depth_map = self.depth_estimator.predict(frame) if self.depth_estimator is not None and batch.detections else None
                     if time.monotonic() - captured_at > self.args.max_frame_age:
                         raise DetectorError('Inference result is stale; discarded')
-                    hazards = assess(batch.detections, (frame.shape[1], frame.shape[0]),
-                                     self.settings['alert_gate'], self.settings['severity'], depth_map)
-                    hazards = [hazard for hazard in hazards if hazard.gated]
-                    annotated = annotate(frame, batch.detections)
-                    for hazard in hazards:
-                        if hazard.proximity is not None:
-                            x1, y1 = int(hazard.xyxy[0]), int(hazard.xyxy[1])
-                            cv2.putText(annotated, f"{hazard.proximity:.2f}", (x1, max(y1 - 10, 15)),
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 200, 255), 2)
-                    alerts = list(dict.fromkeys(phrase_for(hazard) for hazard in hazards))
-                    if hazards:
-                        alert_text = alerts[0]
-                        # One current message per frame, in priority order. A named
-                        # hazard on cooldown must not starve generic object alerts.
+                    # One decision per frame: banner, list, highlight and speech all
+                    # come from these gated hazards (decision D6).
+                    result = self.policy.process(batch.detections, (frame.shape[1], frame.shape[0]), depth_map)
+                    annotated = annotate_hazards(frame, result.hazards, result.selected)
+                    debug_annotated = annotate_hazards(frame, result.hazards, result.selected, debug=True)
+                    if result.speak is not None:
+                        spoken_at = time.time()
                         if self.speaker is not None:
-                            for hazard in hazards:
-                                if self.cooldown.should_announce(hazard):
-                                    self.speaker.say(phrase_for(hazard))
-                                    break
+                            self.speaker.say(result.speak)
                 except Exception as exc:
                     # Never retain prior boxes/alerts after an inference failure.
                     error = str(exc)
-                    alert_text = ""
-                    alerts = []
-                    batch = None
-                    annotated = frame.copy()
+                    batch = result = None
+                    annotated = debug_annotated = frame
 
                 now = time.monotonic()
                 fps = 1.0 / max(now - prev_time, 1e-6)
                 prev_time = now
 
                 ok_jpeg, buffer = cv2.imencode(".jpg", annotated)
+                ok_debug, debug_buffer = cv2.imencode(".jpg", debug_annotated)
+                hazards = sorted(result.hazards, key=lambda h: h.index) if result else []
                 with self._lock:
-                    if ok_jpeg:
+                    if ok_jpeg and ok_debug:
                         self._latest_jpeg = buffer.tobytes()
+                        self._latest_debug_jpeg = debug_buffer.tobytes()
                         self._frame_captured_at = captured_at
                     self.status["fps"] = round(fps, 1)
-                    self.status["alert"] = alert_text
-                    self.status["alerts"] = alerts
+                    self.status["alert"] = result.banner if result else ""
+                    self.status["alerts"] = result.alerts if result else []
+                    self.status["selected"] = _selected_dict(result.selected) if result else None
+                    if spoken_at is not None:
+                        self.status["spoken_at"] = spoken_at
                     self.status["error"] = error
                     self.status["latency_ms"] = batch.latency_ms if batch else None
                     self.status["round_trip_ms"] = batch.round_trip_ms if batch else None
-                    self.status["detections"] = [d.to_dict() for d in batch.detections] if batch else []
+                    self.status["detections"] = [hazard.to_dict() for hazard in hazards]
         except Exception as exc:
             with self._lock:
                 self.status['error'] = f'Pipeline stopped: {exc}'
         finally:
             self.capture.release()
             with self._lock:
-                self.status.update(alert="", alerts=[], detections=[], fps=0., latency_ms=None, round_trip_ms=None)
+                self.status.update(EMPTY_RESULT)
                 if not self.status['error']:
                     self.status['error'] = 'Pipeline stopped'
-                self._latest_jpeg = None
+                self._latest_jpeg = self._latest_debug_jpeg = None
                 self._frame_captured_at = None
 
 
@@ -154,9 +164,12 @@ def create_app(state: PipelineState) -> Flask:
 
     @app.route("/video_feed")
     def video_feed():
+        # ?debug=1 also draws ignored (far, side, low-confidence) boxes and sizes.
+        debug = request.args.get("debug") == "1"
+
         def generate():
             while True:
-                jpeg = state.get_jpeg()
+                jpeg = state.get_jpeg(debug)
                 if jpeg is not None:
                     yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + jpeg + b"\r\n"
                 time.sleep(0.03)

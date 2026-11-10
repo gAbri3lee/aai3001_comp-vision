@@ -40,6 +40,7 @@ class Hazard:
     class_id: int | None = None
     gated: bool = True               # True: passed the alert gate and may be announced
     reason: str | None = None        # Why it was ignored: far / side / low_confidence
+    index: int | None = None         # Position in the detector's output list
 
     @property
     def key(self):
@@ -70,7 +71,7 @@ def build_hazards(detections, depth_map, frame_width: int, severity=None) -> lis
     """Ungated hazards, used when the alert gate is disabled."""
     severity = SEVERITY if severity is None else severity
     hazards = []
-    for detection in detections:
+    for index, detection in enumerate(detections):
         label, xyxy = detection.label, detection.box_xyxy
         proximity = None
         if depth_map is not None:
@@ -81,7 +82,7 @@ def build_hazards(detections, depth_map, frame_width: int, severity=None) -> lis
         priority = weight * (0.5 + 0.5 * (proximity if proximity is not None else 0.0))
         hazards.append(Hazard(label, proximity, position, priority, tuple(xyxy),
                               source=_source(detection), confidence=detection.confidence,
-                              class_id=detection.class_id))
+                              class_id=detection.class_id, index=index))
     return sorted(hazards, key=lambda h: h.priority, reverse=True)
 
 
@@ -107,7 +108,7 @@ def assess(detections, frame_size, gate=None, severity=None, depth_map=None) -> 
         return build_hazards(detections, depth_map, width, severity)
     centre = tuple(gate["centre_third"])
     hazards = []
-    for detection in detections:
+    for index, detection in enumerate(detections):
         label, xyxy = detection.label, tuple(detection.box_xyxy)
         source = _source(detection)
         size = (xyxy[3] - xyxy[1]) / height
@@ -132,7 +133,8 @@ def assess(detections, frame_size, gate=None, severity=None, depth_map=None) -> 
         priority = weight * (0.5 + 0.5 * proximity)
         hazards.append(Hazard(label, proximity, position, priority, xyxy, size=size, band=band,
                               source=source, confidence=detection.confidence,
-                              class_id=detection.class_id, gated=reason is None, reason=reason))
+                              class_id=detection.class_id, gated=reason is None, reason=reason,
+                              index=index))
     # Any trained hazard outranks any generic Object, whatever their scores.
     return sorted(hazards, key=lambda h: (h.gated, h.label != "Object", h.priority), reverse=True)
 
@@ -194,3 +196,43 @@ class AlertCooldown:
             self.record(hazard, now)
             return True
         return False
+
+
+@dataclass
+class FrameAlerts:
+    hazards: list            # Every detection as a Hazard, gated ones first
+    alerts: list             # Phrases of the gated hazards, in priority order
+    banner: str              # Top gated phrase, or "" when nothing passed the gate
+    selected: Hazard | None  # The hazard being spoken (this frame, or still in view)
+    speak: str | None        # Phrase to send to the speaker this frame, if any
+
+
+class AlertPolicy:
+    """One alert decision per frame (decision D6), shared by the web app and replay.
+
+    The banner is the top gated hazard. The speaker gets the highest-priority gated
+    hazard whose cooldown has expired. Both come from the same frame, so a spoken
+    phrase always belongs to a hazard that is currently visible and gated. The
+    selected hazard stays marked while the same label and position stay in view.
+    """
+
+    def __init__(self, gate=None, severity=None, clock=time.monotonic):
+        self.gate = ALERT_GATE if gate is None else gate
+        self.severity = SEVERITY if severity is None else severity
+        self.clock = clock
+        self.cooldown = AlertCooldown.from_gate(self.gate, clock)
+        self._selected = None
+
+    def process(self, detections, frame_size, depth_map=None, now=None) -> FrameAlerts:
+        now = self.clock() if now is None else now
+        hazards = assess(detections, frame_size, self.gate, self.severity, depth_map)
+        announceable = [hazard for hazard in hazards if hazard.gated]
+        alerts = list(dict.fromkeys(phrase_for(hazard) for hazard in announceable))
+        selected = next((hazard for hazard in announceable
+                         if self.cooldown.should_announce(hazard, now)), None)
+        speak = phrase_for(selected) if selected is not None else None
+        if selected is None and self._selected is not None:
+            selected = next((hazard for hazard in announceable
+                             if (hazard.label, hazard.position) == self._selected), None)
+        self._selected = (selected.label, selected.position) if selected is not None else None
+        return FrameAlerts(hazards, alerts, alerts[0] if alerts else "", selected, speak)
