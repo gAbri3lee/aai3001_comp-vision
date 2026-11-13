@@ -76,6 +76,36 @@ Keyboard and layout:
       explanation (ask someone who has not seen the app).
 - [ ] With a screen reader (macOS VoiceOver, Cmd+F5) a new banner alert is announced.
 
+## Upload demo (third hand-over)
+
+Start the app as above. Put a few test-split images in `demo/<class>/` and a
+video in `demo/videos/` (see `demo/README.md` and `docs/DEMO_VIDEO_GUIDE.md`).
+
+- [ ] Upload a real phone video (landscape, MP4, 30 to 60 seconds) and play it
+      start to finish on the demo laptop.
+- [ ] Speech during video playback is audible, in time with the banner, and Mute
+      stops it at once.
+- [ ] Every class that appears in the video is detected at least once. Note any
+      misses, expecting Pillar to be weakest.
+- [ ] A portrait phone video is oriented correctly and Recognition view behaves
+      sensibly.
+- [ ] Switching Local to Cloud during playback does not confuse the speech.
+- [ ] Image batch of 10 test-split images per class gives sensible recognised
+      counts. Record them for the report:
+
+      | Class | Local recognised | Cloud recognised |
+      |---|---|---|
+      | Escalator | of 10 | of 10 |
+      | People | of 10 | of 10 |
+      | Pillar | of 10 | of 10 |
+      | Stair | of 10 | of 10 |
+      | Wet Floor Sign | of 10 | of 10 |
+
+- [ ] Upload section is readable on the projector from a distance.
+- [ ] Drag and drop and the file picker both work in the browser used for the demo.
+- [ ] The end-of-video summary appears, Replay plays it again, and Back to camera
+      returns to the live camera.
+
 Notes:
 
 | Date | Tester | Check | Result |

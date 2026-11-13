@@ -69,21 +69,43 @@ responses are discarded. Recorded video sources are paced at their own frame rat
 
 - `GET /status`: live result plus `mode`, `mode_label`, `cloud_available`,
   `fallback_active`, `last_error`, `health` (list of `{code, severity, message}`),
-  `paused`, `muted`, `speech_rate`, `speech_enabled`, `last_spoken` and
-  `spoken_log` (last 10, newest first, memory only).
+  `paused`, `muted`, `speech_rate`, `speech_enabled`, `last_spoken`,
+  `spoken_log` (last 10, newest first, memory only), `recognition` (every trained
+  detection this frame), `view`, `source` (`type` camera or video, `origin`
+  camera/file/upload/library, display `name` that is never a path, `duration`,
+  `position`, `fps`, `ended`, `replay_available`), `video_summary` (per class:
+  first/last seen, frames, best confidence), `frames_processed` and `accuracy_note`.
 - `POST /mode` `{"backend": "local" | "cloud"}`: cloud only after its `/health`
   succeeds (this is also Retry cloud). 400 for anything else, 503 if unavailable.
 - `POST /control`: any of `paused`, `muted` (booleans), `rate` (clamped to 120 to
   260 words per minute, default 180) and `action` (`test_voice`, `replay_last`,
   `clear_log`). Validated before anything changes; 409 when muted or speech is off.
-- `POST /analyze`: multipart `image` (JPEG or PNG, 10 MB) or form `sample` (an id
-  from `GET /samples`, images from `golden/images`). Same detector, `decide()` and
-  `annotate()` as the live loop with a fresh `AlertPolicy`; nothing is stored.
+- `POST /analyze`: up to 20 of multipart `image` (JPEG or PNG, 10 MB each), form
+  `sample` (ids from `GET /samples`, images from `golden/images`), `demo` (ids from
+  `GET /demo`) or `demo_class`. Optional `view` (`recognition` or `alert`, API
+  default alert, page default recognition), `expected` (a class), `compare=1`,
+  `speak=1`. Every response has `results` (one per image; a bad file is a row with
+  `error`), `summary`, `accuracy_note`; one image also keeps the old top-level
+  fields and HTTP error codes. Same detector, `decide()` and `annotate()` as the
+  live loop with a fresh `AlertPolicy`; images are never written to disk. Images
+  reach the cloud only in cloud mode or with `compare`.
+- `POST /source`: multipart `video` (MP4, MOV or WebM, 150 MB, 120 s) or form
+  `demo` (a library video id). The upload is saved under a random name in a
+  private temp folder (`media.TempStore`) and handed to the live loop, which plays
+  it like the camera. `POST /source/control` JSON `action` (`restart`, `camera`)
+  and/or `view`. Recognition view skips the gate and never speaks; the camera
+  always uses Alert view. The copy is deleted on replace, Back to camera, error,
+  app stop or 10 minutes after the end.
+- `GET /demo` lists `demo/<class>/` images and `demo/videos/` by id and name only,
+  from an allow-list built per request; `GET /demo/thumb/<id>` is a 240 px JPEG.
+- Shared-code rule: uploads, library files and videos go through the same
+  detector, `decide()`, cooldown, speaker and annotation code as the camera. Add
+  shared helpers (`media.py`, `capture.py`, `detection.py`) rather than copies.
 - `GET /config`: priority order from the config severities (then Object), band
   labels and control ranges for the page.
 - Health codes: `camera_missing` (camera retried every 2 s), `no_video` (3 s),
   `cloud_unreachable`, `general_unavailable`, `speech_unavailable`,
-  `source_ended`, `pipeline_stopped`. Missing weights or a class-order mismatch
+  `source_ended`, `pipeline_stopped`, `video_ended`, `video_deleted`. Missing weights or a class-order mismatch
   still stop the app at startup, as does a missing video file.
 - Keyboard shortcuts live in `src/static/shortcuts.js` (tested with node).
   `scripts/check_contrast.py` and `scripts/check_layout.mjs` check the page.
@@ -102,6 +124,7 @@ metrics. `scripts/verify_detector.py` verifies golden parity, evaluates a suppli
 fixed test split and benchmarks batch-one inference. AP uses detections >=0.001;
 alert metrics use the existing validation-selected threshold, never retuned on
 test. Keep Ultralytics `.val()` results separately labelled if measured.
+Score captions use `split_images.test` and `expected.test_map50` from the config.
 `scripts/recall_by_size.py`, `scripts/compare_pillar.py` and
 `scripts/replay_alerts.py` analyse size, Pillar and local versus cloud alerts.
 

@@ -162,7 +162,7 @@ never spoken, and boxes cut off by the frame edge get no estimate.
 | **Test voice**, **Replay last alert** | Speak a fixed test phrase, or repeat the last alert, through the same speaker. Both respect Mute. |
 | **Spoken log** | The last 10 phrases sent to the speaker with time and backend, newest first. Kept in memory only; **Clear** empties it. |
 | **Priority legend** | The class order from the config severities, highest first, then Object. The class of the current top hazard is outlined and underlined. |
-| **Analyse an image** | Upload a JPEG or PNG (up to 10 MB) or pick a sample from `golden/images`. It runs through the same detector, alert gate and phrase code as the live view and shows the result in place of the video until **Back to live**. Uploads are not stored. **Speak result** is off by default. |
+| **Upload** | Images, a video or the demo library, described in the next section. |
 
 Keyboard shortcuts: **Space** pauses or resumes, **M** mutes or unmutes, **C**
 switches Local or Cloud. They are ignored while a text box, slider, list or
@@ -178,6 +178,78 @@ a blank screen: camera not found (retried every 2 seconds), no video for 3 secon
 (the banner is cleared and nothing is spoken), cloud unreachable (the app falls
 back to local), extra object detection off, and speech unavailable. Missing weights
 or a wrong class order still stop the app at startup.
+
+### Upload demo: images and video
+
+The demo does not need the laptop pointed at real escalators and stairs. Under
+**Upload** on the right of the page there are three choices.
+
+**Images.** Drop up to 20 JPEG or PNG images (each up to 10 MB) on the drop zone,
+or press **Choose images**, or use the samples from `golden/images`. Each file is
+checked on its own; a damaged or wrong file becomes a row with a message and the
+others still run. One image replaces the video until **Back to live**; several
+open a results gallery with a detections table under each picture. Each result
+shows the model and its inference time.
+
+There are two views, and you can switch between them without sending the images
+again:
+
+| View | Shows | Speech |
+|---|---|---|
+| **Recognition** (default for images) | Every detection of the five trained classes above the class threshold, with class and confidence. No distance or side filter. | Never |
+| **Alert** | Exactly what the live camera would do: gated hazards, the spoken phrase and the ignored list with reasons. | Only when **Speak result** is ticked, for a single image, and not muted |
+
+The alert gate hides far, small and side detections on purpose, so a correct but
+small Stair can be missing in Alert view. Recognition view is the one to use to
+show whether the model recognises a class.
+
+**These images show** (optional) marks each image *Recognised* or *Not
+recognised* and gives a line such as "Stair: 8 of 10 recognised, mean confidence
+0.87". Next to every score the page says: "This is a check on these images only.
+Tested accuracy on 920 test images: local mAP50 0.658, cloud mAP50 0.739." Those
+figures come from `visionaid_config.json`. A handful of images is not the model's
+accuracy, and images the model was trained on look better than reality, so use
+test-split images or new photos.
+
+**Compare local and cloud** (only shown when the app has `--endpoint`) runs both
+detectors on each image and shows them side by side. Images are sent to the cloud
+only in cloud mode or when this box is ticked, and the page then says "Cloud used:
+these images were sent to the server."
+
+**Video.** Drop one MP4, MOV or WebM video (at most 150 MB and 120 seconds) or
+press **Choose video**. It plays through the live pipeline instead of the camera,
+so the banner, highlighted box, hazard list, spoken alerts, spoken log, Local or
+Cloud, Pause and Mute all work as they do for the camera. A bar under the video
+shows the name, a progress bar, **Alert / Recognition** view (Alert with speech is
+the default for video), **Restart** and **Back to camera**. Playback is real time
+and never sped up; when processing is slower than the video, frames are skipped
+and the bar says "Processing at X FPS". Pause stops the video where it is. Phone
+rotation metadata is applied and frames larger than 1920 px are reduced before
+detection. When the video ends the pipeline stays up and the page shows a table
+of each class (first and last time seen, frames, best confidence) with **Replay**
+and **Back to camera**.
+
+Film in landscape. The gate sizes were set for a landscape webcam; in a portrait
+phone video objects are taller compared with the frame, so Alert view behaves
+differently and Recognition view is more useful. Filming tips for the walking
+video are in `docs/DEMO_VIDEO_GUIDE.md`.
+
+**Demo library.** Put prepared images in `demo/<class>/` (for example
+`demo/Stair/`) and videos in `demo/videos/`, then press **Reload**. The page lists
+them by class with thumbnails: one click analyses an image, **Analyse all**
+scores a whole class with the folder as the expected class (at most 20 images),
+and **Play** starts a video. Files are chosen by id and never copied or changed.
+Videos are ignored by git. See `demo/README.md`. The library is empty in the
+repository.
+
+**What happens to uploaded files.** Images are read in memory and never written to
+disk. A video has to be a file for OpenCV, so it is saved under a random name in a
+private temporary folder (readable only by you), never under its own name. It is
+deleted when another video replaces it, on **Back to camera**, after an error,
+when the app stops, and 10 minutes after the video ends if neither button was
+pressed (Replay works until then). A folder left by a crashed run is removed at
+the next start. In cloud mode the video's frames go to the cloud server, as camera
+frames do, and the page says so.
 
 ### 4. Try the full pipeline, including depth
 
@@ -391,8 +463,11 @@ Two page checks are separate scripts. `python scripts/check_contrast.py` prints
 the contrast ratio of every colour pair on the page. With the app running,
 `node scripts/check_layout.mjs http://127.0.0.1:5001 artifacts/screenshots`
 loads the page in headless Google Chrome at 1920x1080, 1366x768 (also with
-`?debug=1`) and 390 px wide, checks for page and sideways scrolling, and saves
-screenshots.
+`?debug=1`) and 390 px wide, opens the results gallery and the demo library,
+checks for page and sideways scrolling, and saves screenshots. Add
+`VISIONAID_VIDEO=path/to/clip.mp4` in front of the command to also upload that
+clip and check the video bar. For screenshots that will be shared, start the app
+with `--source` set to a demo clip so your camera view is not captured.
 
 ### Check the 20 reference images
 

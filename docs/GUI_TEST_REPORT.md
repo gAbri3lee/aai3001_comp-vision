@@ -763,3 +763,173 @@ Not verified here (in `docs/MANUAL_TEST_SHEET.md`):
 - reading the page from a distance on the projector;
 - whether a marker understands the legend unaided;
 - VoiceOver announcing the banner.
+
+---
+
+# Third hand-over: upload demo (images and video)
+
+Source: `VisionAid_GUI_Handover_3_Upload_Demo.md`, suggested by Matthias. The
+presenter uploads images or a walking video instead of carrying the laptop to
+escalators and stairs. Work is on the real branch `gabriel` (the hand-over calls
+it `aai3001_comp-vision-gabriel`), one commit per phase, no force push.
+
+## Decisions applied
+
+| # | Decision | Applied |
+|---|---|---|
+| V1 | Images open in Recognition view, with a switch to Alert view | Page default. The API keeps `alert` as its default so the old one-image response is unchanged |
+| V2 | Video opens in Alert view with speech, switch to Recognition view, Mute respected | Yes |
+| V3 | MP4, MOV or WebM, at most 150 MB and 120 s, clear rejections | Yes |
+| V4 | Up to 20 images at once, each a JPEG or PNG of at most 10 MB | Yes |
+| V5 | Optional expected class with a recognised count and mean confidence | Yes, plus automatic for library images (their folder) |
+| V6 | Compare local and cloud for images, hidden without cloud | Yes |
+| V7 | `demo/` with one folder per class and `demo/videos/` | Yes, left empty (no images were supplied) |
+| V8 | At the end of a video: per-class summary, Replay, Back to camera, pipeline stays up | Yes |
+
+## Phase 1: images
+
+- `POST /analyze` takes up to 20 files or sample ids. Each file is read up to its
+  10 MB limit and checked on its own; a bad file is a row with an `error` and the
+  rest still run. More than 20 is refused as a whole.
+- Every result carries both annotated pictures and both lists, so the page
+  switches view without sending the images again:
+  - `recognition`: every trained detection above the class threshold, no gate.
+    General-model detections (Object, general People) are left out because they
+    are not trained classes.
+  - `detections`, `alert`, `selected`: the live decision, from the same
+    `decide()` and `annotate()` as the camera with a fresh `AlertPolicy`.
+- `expected` marks each image recognised or not with its best confidence for that
+  class. The summary is "Stair: 8 of 20 recognised, mean confidence 0.87"; the
+  mean is over the best confidence of each recognised image. The caption comes
+  from the config (`dataset.split_images.test` was added as 920, next to the
+  recorded fingerprint, and `expected.test_map50`). Figures are truncated to three
+  places so they never overstate: 0.658 and 0.739.
+- `compare=1` runs both detectors on each image. A cloud failure is an error on
+  that run only. Without `--endpoint` it is refused with 503 and the checkbox is
+  hidden. In local mode without compare the cloud client is never called (tested).
+- Only a single image in Alert view can be spoken, and only with Speak result
+  ticked and not muted. A batch never speaks.
+- Annotated pictures sent to the page are at most 1280 px on the long side.
+- Page: Upload section with Images, Video and Demo library. Drop zones have a
+  "Choose" button as the keyboard route. One image shows in place of the video;
+  several open a gallery that scrolls inside the video box, with a table under
+  each picture and local and cloud side by side when comparing.
+
+Real stack (YOLOv8n and the RF-DETR container, 20 golden samples, expected
+Stair, compare): local "Stair: 8 of 20 recognised, mean confidence 0.87", cloud
+"8 of 20, 0.88"; no errors; about 85 ms local and 170 ms cloud per image; the
+response was 5.1 MB.
+
+## Phase 2: video
+
+- `POST /source` saves the upload with `tempfile.mkstemp` in a private folder made
+  by `mkdtemp` (folder mode 700, file mode 600, random name, our own suffix). The
+  client's file name is shown, cleaned, and never used in a path. The copy stops
+  at 150 MB. The file must start with an MP4/MOV or WebM header, open in OpenCV,
+  decode a first frame, have a frame rate, last at most 120 s (frames are counted,
+  up to the limit, when the container has no count) and be at most 7680 px.
+- The checked capture is handed to the live loop, which swaps it in between
+  frames. Everything else is the camera path: detector, `decide()`, cooldown,
+  speaker, banner, lists, spoken log, Local or Cloud, Pause and Mute.
+- `LatestFrameCapture` gained `max_side` (frames over 1920 px are reduced before
+  detection), `position`, and `pause()`/`resume()`. Pause stops a video where it
+  is; a camera keeps streaming while paused, as before. A paused video is not
+  reported as "No video".
+- Playback is paced by the file's frame rate and keeps only the newest frame, so
+  slow inference skips frames instead of slowing or speeding the video. The bar
+  shows "Processing at X FPS (video is Y FPS)" when that happens.
+- Rotation: OpenCV's auto-orientation is on by default and was verified: a clip
+  with a 90 degree display matrix plays upright.
+- Recognition view for video skips the gate, the cooldown and speech; returning
+  to Alert view resets the cooldown so the next hazard is spoken. The camera
+  always uses Alert view.
+- A per-class summary (first and last seen, frames, best confidence) counts every
+  trained detection in both views. When the file ends the loop keeps running; the
+  last picture stays, the banner says "Video finished. See the summary." and the
+  page shows the table with Replay and Back to camera.
+- `/status` gained `source`, `view`, `recognition`, `video_summary`,
+  `frames_processed` and `accuracy_note`; new health codes `video_ended` and
+  `video_deleted`. `POST /source/control` does `restart`, `camera` and `view`.
+- A video file given with `--source` at startup now leaves the loop idle at its
+  end instead of stopping it, so uploads still work afterwards. Its message is
+  unchanged.
+
+Real stack: the 40 s golden clip (640x640, 10 fps) uploaded through the page in
+headless Chrome played at 10 fps, 399 of 400 frames processed, Escalator spoken
+and highlighted at 0:06. Summary: Escalator, People, Stair and Wet Floor Sign
+seen, Pillar not seen (local Pillar recall is weak). The temporary copy was mode
+600 in a mode 700 folder; restarting the app after a kill removed the leftover
+folder.
+
+## Phase 3: demo library
+
+- `demo/Escalator`, `People`, `Pillar`, `Stair`, `Wet Floor Sign` and `videos`,
+  each with a `.gitkeep`, plus `demo/README.md`. `.gitignore` ignores
+  `demo/videos/*` and all `.mp4`, `.mov`, `.webm` and `.avi` files.
+- `GET /demo` builds the allow-list from the folder on every request and returns
+  ids and names only. Ids are short hashes of class and file name. Hidden files,
+  non-image files and links that lead outside the folder are left out.
+- One click analyses a library image with its folder as the expected class;
+  "Analyse all" scores a class (first 20). Library videos play like uploads and
+  are never deleted. `GET /demo/thumb/<id>` gives a 240 px JPEG.
+- An empty library says where to put files.
+- Layout check: added the gallery (three sizes), the library, and the uploaded
+  video at three sizes. All pass. Screenshots in `docs/screenshots/gui3_*.jpg`
+  were taken with a demo clip as the start source, not the live camera, so no
+  room appears in them; the library screenshot used golden images copied into
+  `demo/` for the run and removed afterwards.
+
+## Tests added
+
+| File | Tests | Covers |
+|---|---:|---|
+| `test_upload_batch.py` | 10 | One result per image in order; per-file errors (GIF, text, truncated, over 10 MB) without failing the batch; more than 20 refused; Recognition shows a far Stair that Alert hides; views and speech; expected-class marks, counts and caption; Alert view in a batch matches the live loop; compare calls both, local-only makes zero cloud calls, cloud failure is per run; compare refused without cloud; nothing left on disk; cleaned names |
+| `test_video_upload.py` | 11 | Synthetic video plays, position advances, alert spoken once, end state and summary, Replay and Back to camera; wrong type, fake header, damaged, too long, too large (two ways), no file; copies deleted on replace, camera, expiry and stop; rotated clip upright; 2560x1440 reduced to 1920x1080; same alert as the camera for the same frame; cloud only in cloud mode; pause holds the position and mute silences; Recognition view never speaks and the camera returns to Alert view; one upload at a time |
+| `test_demo_library.py` | 7 | Empty library help; names and ids only, stable ids, no paths, link outside ignored; folder as expected class and Analyse all; unknown ids and paths refused; thumbnails; library video plays and is never deleted; the real `demo/` folders, README and ignore rules |
+
+`test_pipeline.py` gained the new attributes on its hand-built state.
+
+## Notes and things that differ from the hand-over
+
+1. **Deleting a video when it ends conflicts with Replay (V8).** The temporary
+   copy is kept after the end so Replay works, and deleted on Back to camera, on
+   replacement, on an error, when the app stops, and 10 minutes after the end.
+   After that the page says to upload it again.
+2. The API default view stays `alert` so existing clients get the same response;
+   the page sends `recognition` for images (V1).
+3. A batch is never spoken; Speak result applies to a single image.
+4. Recognition view lists the five trained classes only.
+5. Library images keep the 10 MB image limit; library videos keep the video limits.
+6. `ffmpeg` is not installed, so the rotated clip in the test is made by writing
+   the rotation matrix into an OpenCV-written MP4.
+7. The demo library is empty in the repository because no images were supplied.
+
+## Final checks (third hand-over)
+
+```
+python -m pytest -q                      -> 144 passed, 12 subtests passed
+verify_detector.py local golden          -> passed, 20 matched, 0 extra
+verify_detector.py cloud golden (HTTP)   -> passed, 24 matched, 0 extra
+python scripts/check_contrast.py         -> 29 of 29 pairs pass
+VISIONAID_VIDEO=clip node scripts/check_layout.mjs -> all 11 states pass
+```
+
+## Definition of done (third hand-over)
+
+| Item | Status |
+|---|---|
+| Several images together, Recognition or Alert view, optional expected class, honest caption | Done |
+| Video plays at real speed through the live pipeline, ends with a summary, Replay and Back to camera | Done; real clip checked in Chrome |
+| Library lists images and videos for one click, no client paths | Done |
+| Clear messages for every limit; uploads never kept | Done; video copies deleted as in note 1 |
+| Local mode never contacts the cloud; cloud use is announced | Done, tested |
+| pytest green, golden parity unchanged, contrast and layout pass, screenshots | Done |
+| README, `CLAUDE.md`, this report, the manual sheet and the video guide | Done |
+| Committed on Gabriel's branch, no force push | Done |
+
+Not verified here (in `docs/MANUAL_TEST_SHEET.md`): a real phone video on the
+demo laptop, audible speech during playback, a portrait phone clip, switching
+mode during playback by ear, recognised counts for 10 test-split images per
+class, reading the upload section on the projector, and drag and drop in the
+demo browser (the file chooser path was driven in headless Chrome; dropping a
+file needs a person).
