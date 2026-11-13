@@ -170,6 +170,15 @@
   }
   .drop.over { border-color: var(--accent); border-style: solid; color: var(--text); }
   .accuracy-note { color: var(--muted); font-size: 0.8rem; }
+  .library-group h3 {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.4rem; margin: 0.35rem 0 0.25rem; font-size: 0.9rem;
+  }
+  .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr)); gap: 0.35rem; }
+  .thumbs button { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.2rem; font-size: 0.72rem; text-align: left; min-width: 0; }
+  .thumbs img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; background: var(--video-bg); }
+  .thumbs .label { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .video-list { display: flex; flex-direction: column; gap: 0.3rem; }
+  .video-list button { text-align: left; overflow-wrap: anywhere; }
   .source-bar {
     display: flex; flex-wrap: wrap; gap: 0.35rem 0.6rem; align-items: center; padding: 0.35rem 0.75rem;
     border-radius: 8px; border: 2px solid var(--accent); font-size: 0.9rem;
@@ -322,6 +331,7 @@
     <div class="switch" role="group" aria-labelledby="upload-title">
       <button type="button" id="tab-images" data-panel="panel-images" aria-pressed="true">Images</button>
       <button type="button" id="tab-video" data-panel="panel-video" aria-pressed="false">Video</button>
+      <button type="button" id="tab-library" data-panel="panel-library" aria-pressed="false">Demo library</button>
     </div>
     <div class="upload-panel" id="panel-images">
       <div class="drop" id="drop-images">
@@ -360,6 +370,13 @@
              accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm">
       <div class="status-line" id="video-upload-status">The video plays through the live pipeline, with alerts and speech in Alert view.</div>
       <div class="hint">Landscape recordings work best. For a portrait phone video, Recognition view is more useful.</div>
+    </div>
+    <div class="upload-panel" id="panel-library" hidden>
+      <div class="row">
+        <span class="status-line" id="library-status">Loading the demo library...</span>
+        <button type="button" id="library-reload">Reload</button>
+      </div>
+      <div id="library"></div>
     </div>
   </section>
 </main>
@@ -476,9 +493,10 @@
   // so switching view never sends the images again.
   function note(severity, message) { actionMessage = {severity, message}; if (latest) renderMessages(latest); }
 
-  async function analyze(form) {
+  async function analyze(form, {library = false} = {}) {
     form.append("view", imageView.value);
-    if (expectedSelect.value) form.append("expected", expectedSelect.value);
+    // Library images use their folder as the expected class (set by the server).
+    if (expectedSelect.value && !library) form.append("expected", expectedSelect.value);
     if (compareBox.checked && !compareRow.hidden) form.append("compare", "1");
     form.append("speak", speakResult.checked ? "1" : "0");
     if (debug) form.append("debug", "1");
@@ -635,6 +653,97 @@
   for (const id of ["video-restart", "summary-replay"]) $(id).addEventListener("click", () => sourceControl({action: "restart"}));
   for (const id of ["video-camera", "summary-camera"]) $(id).addEventListener("click", () => sourceControl({action: "camera"}));
   for (const [view, button] of Object.entries(videoViewButtons)) button.addEventListener("click", () => sourceControl({view}));
+
+  // Demo library: prepared images and videos, chosen by id (never by path).
+  function button(text, onClick, label) {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.textContent = text;
+    if (label) el.setAttribute("aria-label", label);
+    el.addEventListener("click", onClick);
+    return el;
+  }
+
+  async function playLibraryVideo(id, name) {
+    const form = new FormData();
+    form.append("demo", id);
+    note("info", `Starting ${name}...`);
+    try {
+      const res = await fetch("/source", {method: "POST", body: form});
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "The video could not be played.");
+      actionMessage = null;
+      backToLive();
+    } catch (e) {
+      note("error", e.message);
+    }
+    pollStatus();
+  }
+
+  async function loadLibrary() {
+    const box = $("library"), status = $("library-status");
+    try {
+      const lib = await (await fetch("/demo")).json();
+      if (lib.empty) {
+        status.textContent = lib.help;
+        box.replaceChildren();
+        return;
+      }
+      const total = lib.classes.reduce((n, group) => n + group.images.length, 0);
+      status.textContent = `${total} image${total === 1 ? "" : "s"}, ${lib.videos.length} video${lib.videos.length === 1 ? "" : "s"}`;
+      const groups = lib.classes.map(group => {
+        const section = document.createElement("div");
+        section.className = "library-group";
+        const heading = document.createElement("h3");
+        heading.appendChild(span("", `${group.class} (${group.images.length})`));
+        if (group.images.length) {
+          const first = group.images.length > maxBatch ? ` (first ${maxBatch})` : "";
+          heading.appendChild(button(`Analyse all${first}`, () => {
+            const form = new FormData();
+            form.append("demo_class", group.class);
+            analyze(form, {library: true});
+          }, `Analyse all ${group.class} images${first}`));
+        }
+        section.appendChild(heading);
+        if (!group.images.length) {
+          section.appendChild(span("hint", `No images yet. Add some to demo/${group.class}/.`));
+          return section;
+        }
+        const grid = document.createElement("div");
+        grid.className = "thumbs";
+        for (const item of group.images) {
+          const el = button("", () => {
+            const form = new FormData();
+            form.append("demo", item.id);
+            analyze(form, {library: true});
+          }, `Analyse ${item.name} (${group.class})`);
+          const img = document.createElement("img");
+          img.src = `/demo/thumb/${encodeURIComponent(item.id)}`;
+          img.alt = "";
+          img.loading = "lazy";
+          el.append(img, span("label", item.name));
+          grid.appendChild(el);
+        }
+        section.appendChild(grid);
+        return section;
+      });
+      const videos = document.createElement("div");
+      videos.className = "library-group";
+      const heading = document.createElement("h3");
+      heading.appendChild(span("", `Videos (${lib.videos.length})`));
+      videos.appendChild(heading);
+      const list = document.createElement("div");
+      list.className = "video-list";
+      for (const item of lib.videos) list.appendChild(button(`Play ${item.name}`, () => playLibraryVideo(item.id, item.name)));
+      if (!lib.videos.length) list.appendChild(span("hint", "No videos yet. Add some to demo/videos/."));
+      videos.appendChild(list);
+      box.replaceChildren(...groups, videos);
+    } catch (e) {
+      status.textContent = "Could not load the demo library.";
+    }
+  }
+  $("library-reload").addEventListener("click", loadLibrary);
+  loadLibrary();
 
   function clock(seconds) {
     const s = Math.max(0, Math.floor(seconds || 0));

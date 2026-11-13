@@ -235,6 +235,7 @@ class PipelineState:
         # One inference at a time across the live loop and image analysis.
         self._detect_lock = threading.Lock()
         self.samples = find_samples()
+        self.demo_root = resolve_path(media.DEMO_DIR)
         self._latest_jpeg = None
         self._latest_debug_jpeg = None
         self._frame_captured_at = None
@@ -1004,7 +1005,7 @@ def create_app(state: PipelineState) -> Flask:
                 raise UploadError(str(exc))
             files = request.files.getlist("image")
             sample_ids = form.getlist("sample")
-            if not files and not any(sample_ids):
+            if not files and not any(sample_ids) and not form.getlist("demo") and not form.get("demo_class"):
                 raise UploadError("Choose an image file or a sample.")
             if len(files) + len(sample_ids) > media.MAX_BATCH:
                 raise UploadError(f"Upload at most {media.MAX_BATCH} images at once.")
@@ -1019,6 +1020,18 @@ def create_app(state: PipelineState) -> Flask:
             except UploadError as exc:
                 items.append((name, "upload", None, str(exc)))
                 statuses.append(exc.status)
+        library = media.demo_library(state.demo_root)
+        demo_ids = form.getlist("demo")
+        demo_class = form.get("demo_class")
+        if demo_class:
+            if demo_class not in CLASS_NAMES:
+                return jsonify(error="Unknown class."), 400
+            demo_ids += [key for key, item in library["images"].items() if item["class"] == demo_class]
+        if len(files) + len(sample_ids) + len(demo_ids) > media.MAX_BATCH:
+            if demo_class and not files and not sample_ids:
+                demo_ids = demo_ids[:media.MAX_BATCH]  # a large class folder: its first 20 images
+            else:
+                return jsonify(error=f"Upload at most {media.MAX_BATCH} images at once."), 400
         sample_keys = list(state.samples)
         for sample_id in sample_ids:
             path = state.samples.get(sample_id)
@@ -1031,6 +1044,22 @@ def create_app(state: PipelineState) -> Flask:
             except UploadError as exc:
                 items.append((name, name, None, str(exc)))
                 statuses.append(exc.status)
+        demo_classes = set()
+        for demo_id in demo_ids:
+            item = library["images"].get(demo_id)
+            name = item["name"] if item is not None else "Unknown library image"
+            try:
+                if item is None:
+                    raise UploadError("Unknown library image.", 404)
+                demo_classes.add(item["class"])
+                items.append((name, "Demo library", decode_upload(item["path"].read_bytes()), None))
+                statuses.append(200)
+            except UploadError as exc:
+                items.append((name, "Demo library", None, str(exc)))
+                statuses.append(exc.status)
+        if expected is None and demo_ids and not files and not sample_ids and len(demo_classes) == 1:
+            # Library images sit in their class folder, so that class is what they show.
+            expected = demo_classes.pop()
         compare = form_flag(form, "compare")
         try:
             batch = state.analyze_batch(items, view=view, expected=expected, compare=compare,
@@ -1047,6 +1076,25 @@ def create_app(state: PipelineState) -> Flask:
             return jsonify({**batch, **run, "name": entry["name"], "image": run["images"][view]})
         return jsonify(batch)
 
+    @app.get("/demo")
+    def demo():
+        """The demo library: ids and names only. Built from the folder each time."""
+        return jsonify(media.library_listing(media.demo_library(state.demo_root)))
+
+    @app.get("/demo/thumb/<item_id>")
+    def demo_thumbnail(item_id):
+        item = media.demo_library(state.demo_root)["images"].get(item_id)
+        if item is None:
+            return jsonify(error="Unknown library image."), 404
+        try:
+            frame = decode_upload(item["path"].read_bytes())
+        except UploadError as exc:
+            return jsonify(error=str(exc)), exc.status
+        ok, buffer = cv2.imencode(".jpg", limit_size(frame, media.THUMBNAIL_SIDE), [cv2.IMWRITE_JPEG_QUALITY, 80])
+        if not ok:
+            return jsonify(error="Could not make a thumbnail."), 500
+        return Response(buffer.tobytes(), mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+
     @app.post("/source")
     def source():
         """Play a video through the live pipeline instead of the camera: multipart
@@ -1057,6 +1105,11 @@ def create_app(state: PipelineState) -> Flask:
         try:
             if "video" in request.files:
                 return jsonify(state.upload_video(request.files["video"]))
+            if request.form.get("demo"):
+                item = media.demo_library(state.demo_root)["videos"].get(request.form["demo"])
+                if item is None:
+                    raise UploadError("Unknown library video.", 404)
+                return jsonify(state.play_library_video(item["path"], item["name"]))
             raise UploadError("Choose a video file.")
         except UploadError as exc:
             return jsonify(error=str(exc)), exc.status

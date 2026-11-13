@@ -245,3 +245,58 @@ class ClassSummary:
                          "frames": 0 if entry is None else entry["frames"],
                          "max_confidence": None if entry is None else round(entry["max_confidence"], 2)})
         return rows
+
+
+# Demo library (decision V7): demo/<Class>/ images and demo/videos/ videos, listed
+# for one-click use. The allow-list is built from the folder on every request and
+# clients choose by id only; a path from the client is never used.
+DEMO_DIR = "demo"
+IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png")
+THUMBNAIL_SIDE = 240
+
+
+def _library_id(prefix, text):
+    import hashlib
+    return f"{prefix}-{hashlib.sha1(text.encode('utf-8')).hexdigest()[:12]}"
+
+
+def _inside(path, root):
+    """A regular file inside the library folder: symbolic links that lead out of it
+    and hidden files are left out."""
+    try:
+        return (not path.name.startswith('.') and path.is_file()
+                and path.resolve().is_relative_to(root.resolve()))
+    except OSError:
+        return False
+
+
+def demo_library(root):
+    """{"images": {id: {class, name, path}}, "videos": {id: {name, path}}}."""
+    images, videos = {}, {}
+    if root.is_dir():
+        for label in CLASS_NAMES:
+            folder = root / label
+            if folder.is_dir():
+                for path in sorted(folder.iterdir(), key=lambda p: p.name.lower()):
+                    if path.suffix.lower() in IMAGE_SUFFIXES and _inside(path, root):
+                        images[_library_id('img', f'{label}/{path.name}')] = {
+                            'class': label, 'name': path.name, 'path': path}
+        folder = root / 'videos'
+        if folder.is_dir():
+            for path in sorted(folder.iterdir(), key=lambda p: p.name.lower()):
+                if path.suffix.lower() in VIDEO_SUFFIXES and _inside(path, root):
+                    videos[_library_id('vid', path.name)] = {'name': path.name, 'path': path}
+    return {'images': images, 'videos': videos}
+
+
+def library_listing(library):
+    """What GET /demo returns: names and ids only, never paths."""
+    classes = [{'class': label,
+                'images': [{'id': key, 'name': item['name']}
+                           for key, item in library['images'].items() if item['class'] == label]}
+               for label in CLASS_NAMES]
+    videos = [{'id': key, 'name': item['name']} for key, item in library['videos'].items()]
+    return {'classes': classes, 'videos': videos,
+            'empty': not library['images'] and not library['videos'],
+            'help': ("The demo library is empty. Put images in demo/<class name>/ (for example "
+                     "demo/Stair/) and videos in demo/videos/, then press Reload. See demo/README.md.")}

@@ -1,21 +1,24 @@
 // Check the page layout in headless Chrome and save screenshots.
 //
 //   node scripts/check_layout.mjs http://127.0.0.1:5000 artifacts/screenshots [suffix]
+//   VISIONAID_VIDEO=clip.mp4 node scripts/check_layout.mjs ...   (adds uploaded-video states)
 //
 // For each size it measures horizontal overflow (never allowed), page scrolling
 // (not allowed at the two desktop sizes) and whether the main parts (header
 // controls, video, banner, legend, status card) sit fully inside the viewport.
 // Needs Google Chrome (set CHROME to override the path) and Node 22 or later.
 import { spawn } from "node:child_process";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
 const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const [base = "http://127.0.0.1:5000", outDir = "artifacts/screenshots", suffix = ""] = process.argv.slice(2);
 // `action` runs in the page after it loads (for example to open the results gallery).
 const ALL_SAMPLES = `document.getElementById("expected").value = "Stair";
   document.getElementById("analyze-all-samples").click();`;
+const LIBRARY = `document.getElementById("tab-library").click();
+  document.getElementById("upload-title").scrollIntoView();`;
 const SIZES = [
   {name: "1920x1080", width: 1920, height: 1080, desktop: true, path: "/"},
   {name: "1366x768", width: 1366, height: 768, desktop: true, path: "/"},
@@ -24,9 +27,18 @@ const SIZES = [
   {name: "1920x1080-gallery", width: 1920, height: 1080, desktop: true, path: "/", action: ALL_SAMPLES, wait: 9000},
   {name: "1366x768-gallery", width: 1366, height: 768, desktop: true, path: "/", action: ALL_SAMPLES, wait: 9000},
   {name: "390x844-gallery", width: 390, height: 844, desktop: false, path: "/", action: ALL_SAMPLES, wait: 9000},
+  // The library sits low in the side panel, which scrolls on its own; the status card scrolls away.
+  {name: "1366x768-library", width: 1366, height: 768, desktop: true, path: "/", action: LIBRARY, wait: 2500,
+   ignore: ["#model-status"]},
+  {name: "1366x768-video", width: 1366, height: 768, desktop: true, path: "/", video: true, wait: 0},
+  {name: "1920x1080-video", width: 1920, height: 1080, desktop: true, path: "/", video: true, wait: 0},
+  {name: "390x844-video", width: 390, height: 844, desktop: false, path: "/", video: true, wait: 0},
 ];
+// Optional: VISIONAID_VIDEO=path/to/clip.mp4 adds the uploaded-video states.
+const VIDEO = process.env.VISIONAID_VIDEO;
 const MAIN_PARTS = ["header", "#mode-local", "#mode-cloud", "#pause", "#mute", ".video-wrap",
                     "#alert-banner", ".legend-wrap", "#model-status"];
+const VIDEO_PARTS = ["#source-bar", "#video-progress", "#video-restart", "#video-camera"];
 const PORT = 9333;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -61,9 +73,9 @@ const send = (method, params = {}) => new Promise((resolve, reject) => {
   ws.send(JSON.stringify({id, method, params}));
 });
 
-const measure = `(() => {
+const measure = selectors => `(() => {
   const root = document.documentElement;
-  const parts = ${JSON.stringify(MAIN_PARTS)}.map(selector => {
+  const parts = ${JSON.stringify(selectors)}.map(selector => {
     const el = document.querySelector(selector);
     if (!el) return {selector, missing: true};
     const r = el.getBoundingClientRect();
@@ -81,6 +93,14 @@ mkdirSync(outDir, {recursive: true});
 const results = [];
 await send("Page.enable");
 for (const size of SIZES) {
+  if (size.video) {
+    if (!VIDEO) continue;
+    // Upload the clip so the page shows the uploaded-video state with its bar.
+    const form = new FormData();
+    form.append("video", new Blob([readFileSync(VIDEO)]), basename(VIDEO));
+    const res = await fetch(base + "/source", {method: "POST", body: form});
+    if (!res.ok) throw new Error(`Video upload failed: ${await res.text()}`);
+  }
   await send("Emulation.setDeviceMetricsOverride", {width: size.width, height: size.height,
                                                     deviceScaleFactor: 1, mobile: !size.desktop});
   await send("Page.navigate", {url: base + size.path});
@@ -89,13 +109,15 @@ for (const size of SIZES) {
     await send("Runtime.evaluate", {expression: size.action});
     await sleep(size.wait || 3000);
   }
-  const m = JSON.parse((await send("Runtime.evaluate", {expression: measure, returnByValue: true})).result.value);
+  const m = JSON.parse((await send("Runtime.evaluate", {expression: measure(size.video ? MAIN_PARTS.concat(VIDEO_PARTS) : MAIN_PARTS),
+                                                           returnByValue: true})).result.value);
   const shot = await send("Page.captureScreenshot", {format: "png"});
   const file = join(outDir, `gui2_${size.name}${suffix}.png`);
   writeFileSync(file, Buffer.from(shot.data, "base64"));
   const horizontal = m.scrollWidth > m.clientWidth;
   const pageScroll = m.scrollHeight > m.innerHeight;
-  const outside = m.parts.filter(p => p.missing || !p.inside).map(p => p.selector);
+  const outside = m.parts.filter(p => p.missing || !p.inside).map(p => p.selector)
+                         .filter(selector => !(size.ignore || []).includes(selector));
   const ok = !horizontal && (!size.desktop || (!pageScroll && outside.length === 0));
   results.push({size: size.name, ok, horizontal_scroll: horizontal, page_scroll: pageScroll,
                 main_parts_outside: size.desktop ? outside : "n/a (page scrolls on phones)",
