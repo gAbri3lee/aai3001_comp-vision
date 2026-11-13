@@ -39,6 +39,8 @@ PAIRS = [
     ('accent', 'bg', 3.0, 'mode badge border, analysis view border'),
     ('caution-line', 'bg', 3.0, 'cloud mode badge border'),
     ('text', 'card', 3.0, 'current legend entry border'),
+    ('muted', 'panel', 3.0, 'upload drop zone border'),
+    ('accent', 'panel', 3.0, 'drop zone border while a file is dragged over'),
 ]
 
 

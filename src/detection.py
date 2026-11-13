@@ -122,6 +122,26 @@ def annotate_hazards(frame_bgr, hazards, selected=None, debug=False):
     return frame
 
 
+def annotate_recognition(frame_bgr, hazards):
+    """Recognition view: every trained detection with its class and confidence.
+
+    There is no alert gate here, so far and side detections are drawn like near
+    ones, in the same band colours as the live view (far uses the default colour).
+    General-model detections are not trained classes and are not drawn.
+    """
+    import cv2
+    frame = frame_bgr.copy()
+    trained = sorted((h for h in hazards if h.source == 'trained'), key=lambda h: h.confidence)
+    for hazard in trained:  # the most confident box is drawn last, on top
+        x1, y1, x2, y2 = map(int, hazard.xyxy)
+        colour = BAND_COLOURS.get(hazard.band, BAND_COLOURS[None])
+        cv2.rectangle(frame, (x1, y1), (x2, y2), colour, 3)
+        text_y = y1 - 6 if y1 >= 24 else y1 + 20
+        cv2.putText(frame, f'{hazard.label} {hazard.confidence:.2f}', (x1 + 2, text_y),
+                    cv2.FONT_HERSHEY_SIMPLEX, .6, colour, 2)
+    return frame
+
+
 def annotate(frame_bgr, detections):
     import cv2
     frame = frame_bgr.copy()

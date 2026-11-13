@@ -3,7 +3,8 @@
   "dataset": {
     "roboflow_project": "version2-nvt5l",
     "version": 4,
-    "split_fingerprint": "49601080aac1f838190341d331785578"
+    "split_fingerprint": "49601080aac1f838190341d331785578",
+    "split_images": {"train": 8247, "valid": 925, "test": 920}
   },
   "classes": [
     "Escalator",

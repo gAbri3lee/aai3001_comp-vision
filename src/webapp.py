@@ -17,17 +17,18 @@ import time
 import cv2
 import numpy as np
 from flask import Flask, Response, jsonify, render_template, request
-from config import add_detector_arguments, detector_settings, resolve_path
+from config import CLASS_NAMES, add_detector_arguments, detector_settings, load_config, resolve_path
 from detectors import DetectorError
 from scene_detector import SceneDetector as create_detector
-from detection import annotate_hazards
-from capture import LatestFrameCapture
+from detection import annotate_hazards, annotate_recognition
+from capture import LatestFrameCapture, limit_size
+import media
 
 from decision_engine import AlertPolicy, phrase_for
 import distance
 
 # Status fields cleared whenever results expire, fail or the source ends.
-EMPTY_RESULT = dict(alert="", alerts=[], detections=[], selected=None, fps=0.,
+EMPTY_RESULT = dict(alert="", alerts=[], detections=[], recognition=[], selected=None, fps=0.,
                     latency_ms=None, round_trip_ms=None)
 BACKENDS = ("local", "cloud")
 MODEL_NAMES = {"local": "YOLOv8n", "cloud": "RF-DETR Nano"}
@@ -62,7 +63,11 @@ def priority_order(severity):
 
 
 # Image analysis (decision U4): JPEG or PNG, at most 10 MB, never written to disk.
+# Up to 20 images per request (decision V4).
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_BATCH_BYTES = media.MAX_BATCH * MAX_UPLOAD_BYTES + 1024 * 1024
+# Recognition view: every trained detection, no gate, no speech. Alert view: the live rules.
+VIEWS = ("recognition", "alert")
 MAX_UPLOAD_PIXELS = 40_000_000
 SAMPLE_DIRS = ("demo", "golden/images")
 SAMPLE_SUFFIXES = (".jpg", ".jpeg", ".png")
@@ -165,6 +170,19 @@ def annotate(frame, result):
             annotate_hazards(frame, result.hazards, result.selected, debug=True))
 
 
+def jpeg_data_url(image):
+    """An annotated image for the page, at most MAX_DISPLAY_SIDE on its long side."""
+    ok, buffer = cv2.imencode(".jpg", limit_size(image, media.MAX_DISPLAY_SIDE),
+                              [cv2.IMWRITE_JPEG_QUALITY, 85])
+    if not ok:
+        raise RuntimeError("Could not encode the annotated image")
+    return "data:image/jpeg;base64," + base64.b64encode(buffer.tobytes()).decode("ascii")
+
+
+def form_flag(form, name):
+    return form.get(name) in ("1", "true", "on")
+
+
 class PipelineState:
     """Owns the background capture/inference loop and exposes thread-safe
     reads for Flask's request handlers (which run on separate threads)."""
@@ -209,6 +227,7 @@ class PipelineState:
         if self.speaker is not None:
             self.speaker.rate = RATE_DEFAULT
         self.policy = AlertPolicy(self.settings['alert_gate'], self.settings['severity'])
+        self.accuracy_note = media.accuracy_note(load_config(args.config))
         # Optional distance estimate for the debug panel only (never spoken).
         self.calibration = distance.load_calibration()
         self._lock = threading.Lock()
@@ -251,12 +270,15 @@ class PipelineState:
 
     # Mode (Local/Cloud) ---------------------------------------------------
 
+    def _model_label(self, mode):
+        general = getattr(self.detectors[mode], "general", True) is not None
+        return self.backend_settings[mode]["model"] + (" + general-yolov8n" if general else "")
+
     def _mode_fields(self):
         """Caller holds the lock."""
-        general = getattr(self.detectors[self.mode], "general", True) is not None
         return {"mode": self.mode, "backend": self.mode,
                 "mode_label": f"{self.mode.upper()}, {MODEL_NAMES[self.mode]}",
-                "model": self.backend_settings[self.mode]["model"] + (" + general-yolov8n" if general else ""),
+                "model": self._model_label(self.mode),
                 "cloud_available": "cloud" in self.detectors,
                 "cloud_unavailable_reason": None if "cloud" in self.detectors else
                     "Cloud unavailable: start the app with --endpoint",
@@ -452,31 +474,76 @@ class PipelineState:
 
     # Image analysis -----------------------------------------------------
 
-    def analyze(self, frame, source, speak=False, debug=False) -> dict:
-        """Run one image through the live path: the active detector, decide() and
-        annotate(). A fresh AlertPolicy gives analysis its own cooldown state, so it
-        never disturbs the live loop and always selects the top gated hazard."""
+    def analyze(self, frame, source, speak=False, debug=False, view="alert", expected=None,
+                mode=None) -> dict:
+        """Run one image through the live path: the detector, decide() and annotate().
+        A fresh AlertPolicy gives analysis its own cooldown state, so it never
+        disturbs the live loop and always selects the top gated hazard.
+
+        Both views come from the same detections. Recognition view lists every
+        trained detection (no gate) and never speaks. In Alert view the result is
+        spoken only when asked for and not muted."""
         with self._lock:
-            mode = self.mode
-            model = self._mode_fields()["model"]
+            mode = mode or self.mode
+            model = self._model_label(mode)
         policy = AlertPolicy(self.settings['alert_gate'], self.settings['severity'])
         with self._detect_lock:
             batch = self.detectors[mode].predict(frame)
             result = decide(frame, batch, policy, self.depth_estimator)
         normal, debug_image = annotate(frame, result)
-        ok, buffer = cv2.imencode(".jpg", debug_image if debug else normal)
-        if not ok:
-            raise RuntimeError("Could not encode the annotated image")
         hazards = sorted(result.hazards, key=lambda h: h.index)
-        spoken = bool(speak and result.speak and self._speak(result.speak, kind="upload"))
-        return {"source": source, "mode": mode, "model": model,
-                "width": int(frame.shape[1]), "height": int(frame.shape[0]),
-                "alert": result.banner, "alerts": result.alerts,
-                "selected": _selected_dict(result.selected),
-                "detections": [self._detection_dict(h, frame.shape[0]) for h in hazards],
-                "latency_ms": batch.latency_ms, "round_trip_ms": batch.round_trip_ms,
-                "spoken": spoken,
-                "image": "data:image/jpeg;base64," + base64.b64encode(buffer.tobytes()).decode("ascii")}
+        recognition = media.recognition_dicts(result.hazards)
+        images = {"alert": jpeg_data_url(debug_image if debug else normal),
+                  "recognition": jpeg_data_url(annotate_recognition(frame, result.hazards))}
+        spoken = bool(view == "alert" and speak and result.speak and self._speak(result.speak, kind="upload"))
+        output = {"source": source, "mode": mode, "model": model, "view": view,
+                  "width": int(frame.shape[1]), "height": int(frame.shape[0]),
+                  "alert": result.banner, "alerts": result.alerts,
+                  "selected": _selected_dict(result.selected),
+                  "detections": [self._detection_dict(h, frame.shape[0]) for h in hazards],
+                  "recognition": recognition,
+                  "latency_ms": batch.latency_ms, "round_trip_ms": batch.round_trip_ms,
+                  "spoken": spoken, "images": images, "image": images[view]}
+        if expected is not None:
+            output["expected"] = media.expected_result(recognition, expected)
+        return output
+
+    def analyze_batch(self, items, view="alert", expected=None, compare=False, speak=False,
+                      debug=False) -> dict:
+        """Analyse up to MAX_BATCH images. `items` holds (name, source, frame, error);
+        a file that failed validation keeps its error and never stops the others.
+
+        Images go to the cloud only in cloud mode or when compare is asked for
+        (decision V6). Speech is used only for a single image in Alert view."""
+        if compare and "cloud" not in self.detectors:
+            raise ModeUnavailable("Compare needs the cloud. Start the app with --endpoint.")
+        with self._lock:
+            backends = list(BACKENDS) if compare else [self.mode]
+        speak = speak and len(items) == 1 and not compare
+        results = []
+        for index, (name, source, frame, error) in enumerate(items):
+            entry = {"index": index, "name": name, "source": source}
+            if error is not None:
+                entry["error"] = error
+                results.append(entry)
+                continue
+            runs = []
+            for backend in backends:
+                try:
+                    run = self.analyze(frame, source, speak=speak, debug=debug, view=view,
+                                       expected=expected, mode=backend)
+                    del run["image"]  # `images` holds both views; keep the batch small
+                    runs.append(run)
+                except Exception as exc:
+                    runs.append({"mode": backend, "model": self._model_label(backend),
+                                 "error": f"Analysis failed: {exc}"})
+            entry["runs"] = runs
+            results.append(entry)
+        summary = [media.batch_summary(results, backend, self._model_label(backend), expected)
+                   for backend in backends] if expected else []
+        return {"view": view, "expected_class": expected, "compare": compare, "backends": backends,
+                "cloud_used": "cloud" in backends, "results": results, "summary": summary,
+                "accuracy_note": self.accuracy_note}
 
     def _detection_dict(self, hazard, frame_height):
         item = hazard.to_dict()
@@ -664,12 +731,13 @@ def create_app(state: PipelineState) -> Flask:
         except ValueError as exc:
             return jsonify(error=str(exc)), 400
 
-    # Multipart overhead on top of the 10 MB image limit; the exact limit is checked later.
-    app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES + 256 * 1024
+    # Multipart limit for a batch of 20 images of 10 MB; each file is checked on its own.
+    app.config["MAX_CONTENT_LENGTH"] = MAX_BATCH_BYTES
 
     @app.errorhandler(413)
     def too_large(_):
-        return jsonify(error="The image is larger than 10 MB."), 413
+        return jsonify(error=f"The upload is too large: at most {media.MAX_BATCH} images, "
+                             "each up to 10 MB."), 413
 
     @app.get("/config")
     def config():
@@ -677,36 +745,83 @@ def create_app(state: PipelineState) -> Flask:
         return jsonify(priority=priority_order(state.settings["severity"]), band_labels=BAND_LABELS,
                        speech_rate_min=RATE_MIN, speech_rate_max=RATE_MAX, speech_rate_default=RATE_DEFAULT,
                        shortcuts={"Space": "pause", "M": "mute", "C": "mode"},
-                       max_upload_bytes=MAX_UPLOAD_BYTES)
+                       max_upload_bytes=MAX_UPLOAD_BYTES, max_batch=media.MAX_BATCH,
+                       classes=list(CLASS_NAMES), views=list(VIEWS),
+                       accuracy_note=getattr(state, "accuracy_note", None) or media.accuracy_note(load_config()))
 
     @app.get("/samples")
     def samples():
         return jsonify([{"id": key, "name": f"Sample {i}"}
                         for i, key in enumerate(state.samples, 1)])
 
+    def read_image(file):
+        """One uploaded file: its bytes up to the limit, so a huge file is not read whole."""
+        data = file.stream.read(MAX_UPLOAD_BYTES + 1)
+        return decode_upload(data)
+
     @app.post("/analyze")
     def analyze():
-        """Multipart field `image` (JPEG or PNG) or form field `sample` (an id from
-        /samples). Optional `speak=1` and `debug=1`. Nothing is stored."""
+        """Multipart field `image` (one or more JPEG or PNG files) or form field
+        `sample` (one or more ids from /samples). Optional: `view` (recognition or
+        alert, default alert), `expected` (a class name), `compare=1`, `speak=1`,
+        `debug=1`. Nothing is stored.
+
+        One image keeps the original response (its fields at the top level and its
+        error as the HTTP status). Every response also has `results`, one entry per
+        image, so a bad file in a batch is a row with an error."""
         form = request.form
-        speak = form.get("speak") in ("1", "true", "on")
-        debug = form.get("debug") in ("1", "true", "on")
+        view = form.get("view") or "alert"
         try:
-            if "image" in request.files:
-                frame, source = decode_upload(request.files["image"].read()), "upload"
-            elif form.get("sample"):
-                path = state.samples.get(form["sample"])
-                if path is None:
-                    raise UploadError("Unknown sample.", 404)
-                frame, source = decode_upload(path.read_bytes()), f"Sample {list(state.samples).index(form['sample']) + 1}"
-            else:
+            if view not in VIEWS:
+                raise UploadError('view must be "recognition" or "alert"')
+            try:
+                expected = media.valid_expected(form.get("expected"))
+            except ValueError as exc:
+                raise UploadError(str(exc))
+            files = request.files.getlist("image")
+            sample_ids = form.getlist("sample")
+            if not files and not any(sample_ids):
                 raise UploadError("Choose an image file or a sample.")
+            if len(files) + len(sample_ids) > media.MAX_BATCH:
+                raise UploadError(f"Upload at most {media.MAX_BATCH} images at once.")
         except UploadError as exc:
             return jsonify(error=str(exc)), exc.status
+        items, statuses = [], []
+        for number, file in enumerate(files, 1):
+            name = media.display_name(file.filename, f"Image {number}")
+            try:
+                items.append((name, "upload", read_image(file), None))
+                statuses.append(200)
+            except UploadError as exc:
+                items.append((name, "upload", None, str(exc)))
+                statuses.append(exc.status)
+        sample_keys = list(state.samples)
+        for sample_id in sample_ids:
+            path = state.samples.get(sample_id)
+            name = f"Sample {sample_keys.index(sample_id) + 1}" if path is not None else "Unknown sample"
+            try:
+                if path is None:
+                    raise UploadError("Unknown sample.", 404)
+                items.append((name, name, decode_upload(path.read_bytes()), None))
+                statuses.append(200)
+            except UploadError as exc:
+                items.append((name, name, None, str(exc)))
+                statuses.append(exc.status)
+        compare = form_flag(form, "compare")
         try:
-            return jsonify(state.analyze(frame, source, speak=speak, debug=debug))
-        except Exception as exc:
-            return jsonify(error=f"Analysis failed: {exc}"), 503
+            batch = state.analyze_batch(items, view=view, expected=expected, compare=compare,
+                                        speak=form_flag(form, "speak"), debug=form_flag(form, "debug"))
+        except ModeUnavailable as exc:
+            return jsonify(error=str(exc)), 503
+        if len(items) == 1 and not compare:
+            entry = batch["results"][0]
+            if "error" in entry:
+                return jsonify(error=entry["error"], **batch), statuses[0]
+            run = entry["runs"][0]
+            if "error" in run:
+                return jsonify(error=run["error"], **batch), 503
+            return jsonify({**batch, **run, "name": entry["name"], "image": run["images"][view]})
+        return jsonify(batch)
 
     @app.post("/mode")
     def mode():

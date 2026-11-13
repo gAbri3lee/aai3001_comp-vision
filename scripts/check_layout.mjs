@@ -13,11 +13,17 @@ import { join } from "node:path";
 
 const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const [base = "http://127.0.0.1:5000", outDir = "artifacts/screenshots", suffix = ""] = process.argv.slice(2);
+// `action` runs in the page after it loads (for example to open the results gallery).
+const ALL_SAMPLES = `document.getElementById("expected").value = "Stair";
+  document.getElementById("analyze-all-samples").click();`;
 const SIZES = [
   {name: "1920x1080", width: 1920, height: 1080, desktop: true, path: "/"},
   {name: "1366x768", width: 1366, height: 768, desktop: true, path: "/"},
   {name: "1366x768-debug", width: 1366, height: 768, desktop: true, path: "/?debug=1"},
   {name: "390x844", width: 390, height: 844, desktop: false, path: "/"},
+  {name: "1920x1080-gallery", width: 1920, height: 1080, desktop: true, path: "/", action: ALL_SAMPLES, wait: 9000},
+  {name: "1366x768-gallery", width: 1366, height: 768, desktop: true, path: "/", action: ALL_SAMPLES, wait: 9000},
+  {name: "390x844-gallery", width: 390, height: 844, desktop: false, path: "/", action: ALL_SAMPLES, wait: 9000},
 ];
 const MAIN_PARTS = ["header", "#mode-local", "#mode-cloud", "#pause", "#mute", ".video-wrap",
                     "#alert-banner", ".legend-wrap", "#model-status"];
@@ -79,6 +85,10 @@ for (const size of SIZES) {
                                                     deviceScaleFactor: 1, mobile: !size.desktop});
   await send("Page.navigate", {url: base + size.path});
   await sleep(3500);  // status polls and video frames arrive
+  if (size.action) {
+    await send("Runtime.evaluate", {expression: size.action});
+    await sleep(size.wait || 3000);
+  }
   const m = JSON.parse((await send("Runtime.evaluate", {expression: measure, returnByValue: true})).result.value);
   const shot = await send("Page.captureScreenshot", {format: "png"});
   const file = join(outDir, `gui2_${size.name}${suffix}.png`);

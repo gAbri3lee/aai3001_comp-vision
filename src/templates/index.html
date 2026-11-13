@@ -89,7 +89,7 @@
     position: relative; flex: 1 1 auto; min-height: 12rem; border-radius: 10px; overflow: hidden;
     background: var(--video-bg); display: flex; align-items: center; justify-content: center;
   }
-  .video-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .video-wrap > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
   .fps-badge {
     position: absolute; top: 0.5rem; right: 0.5rem; background: var(--overlay-bg); color: var(--overlay-text);
     padding: 0.15rem 0.55rem; border-radius: 20px; font-size: 0.75rem;
@@ -98,9 +98,9 @@
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
     padding: 1rem; font-size: 1.5rem; font-weight: 700; background: var(--overlay-bg); color: var(--overlay-text);
   }
-  .video-overlay[hidden], .view-badge[hidden], .level-chip[hidden] { display: none; }
+  .video-overlay[hidden], .view-badge[hidden], .level-chip[hidden], .video-wrap > img[hidden] { display: none; }
   .view-badge {
-    display: flex; gap: 0.6rem; align-items: center; justify-content: space-between; padding: 0.35rem 0.75rem;
+    display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; align-items: center; justify-content: space-between; padding: 0.35rem 0.75rem;
     border-radius: 8px; border: 2px dashed var(--accent); font-weight: 600;
   }
   .alert-banner {
@@ -128,7 +128,7 @@
   .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.65rem; font-size: 0.9rem; }
   .status-line { color: var(--muted); font-size: 0.8rem; }
   .scroll { overflow-y: auto; min-height: 3rem; }
-  .hazard-box { flex: 1 1 5rem; }
+  .hazard-box { flex: 1 0 7rem; }  /* never squeezed: the side panel scrolls instead */
   ul.hazards { list-style: none; padding: 0; margin: 0; }
   ul.hazards li {
     display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; align-items: baseline; padding: 0.35rem 0.55rem; margin-bottom: 0.3rem;
@@ -150,12 +150,45 @@
   .row label { color: var(--text); }
   input[type="range"] { flex: 1 1 8rem; accent-color: var(--accent); }
   input[type="file"] { max-width: 100%; color: var(--text); font-size: 0.85rem; }
-  input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
+  input[type="checkbox"] { flex: none; width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
+  .check { display: flex; gap: 0.45rem; align-items: flex-start; font-size: 0.9rem; }
+  .check[hidden] { display: none; }
   .log-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
   ol.log { list-style: none; margin: 0; padding: 0; font-size: 0.85rem; max-height: 7.5rem; overflow-y: auto; flex: 0 0 auto; }
   ol.log li { display: flex; flex-wrap: wrap; gap: 0 0.5rem; padding: 0.15rem 0; border-bottom: 1px solid var(--border); }
   ol.log .time, ol.log .backend { color: var(--muted); font-variant-numeric: tabular-nums; }
   ol.log .backend { margin-left: auto; }
+  /* Upload: images, video and the demo library. */
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .upload-panel { display: flex; flex-direction: column; gap: 0.4rem; }
+  .upload-panel[hidden], .gallery[hidden], .source-bar[hidden], .video-summary[hidden] { display: none; }
+  .drop {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; justify-content: space-between;
+    padding: 0.5rem 0.6rem; border: 2px dashed var(--muted); border-radius: 8px; color: var(--muted); font-size: 0.85rem;
+  }
+  .drop.over { border-color: var(--accent); border-style: solid; color: var(--text); }
+  .accuracy-note { color: var(--muted); font-size: 0.8rem; }
+  .gallery {
+    position: absolute; inset: 0; overflow-y: auto; background: var(--bg); padding: 0.6rem;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 0.6rem; align-content: start;
+  }
+  .gallery .summary { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 0.2rem; }
+  .gallery .summary strong { font-size: 1.1rem; }
+  .result-card { margin: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem; font-size: 0.85rem; }
+  .result-card.compare { grid-column: 1 / -1; }
+  .runs { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0.5rem; }
+  .result-card img { display: block; width: 100%; height: auto; border-radius: 6px; background: var(--video-bg); }
+  .run-head { display: flex; flex-wrap: wrap; gap: 0.15rem 0.5rem; align-items: baseline; margin: 0.2rem 0; }
+  .run-head .meta, .result-card .meta { color: var(--muted); font-size: 0.8rem; }
+  table.dets { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.3rem; }
+  table.dets th, table.dets td { text-align: left; padding: 0.1rem 0.3rem; border-bottom: 1px solid var(--border); }
+  table.dets th { color: var(--muted); font-weight: 600; }
+  .tag { font-size: 0.75rem; padding: 0 0.45rem; border-radius: 10px; border: 1px solid; font-weight: 700; }
+  .tag.ok { color: var(--note-text); border-color: var(--note-line); }
+  .tag.miss { color: var(--caution-text); border-color: var(--caution-line); }
+  .tag.err { color: var(--warn-text); border-color: var(--warn-line); }
   footer { color: var(--muted); font-size: 0.75rem; }
   footer details { display: inline; }
   footer summary { display: inline; cursor: pointer; text-decoration: underline; }
@@ -168,6 +201,8 @@
     main { grid-template-columns: minmax(0, 1fr); }
     .video-wrap { flex: none; aspect-ratio: 16 / 10; min-height: 0; }
     .side { overflow: visible; }
+    .video-wrap.gallery-open { aspect-ratio: auto; }
+    .video-wrap.gallery-open .gallery { position: static; width: 100%; max-height: 75vh; }
     .alert-banner { font-size: 1.35rem; }
   }
 </style>
@@ -202,9 +237,14 @@
       <img id="video" src="/video_feed" alt="Live annotated camera feed">
       <div class="fps-badge" id="fps-badge">-- FPS</div>
       <div class="video-overlay" id="video-overlay" hidden></div>
+      <div class="gallery" id="gallery" hidden aria-label="Analysis results" tabindex="0"></div>
     </div>
     <div class="view-badge" id="view-badge" hidden>
       <span id="view-text">Showing an analysed image</span>
+      <div class="switch" role="group" aria-label="Analysis view">
+        <button type="button" id="aview-recognition" data-view="recognition" aria-pressed="true">Recognition</button>
+        <button type="button" id="aview-alert" data-view="alert" aria-pressed="false">Alert</button>
+      </div>
       <button type="button" id="back-live">Back to live</button>
     </div>
     <div class="alert-banner level-clear" id="alert-banner" role="alert" aria-live="assertive" aria-atomic="true">
@@ -242,16 +282,36 @@
       <button type="button" id="clear-log">Clear</button>
     </div>
     <ol class="log" id="spoken-log" aria-labelledby="log-title" tabindex="0"></ol>
-    <h2>Analyse an image</h2>
-    <div class="row">
-      <label for="upload">Image file (JPEG or PNG, up to 10 MB, not stored)</label>
-      <input type="file" id="upload" accept="image/jpeg,image/png">
+    <h2 id="upload-title">Upload</h2>
+    <div class="switch" role="group" aria-labelledby="upload-title">
+      <button type="button" id="tab-images" data-panel="panel-images" aria-pressed="true">Images</button>
     </div>
-    <div class="row">
-      <label for="sample">Sample</label>
-      <select id="sample"><option value="">No samples</option></select>
-      <button type="button" id="analyze-sample">Analyse sample</button>
-      <label class="row"><input type="checkbox" id="speak-result"> Speak result</label>
+    <div class="upload-panel" id="panel-images">
+      <div class="drop" id="drop-images">
+        <span>Drop up to 20 JPEG or PNG images here (10 MB each, not stored)</span>
+        <button type="button" id="choose-images">Choose images</button>
+      </div>
+      <label for="upload" class="visually-hidden">Image files</label>
+      <input type="file" id="upload" class="visually-hidden" accept="image/jpeg,image/png" multiple tabindex="-1">
+      <div class="row">
+        <label for="image-view">View</label>
+        <select id="image-view">
+          <option value="recognition">Recognition: every detection, no speech</option>
+          <option value="alert">Alert: live rules</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="expected">These images show</label>
+        <select id="expected"><option value="">Not set</option></select>
+      </div>
+      <label class="check" id="compare-row" hidden><input type="checkbox" id="compare"> <span>Compare local and cloud side by side (sends the images to the cloud)</span></label>
+      <label class="check"><input type="checkbox" id="speak-result"> <span>Speak result (Alert view, one image)</span></label>
+      <div class="row">
+        <label for="sample">Sample</label>
+        <select id="sample"><option value="">No samples</option></select>
+        <button type="button" id="analyze-sample">Analyse sample</button>
+        <button type="button" id="analyze-all-samples">All samples</button>
+      </div>
     </div>
   </section>
 </main>
@@ -279,12 +339,17 @@
   const lastSpoken = $("last-spoken"), legend = $("legend"), spokenLog = $("spoken-log");
   const uploadInput = $("upload"), sampleSelect = $("sample"), speakResult = $("speak-result");
   const viewBadge = $("view-badge"), viewText = $("view-text");
+  const imageView = $("image-view"), expectedSelect = $("expected"), compareBox = $("compare"), compareRow = $("compare-row");
+  const videoWrap = document.querySelector(".video-wrap");
+  const gallery = $("gallery"), viewButtons = {recognition: $("aview-recognition"), alert: $("aview-alert")};
   const liveSrc = debug ? "/video_feed?debug=1" : "/video_feed";
   const MAX_UPLOAD = 10 * 1024 * 1024;
   if (debug) { video.src = liveSrc; $("ignored").open = true; }
 
   let latest = null;        // Last /status response.
   let analysis = null;      // Last /analyze result while the analysis view is shown.
+  let shownView = "recognition"; // Decision V1: images open in Recognition view.
+  let maxBatch = 20;
   let actionMessage = null; // Result of the last button press, shown until the next one.
   let bandLabels = {"near": "Warning", "mid-close": "Caution", "mid": "Note"};
 
@@ -337,6 +402,13 @@
   // The legend comes from the config (severity order), never from this page.
   fetch("/config").then(r => r.json()).then(config => {
     bandLabels = config.band_labels || bandLabels;
+    maxBatch = config.max_batch || maxBatch;
+    for (const name of config.classes || []) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      expectedSelect.appendChild(option);
+    }
     legend.replaceChildren(...config.priority.map(label => {
       const li = document.createElement("li");
       li.dataset.class = label;
@@ -345,35 +417,87 @@
     }));
   }).catch(() => {});
 
-  // Image analysis: the result replaces the live view until "Back to live".
+  // Image analysis. One image replaces the live view; several fill the results
+  // gallery. Both stay until "Back to live". Both views come back from the server,
+  // so switching view never sends the images again.
+  function note(severity, message) { actionMessage = {severity, message}; if (latest) renderMessages(latest); }
+
   async function analyze(form) {
+    form.append("view", imageView.value);
+    if (expectedSelect.value) form.append("expected", expectedSelect.value);
+    if (compareBox.checked && !compareRow.hidden) form.append("compare", "1");
     form.append("speak", speakResult.checked ? "1" : "0");
     if (debug) form.append("debug", "1");
+    note("info", "Analysing...");
     try {
       const res = await fetch("/analyze", {method: "POST", body: form});
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Analysis failed");
-      actionMessage = null;
-      analysis = data;
-      video.src = data.image;
-      video.alt = `Analysed image: ${data.source}`;
+      actionMessage = data.cloud_used ? {severity: "info", message: "Cloud used: these images were sent to the server."} : null;
+      showAnalysis(data);
     } catch (e) {
-      actionMessage = {severity: "error", message: e.message};
+      note("error", e.message);
     }
     pollStatus();
   }
-  uploadInput.addEventListener("change", () => {
-    const file = uploadInput.files[0];
-    uploadInput.value = "";
-    if (!file) return;
-    if (file.size > MAX_UPLOAD) {
-      actionMessage = {severity: "error", message: "The image is larger than 10 MB."};
-      pollStatus();
-      return;
+
+  function showAnalysis(data) {
+    const first = data.results[0];
+    const single = data.results.length === 1 && !data.compare && first.runs && !first.runs[0].error;
+    analysis = {...data, single: single ? {...first.runs[0], name: first.name} : null};
+    setShownView(data.view);
+  }
+
+  function setShownView(view) {
+    shownView = view;
+    for (const [name, button] of Object.entries(viewButtons)) button.setAttribute("aria-pressed", String(name === view));
+    if (!analysis) return;
+    if (analysis.single) {
+      gallery.hidden = true;
+      video.src = analysis.single.images[view];
+      video.alt = `Analysed image ${analysis.single.name}, ${view} view`;
+      videoWrap.classList.remove("gallery-open");
+      video.hidden = false;
+    } else {
+      videoWrap.classList.add("gallery-open");
+      video.hidden = true;  // the gallery replaces the live picture
+      video.removeAttribute("src");
+      renderGallery();
+      gallery.hidden = false;
     }
+  }
+
+  function sendImages(files) {
+    if (!files.length) return;
+    if (files.length > maxBatch) { note("error", `Upload at most ${maxBatch} images at once.`); return; }
+    const big = files.filter(f => f.size > MAX_UPLOAD);
     const form = new FormData();
-    form.append("image", file);
+    for (const file of files) if (file.size <= MAX_UPLOAD) form.append("image", file);
+    if (big.length) {
+      note("warning", `Not sent, larger than 10 MB: ${big.map(f => f.name).join(", ")}`);
+      if (big.length === files.length) return;
+    }
     analyze(form);
+  }
+
+  function dropZone(zone, onFiles) {
+    zone.addEventListener("dragover", event => { event.preventDefault(); zone.classList.add("over"); });
+    zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+    zone.addEventListener("drop", event => {
+      event.preventDefault();
+      zone.classList.remove("over");
+      onFiles([...event.dataTransfer.files]);
+    });
+  }
+  // A file dropped anywhere else must not make the browser leave the page.
+  for (const type of ["dragover", "drop"]) document.addEventListener(type, event => event.preventDefault());
+
+  dropZone($("drop-images"), sendImages);
+  $("choose-images").addEventListener("click", () => uploadInput.click());
+  uploadInput.addEventListener("change", () => {
+    const files = [...uploadInput.files];
+    uploadInput.value = "";
+    sendImages(files);
   });
   $("analyze-sample").addEventListener("click", () => {
     if (!sampleSelect.value) return;
@@ -381,12 +505,125 @@
     form.append("sample", sampleSelect.value);
     analyze(form);
   });
+  $("analyze-all-samples").addEventListener("click", () => {
+    const form = new FormData();
+    const ids = [...sampleSelect.options].map(o => o.value).filter(Boolean).slice(0, maxBatch);
+    if (!ids.length) return;
+    for (const id of ids) form.append("sample", id);
+    analyze(form);
+  });
+  for (const [view, button] of Object.entries(viewButtons)) {
+    button.addEventListener("click", () => { imageView.value = view; setShownView(view); pollStatus(); });
+  }
+  imageView.addEventListener("change", () => { if (analysis) { setShownView(imageView.value); pollStatus(); } });
   $("back-live").addEventListener("click", () => {
     analysis = null;
+    videoWrap.classList.remove("gallery-open");
+    video.hidden = false;
+    gallery.hidden = true;
+    gallery.replaceChildren();
     video.src = liveSrc;
     video.alt = "Live annotated camera feed";
     pollStatus();
   });
+
+  // Results gallery: one card per image, a detections table under each.
+  function expectedTag(expected) {
+    if (!expected) return null;
+    return expected.recognised ? span("tag ok", `Recognised: ${expected.class} ${expected.confidence.toFixed(2)}`)
+                               : span("tag miss", `Not recognised: ${expected.class}`);
+  }
+
+  function cell(tag, text) {
+    const el = document.createElement(tag);
+    el.textContent = text;
+    return el;
+  }
+
+  function detectionTable(run) {
+    const recognition = shownView === "recognition";
+    const table = document.createElement("table");
+    table.className = "dets";
+    const caption = cell("caption", recognition ? "Every detection" : "Alert decision");
+    caption.className = "visually-hidden";
+    const head = document.createElement("tr");
+    for (const h of recognition ? ["Class", "Confidence", "Where"] : ["Class", "Confidence", "Where", "Alert"]) head.appendChild(cell("th", h));
+    table.append(caption, head);
+    const rows = recognition ? run.recognition : run.detections;
+    for (const d of rows) {
+      const tr = document.createElement("tr");
+      const name = d.class + (d.source === "general" && d.class !== "Object" ? " (general)" : "");
+      tr.append(cell("td", name), cell("td", d.confidence.toFixed(2)), cell("td", POSITION_TEXT[d.position] || d.position));
+      if (!recognition) {
+        tr.appendChild(cell("td", d.gated ? (bandLabels[d.band] || "Alert") + (isSpoken(d, run.selected) ? ", selected" : "")
+                                          : "ignored: " + (REASON_TEXT[d.reason] || d.reason)));
+      }
+      table.appendChild(tr);
+    }
+    if (!rows.length) {
+      const tr = document.createElement("tr");
+      const td = cell("td", recognition ? "Nothing detected" : "No detections");
+      td.colSpan = recognition ? 3 : 4;
+      tr.appendChild(td);
+      table.appendChild(tr);
+    }
+    return table;
+  }
+
+  function runBlock(run, name) {
+    const div = document.createElement("div");
+    const head = document.createElement("div");
+    head.className = "run-head";
+    head.appendChild(span("meta", `${run.mode}: ${run.model}`));
+    if (run.error) {
+      head.appendChild(span("tag err", "Failed"));
+      div.append(head, span("meta", run.error));
+      return div;
+    }
+    const timing = run.round_trip_ms ?? run.latency_ms;
+    if (timing != null) head.appendChild(span("meta", `${timing.toFixed(0)} ms`));
+    const tag = expectedTag(run.expected);
+    if (tag) head.appendChild(tag);
+    if (shownView === "alert") head.appendChild(span("meta", run.alert || "No alert"));
+    const img = document.createElement("img");
+    img.src = run.images[shownView];
+    img.alt = `${name}, ${run.mode}, ${shownView} view`;
+    div.append(head, img, detectionTable(run));
+    return div;
+  }
+
+  function renderGallery() {
+    const head = document.createElement("div");
+    head.className = "summary";
+    const count = analysis.results.length;
+    head.appendChild(cell("strong", `${count} image${count === 1 ? "" : "s"} analysed, ${shownView} view` +
+                                     (analysis.compare ? ", local and cloud side by side" : "")));
+    for (const s of analysis.summary) {
+      head.appendChild(span("", (analysis.compare ? `${s.backend}: ` : "") + s.text +
+                                (s.skipped ? ` (${s.skipped} not analysed)` : "")));
+    }
+    if (analysis.summary.length) head.appendChild(span("accuracy-note", analysis.accuracy_note));
+    const cards = analysis.results.map(entry => {
+      const card = document.createElement("figure");
+      card.className = "result-card" + (analysis.compare ? " compare" : "");
+      const caption = document.createElement("figcaption");
+      caption.className = "run-head";
+      caption.appendChild(span("name", entry.name));
+      card.appendChild(caption);
+      if (entry.error) {
+        caption.appendChild(span("tag err", "Not analysed"));
+        card.appendChild(span("meta", entry.error));
+        return card;
+      }
+      const runs = document.createElement("div");
+      runs.className = "runs";
+      for (const run of entry.runs) runs.appendChild(runBlock(run, entry.name));
+      card.appendChild(runs);
+      return card;
+    });
+    gallery.replaceChildren(head, ...cards);
+  }
+
   fetch("/samples").then(r => r.json()).then(samples => {
     if (!samples.length) return;
     sampleSelect.replaceChildren(...samples.map(s => {
@@ -408,6 +645,7 @@
     modeButtons.cloud.textContent = data.cloud_available ? "Cloud" : "Cloud unavailable";
     modeButtons.cloud.title = data.cloud_unavailable_reason || "";
     retryCloud.hidden = !data.fallback_active;
+    compareRow.hidden = !data.cloud_available;  // decision V6
   }
 
   function renderMessages(data) {
@@ -469,6 +707,22 @@
     return "level-note";
   }
 
+  // Recognition view: detections as list rows, and a one-line summary for the banner.
+  function asRows(recognition) {
+    return recognition.map(d => ({...d, gated: true, band: null, source: "trained", priority: d.confidence}));
+  }
+  function recognitionText(recognition) {
+    if (!recognition.length) return "Recognition view: nothing recognised";
+    return "Recognised: " + recognition.map(d => `${d.class} ${d.confidence.toFixed(2)}`).join(", ");
+  }
+
+  function batchBanner(result) {
+    const summary = result.summary;
+    if (!summary.length) return `${result.results.length} images analysed`;
+    if (summary.length === 1) return summary[0].text;
+    return `${summary[0].class} recognised: ` + summary.map(s => `${s.backend} ${s.recognised} of ${s.total}`).join(", ");
+  }
+
   function isSpoken(d, selected) {
     return !!selected && d.gated && d.class === selected.class && d.position === selected.position;
   }
@@ -503,16 +757,28 @@
       renderControls(data);
       renderMessages(data);
       renderLog(data.spoken_log);
-      // In analysis view the banner and lists describe the analysed image.
-      const view = analysis ? {...data, alert: analysis.alert, alerts: analysis.alerts,
-                               detections: analysis.detections, selected: analysis.selected,
-                               latency_ms: analysis.latency_ms, round_trip_ms: analysis.round_trip_ms,
-                               model: analysis.model, backend: analysis.mode, error: "", paused: false}
-                            : data;
+      // In analysis view the banner and lists describe the analysed image (one image)
+      // or the batch summary (gallery). Recognition view lists every detection.
+      const run = analysis && analysis.single;
+      const recognising = !!analysis && shownView === "recognition";
+      let view = data;
+      if (run) {
+        view = {...data, alert: recognising ? recognitionText(run.recognition) : run.alert,
+                alerts: run.alerts, detections: recognising ? asRows(run.recognition) : run.detections,
+                selected: recognising ? null : run.selected, latency_ms: run.latency_ms,
+                round_trip_ms: run.round_trip_ms, model: run.model, backend: run.mode, error: "", paused: false};
+      } else if (analysis) {
+        view = {...data, alert: batchBanner(analysis),
+                alerts: [], detections: [], selected: null, error: "", paused: false};
+      }
       viewBadge.hidden = !analysis;
-      if (analysis) viewText.textContent = `Showing: ${analysis.source === "upload" ? "uploaded image" : analysis.source}` +
-                                           (analysis.spoken ? " (spoken)" : "");
-      fpsBadge.textContent = analysis ? "Image" : `${data.fps.toFixed(1)} FPS`;
+      if (analysis) {
+        const tag = run && run.expected ? (run.expected.recognised ? `, recognised as ${run.expected.class}`
+                                                                   : `, not recognised as ${run.expected.class}`) : "";
+        viewText.textContent = run ? `Showing: ${run.name}${tag}${run.spoken ? " (spoken)" : ""}`
+                                   : `Showing: ${analysis.results.length} analysed images`;
+      }
+      fpsBadge.textContent = analysis ? (run ? "Image" : "Images") : `${data.fps.toFixed(1)} FPS`;
 
       const detections = view.detections || [];
       const gated = detections.filter(d => d.gated).sort((a, b) => b.priority - a.priority);
@@ -523,10 +789,13 @@
       const blocking = analysis ? null : (data.health || []).find(h => h.severity === "error");
       const problem = blocking ? blocking.message : view.error;
       alertText.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") || view.alert || "No hazards";
-      alertBanner.className = "alert-banner " + (problem ? "level-warning" : levelClassFor(view.alert, top && top.band));
+      // Recognition results and batch summaries are information, not alerts.
+      const informational = recognising || (analysis && !run);
+      alertBanner.className = "alert-banner " + (problem ? "level-warning" : informational ? "level-clear"
+                                                 : levelClassFor(view.alert, top && top.band));
       // The level is written out, never shown by colour alone.
       const word = view.alert && ["Warning", "Caution", "Note"].find(w => view.alert.startsWith(w));
-      const level = problem ? "Problem" : view.alert ? (top && bandLabels[top.band]) || word || "Alert" : "";
+      const level = problem ? "Problem" : informational ? "" : view.alert ? (top && bandLabels[top.band]) || word || "Alert" : "";
       levelChip.hidden = !level;
       levelChip.textContent = level;
       renderLegend(!problem && top ? top.class : null);
@@ -544,11 +813,13 @@
                                     data.paused ? "paused" : null, debug ? "debug view" : null].filter(Boolean).join(" · ");
 
       objectAlerts.replaceChildren();
-      if (problem) {
+      if (analysis && !run) {
+        objectAlerts.appendChild(span("meta", "See the results gallery."));
+      } else if (problem) {
         objectAlerts.appendChild(span("meta", problem));
       } else if (!gated.length) {
         const li = document.createElement("li");
-        li.textContent = "No hazards";
+        li.textContent = recognising ? "Nothing recognised" : "No hazards";
         objectAlerts.appendChild(li);
       } else {
         for (const d of gated) objectAlerts.appendChild(row(d, view.selected, data.muted && !analysis));
