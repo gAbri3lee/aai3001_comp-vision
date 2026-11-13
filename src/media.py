@@ -62,10 +62,10 @@ def _three_places(value):
     return f'{math.floor(value * 1000) / 1000:.3f}'
 
 
-def accuracy_note(config):
+def accuracy_note(config, subject='these images'):
     """The caption shown next to every score, from the recorded test results."""
     test_images = config['dataset']['split_images']['test']
-    return (f"This is a check on these images only. Tested accuracy on {test_images} test images: "
+    return (f"This is a check on {subject} only. Tested accuracy on {test_images} test images: "
             f"local mAP50 {_three_places(config['local']['expected']['test_map50'])}, "
             f"cloud mAP50 {_three_places(config['cloud']['expected']['test_map50'])}.")
 
@@ -76,3 +76,172 @@ def valid_expected(value):
     if value not in CLASS_NAMES:
         raise ValueError('expected must be one of: ' + ', '.join(CLASS_NAMES))
     return value
+
+
+# Video upload (decision V3): MP4, MOV or WebM, at most 150 MB and 120 seconds.
+VIDEO_SUFFIXES = (".mp4", ".mov", ".webm")
+MAX_VIDEO_BYTES = 150 * 1024 * 1024
+MAX_VIDEO_SECONDS = 120
+MAX_VIDEO_SIDE = 7680        # larger frames are refused
+INFERENCE_MAX_SIDE = 1920    # larger frames (for example 4K) are downscaled before inference
+TEMP_PREFIX = "visionaid-video-"
+
+
+class MediaError(ValueError):
+    """A file the app will not use, with a message for the page and an HTTP status."""
+    def __init__(self, message, status=400):
+        super().__init__(message)
+        self.status = status
+
+
+def video_suffix(name):
+    """The type comes from the client's name only to pick one of our own suffixes."""
+    suffix = '.' + name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+    if suffix not in VIDEO_SUFFIXES:
+        raise MediaError("Upload an MP4, MOV or WebM video.", 415)
+    return suffix
+
+
+def looks_like_video(head: bytes):
+    """MP4 and MOV start with an ISO media box; WebM with the EBML header."""
+    return head[4:8] in (b"ftyp", b"moov", b"mdat", b"wide", b"free", b"skip") or head[:4] == b"\x1a\x45\xdf\xa3"
+
+
+def probe_video(path):
+    """Open the file with OpenCV and enforce the limits. Rotation metadata is
+    applied by OpenCV (auto-orientation), so sizes are those of the upright picture."""
+    import cv2
+    with open(path, "rb") as file:
+        if not looks_like_video(file.read(16)):
+            raise MediaError("Upload an MP4, MOV or WebM video.", 415)
+    capture = cv2.VideoCapture(str(path))
+    try:
+        if not capture.isOpened():
+            raise MediaError("Could not read this video. The file may be damaged.")
+        ok, frame = capture.read()
+        if not ok or frame is None:
+            raise MediaError("Could not read this video. The file may be damaged.")
+        fps = capture.get(cv2.CAP_PROP_FPS)
+        if not fps or not math.isfinite(fps) or not 0 < fps <= 240:
+            raise MediaError("Could not read the frame rate of this video.")
+        frames = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+        if not frames or not math.isfinite(frames) or frames <= 0:
+            # Some containers do not record a frame count: count, but stop at the limit.
+            frames, limit = 1, MAX_VIDEO_SECONDS * fps + 1
+            while frames <= limit and capture.grab():
+                frames += 1
+        duration = frames / fps
+        if duration > MAX_VIDEO_SECONDS:
+            raise MediaError(f"The video is longer than {MAX_VIDEO_SECONDS} seconds ({duration:.0f} s).")
+        height, width = frame.shape[:2]
+        if max(width, height) > MAX_VIDEO_SIDE:
+            raise MediaError("The video frames are too large.")
+        return {"fps": round(fps, 3), "duration": round(duration, 2), "width": int(width), "height": int(height)}
+    finally:
+        capture.release()
+
+
+class TempStore:
+    """Private temporary folder for uploaded videos. Files get random names, are
+    readable only by this user, and the folder is removed when the app stops. A
+    folder left behind by a crashed run is removed at the next start."""
+
+    def __init__(self):
+        self.root = None
+
+    def _folder(self):
+        import os
+        import tempfile
+        from pathlib import Path
+        if self.root is None:
+            # mkdtemp creates the folder readable only by this user.
+            self.root = Path(tempfile.mkdtemp(prefix=f"{TEMP_PREFIX}{os.getpid()}-"))
+        return self.root
+
+    def save(self, stream, suffix):
+        """Copy an upload into a new private file, stopping at the size limit."""
+        import os
+        import tempfile
+        from pathlib import Path
+        handle, name = tempfile.mkstemp(suffix=suffix, dir=self._folder())
+        path = Path(name)
+        try:
+            written = 0
+            with os.fdopen(handle, "wb") as out:
+                while True:
+                    chunk = stream.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    written += len(chunk)
+                    if written > MAX_VIDEO_BYTES:
+                        raise MediaError("The video is larger than 150 MB.", 413)
+                    out.write(chunk)
+            if written == 0:
+                raise MediaError("The file is empty.")
+            return path
+        except BaseException:
+            path.unlink(missing_ok=True)
+            raise
+
+    @staticmethod
+    def delete(path):
+        if path is not None:
+            path.unlink(missing_ok=True)
+
+    def cleanup(self):
+        import shutil
+        if self.root is not None:
+            shutil.rmtree(self.root, ignore_errors=True)
+            self.root = None
+
+    @staticmethod
+    def remove_stale():
+        """Remove folders from earlier runs whose process has ended."""
+        import os
+        import shutil
+        import tempfile
+        from pathlib import Path
+        for folder in Path(tempfile.gettempdir()).glob(TEMP_PREFIX + "*"):
+            try:
+                pid = int(folder.name[len(TEMP_PREFIX):].split("-", 1)[0])
+                if folder.is_symlink() or not folder.is_dir() or folder.stat().st_uid != os.getuid():
+                    continue
+                if pid == os.getpid():
+                    continue
+                os.kill(pid, 0)  # still running: leave it alone
+            except ProcessLookupError:
+                shutil.rmtree(folder, ignore_errors=True)
+            except (ValueError, OSError):
+                continue
+
+
+class ClassSummary:
+    """Per-class record while a video plays (decision V8): first and last time a
+    class was seen, in how many processed frames, and its highest confidence.
+    Counts every trained detection, as in Recognition view, whatever the view."""
+
+    def __init__(self):
+        self.frames = 0
+        self.classes = {}
+
+    def add(self, position, recognition):
+        self.frames += 1
+        for label in {d["class"] for d in recognition}:
+            best = max(d["confidence"] for d in recognition if d["class"] == label)
+            entry = self.classes.setdefault(label, {"first_seen": position, "last_seen": position,
+                                                    "frames": 0, "max_confidence": 0.0})
+            entry["last_seen"] = position
+            entry["frames"] += 1
+            entry["max_confidence"] = max(entry["max_confidence"], best)
+
+    def to_list(self):
+        """All five classes, so a class that never appeared shows as not seen."""
+        rows = []
+        for label in CLASS_NAMES:
+            entry = self.classes.get(label)
+            rows.append({"class": label, "seen": entry is not None,
+                         "first_seen": None if entry is None else round(entry["first_seen"], 1),
+                         "last_seen": None if entry is None else round(entry["last_seen"], 1),
+                         "frames": 0 if entry is None else entry["frames"],
+                         "max_confidence": None if entry is None else round(entry["max_confidence"], 2)})
+        return rows

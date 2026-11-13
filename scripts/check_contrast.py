@@ -41,6 +41,8 @@ PAIRS = [
     ('text', 'card', 3.0, 'current legend entry border'),
     ('muted', 'panel', 3.0, 'upload drop zone border'),
     ('accent', 'panel', 3.0, 'drop zone border while a file is dragged over'),
+    ('muted', 'overlay-bg', 4.5, 'video summary headings and caption'),
+    ('accent', 'card', 3.0, 'video bar border and progress'),
 ]
 
 

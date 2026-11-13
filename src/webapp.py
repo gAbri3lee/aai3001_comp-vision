@@ -24,7 +24,7 @@ from detection import annotate_hazards, annotate_recognition
 from capture import LatestFrameCapture, limit_size
 import media
 
-from decision_engine import AlertPolicy, phrase_for
+from decision_engine import AlertPolicy, assess, phrase_for
 import distance
 
 # Status fields cleared whenever results expire, fail or the source ends.
@@ -44,6 +44,8 @@ HEALTH_MESSAGES = {
     "no_video": ("error", "No video. Waiting for camera."),
     "source_ended": ("info", "The video file has ended. Restart the app to play it again."),
     "pipeline_stopped": ("error", "Processing stopped. Restart the app."),
+    "video_ended": ("info", "The video has ended. Replay it or go back to the camera."),
+    "video_deleted": ("info", "The video has ended and its temporary copy was deleted. Upload it again to replay it."),
 }
 
 
@@ -73,10 +75,7 @@ SAMPLE_DIRS = ("demo", "golden/images")
 SAMPLE_SUFFIXES = (".jpg", ".jpeg", ".png")
 
 
-class UploadError(ValueError):
-    def __init__(self, message, status=400):
-        super().__init__(message)
-        self.status = status
+UploadError = media.MediaError  # a rejected file: message for the page plus an HTTP status
 
 
 def decode_upload(data: bytes):
@@ -227,7 +226,9 @@ class PipelineState:
         if self.speaker is not None:
             self.speaker.rate = RATE_DEFAULT
         self.policy = AlertPolicy(self.settings['alert_gate'], self.settings['severity'])
-        self.accuracy_note = media.accuracy_note(load_config(args.config))
+        config = load_config(args.config)
+        self.accuracy_note = media.accuracy_note(config)
+        self.video_accuracy_note = media.accuracy_note(config, "this video")
         # Optional distance estimate for the debug panel only (never spoken).
         self.calibration = distance.load_calibration()
         self._lock = threading.Lock()
@@ -250,6 +251,19 @@ class PipelineState:
                        "distance_calibrated": self.calibration is not None}
 
         self._stop = threading.Event()
+
+        # Uploaded or library video playing instead of the start source (third hand-over).
+        media.TempStore.remove_stale()
+        self.store = media.TempStore()
+        self.video = None
+        self.video_ended = False
+        self._video_ended_at = None
+        self.video_position = 0.0
+        self.view = "alert"
+        self.summary = media.ClassSummary()
+        self._pending = None
+        self._last_frame = None
+        self._upload_lock = threading.Lock()
 
         self._source = int(args.source) if str(args.source).isdigit() else args.source
         self._is_camera = isinstance(self._source, int)
@@ -340,7 +354,7 @@ class PipelineState:
     def _no_video(self):
         """Caller holds the lock. The camera is open but has sent nothing for a while."""
         return (self.capture is not None and not self.source_ended and not self.pipeline_stopped
-                and time.monotonic() - self._last_frame_at > self.NO_VIDEO_SECONDS)
+                and not self.paused and time.monotonic() - self._last_frame_at > self.NO_VIDEO_SECONDS)
 
     def _health(self):
         """Caller holds the lock. Plain messages for problems while running."""
@@ -353,6 +367,8 @@ class PipelineState:
             codes.append("no_video")
         if self.source_ended:
             codes.append("source_ended")
+        if self.video is not None and self.video_ended:
+            codes.append("video_ended" if self.video["path"].exists() else "video_deleted")
         if self.fallback_active:
             codes.append("cloud_unreachable")
         if getattr(self.detectors[self.mode], "general_error", None):
@@ -371,6 +387,11 @@ class PipelineState:
             elif self._frame_is_stale():
                 status.update(EMPTY_RESULT, error="Frame is stale; waiting for fresh inference")
             status["health"] = self._health()
+            status["source"] = self._source_fields()
+            status["view"] = self.view
+            status["video_summary"] = self.summary.to_list() if self.video is not None else None
+            status["frames_processed"] = self.summary.frames if self.video is not None else None
+            status["accuracy_note"] = self.video_accuracy_note
             return status
 
     # Pause, mute and speech ------------------------------------------------
@@ -408,6 +429,8 @@ class PipelineState:
 
         stop_speech = False
         with self._lock:
+            capture = self.capture
+            file_source = self.video is not None or not self._is_camera
             if "paused" in body:
                 if body["paused"] != self.paused:
                     self._paused_shown = False
@@ -421,6 +444,11 @@ class PipelineState:
             if rate is not None:
                 self.speech_rate = rate
             speaker = self.speaker
+        if "paused" in body and file_source and capture is not None:
+            # A video stops where it is; a camera keeps streaming while paused.
+            toggle = getattr(capture, "pause" if body["paused"] else "resume", None)
+            if toggle is not None:
+                toggle()
         if speaker is not None:
             speaker.rate = self.speech_rate
             if stop_speech:
@@ -554,11 +582,169 @@ class PipelineState:
             item['distance_note'] = note
         return item
 
+    # Video source ---------------------------------------------------------
+
+    VIDEO_KEEP_SECONDS = 600  # an ended upload stays available for Replay this long
+
+    def _source_fields(self):
+        """Caller holds the lock. The name is for display only, never a path."""
+        home = "camera" if self._is_camera else "file"
+        # A switch the loop has not applied yet is reported as already started.
+        pending = self._pending is not None
+        video = self._pending[1] if pending else self.video
+        if video is None:
+            return {"type": "camera" if self._is_camera else "video", "origin": home, "home": home,
+                    "name": "Camera" if self._is_camera else "Video file", "duration": None,
+                    "position": None, "fps": None, "ended": False if pending else self.source_ended,
+                    "replay_available": False}
+        position = 0.0 if pending else min(self.video_position, video["duration"])
+        return {"type": "video", "origin": "upload" if video["temporary"] else "library", "home": home,
+                "name": video["name"], "duration": video["duration"], "position": round(position, 1),
+                "fps": video["fps"], "ended": False if pending else self.video_ended,
+                "replay_available": video["path"].exists()}
+
+    def source_state(self) -> dict:
+        with self._lock:
+            return {"source": self._source_fields(), "view": self.view}
+
+    def upload_video(self, file) -> dict:
+        """Save one uploaded video under a random private name, check it and play it
+        through the live loop. One upload at a time; any failure deletes the copy."""
+        if not self._upload_lock.acquire(blocking=False):
+            raise UploadError("Another video is being uploaded. Wait for it to finish.", 409)
+        try:
+            name = media.display_name(file.filename, "Uploaded video")
+            path = self.store.save(file.stream, media.video_suffix(name))
+            try:
+                self._play(path, name, temporary=True)
+            except BaseException:
+                self.store.delete(path)
+                raise
+        finally:
+            self._upload_lock.release()
+        return self.source_state()
+
+    def play_library_video(self, path, name) -> dict:
+        """A prepared video from demo/videos. It is the presenter's file: never deleted."""
+        self._play(path, name, temporary=False)
+        return self.source_state()
+
+    def _play(self, path, name, temporary):
+        info = media.probe_video(path)
+        try:
+            capture = LatestFrameCapture(str(path), max_side=media.INFERENCE_MAX_SIDE)
+        except RuntimeError as exc:
+            raise UploadError("Could not read this video. The file may be damaged.") from exc
+        self._switch(capture, {"name": name, "path": path, "temporary": temporary, **info})
+
+    def source_control(self, body) -> dict:
+        """`action`: restart (also Replay) or camera (back to the start source).
+        `view`: recognition or alert. Validated before anything changes."""
+        if not isinstance(body, dict) or not body:
+            raise ValueError("Send a JSON object with action or view")
+        unknown = sorted(set(body) - {"action", "view"})
+        if unknown:
+            raise ValueError(f"Unknown control: {', '.join(unknown)}")
+        action, view = body.get("action"), body.get("view")
+        if action is not None and action not in ("restart", "camera"):
+            raise ValueError('action must be "restart" or "camera"')
+        if view is not None and view not in VIEWS:
+            raise ValueError('view must be "recognition" or "alert"')
+        if view is not None:
+            with self._lock:
+                if view != self.view:
+                    self._reset_policy = True  # back in Alert view, the next hazard is spoken
+                self.view = view
+                speaker = self.speaker
+            if view == "recognition" and speaker is not None:
+                speaker.stop()  # Recognition view never speaks
+        if action == "restart":
+            with self._lock:
+                video = self.video
+            if video is None:
+                raise ControlConflict("No video is playing.")
+            if not video["path"].exists():
+                raise ControlConflict("The temporary copy was deleted. Upload the video again.")
+            try:
+                capture = LatestFrameCapture(str(video["path"]), max_side=media.INFERENCE_MAX_SIDE)
+            except RuntimeError as exc:
+                raise ControlConflict("Could not reopen the video.") from exc
+            self._switch(capture, video)
+        elif action == "camera":
+            self._switch(None, None)
+        return self.source_state()
+
+    def _switch(self, capture, video):
+        """Hand a new source to the loop thread, which swaps it in between frames.
+        A switch that was still waiting is dropped and its file deleted."""
+        with self._lock:
+            replaced, self._pending = self._pending, (capture, video)
+            if video is None:
+                self.view = "alert"  # the camera always uses the live rules
+        if replaced is not None:
+            self._discard(*replaced, keep=video)
+
+    def _discard(self, capture, video, keep=None):
+        if capture is not None:
+            capture.release()
+        if video is not None and video["temporary"] and (keep is None or keep["path"] != video["path"]):
+            self.store.delete(video["path"])
+
+    def _apply_pending(self):
+        """Loop thread only: start the source asked for by upload, Replay or Back to camera."""
+        with self._lock:
+            pending, self._pending = self._pending, None
+        if pending is None:
+            return
+        capture, video = pending
+        old_capture, old_video = self.capture, self.video
+        self._discard(old_capture if old_capture is not capture else None, old_video, keep=video)
+        with self._lock:
+            self.capture, self.video = capture, video
+            self.video_ended, self._video_ended_at, self.video_position = False, None, 0.0
+            self.source_ended = self.camera_missing = False
+            self.summary = media.ClassSummary()
+            self._reset_policy = True  # a new source starts with no cooldowns
+            if video is None:
+                self.view = "alert"  # the camera always uses the live rules
+            self.status.update(EMPTY_RESULT, error="")
+            self._latest_jpeg = self._latest_debug_jpeg = None
+            self._frame_captured_at = None
+            self._last_frame, self._paused_shown = None, False
+            self._last_frame_at = time.monotonic()
+            paused = self.paused
+        if capture is not None and paused:
+            capture.pause()
+        if capture is None:
+            self._next_camera_try = 0.
+
+    def _video_finished(self):
+        """Decision V8: the pipeline stays up; the page shows the summary, Replay
+        and Back to camera. The last picture stays on screen."""
+        self.capture.release()
+        with self._lock:
+            self.capture = None
+            self.video_ended, self._video_ended_at = True, time.monotonic()
+            self.status.update(EMPTY_RESULT)
+            self._frame_captured_at = None  # the last picture is kept, never "stale"
+
+    def _expire_ended_video(self):
+        with self._lock:
+            video, ended_at = self.video, self._video_ended_at
+        if (video is not None and video["temporary"] and ended_at is not None
+                and time.monotonic() - ended_at > self.VIDEO_KEEP_SECONDS):
+            self.store.delete(video["path"])
+
     def stop(self):
         self._stop.set()
         self._thread.join(timeout=self.args.timeout + 3)
         if self.capture is not None:
             self.capture.release()
+        with self._lock:
+            pending, self._pending = self._pending, None
+        if pending is not None:
+            self._discard(*pending)
+        self.store.cleanup()  # every uploaded video goes with the app
 
     # Camera ---------------------------------------------------------------
 
@@ -594,28 +780,43 @@ class PipelineState:
         try:
             prev_time = time.monotonic()
             while not self._stop.is_set():
+                self._apply_pending()
                 if self.capture is None:
-                    if not self._try_open_camera():
+                    if self.video is not None or self.source_ended:
+                        # An ended video waits for Replay, Back to camera or a new upload.
+                        self._expire_ended_video()
+                        self._stop.wait(0.05)
+                    elif not self._try_open_camera():
                         self._stop.wait(0.05)
                     continue
                 ok, frame, captured_at = self.capture.read()
                 if not ok:
                     if self.capture.finished:
+                        if self.video is not None:
+                            self._video_finished()
+                            continue
                         if self._is_camera:
                             self._camera_lost()  # Unplugged: keep the page up and retry.
                             continue
+                        self.capture.release()
                         with self._lock:
+                            self.capture = None
                             self.status.update(EMPTY_RESULT, error="Camera/source ended")
                             self.source_ended = True
                             self._latest_jpeg = self._latest_debug_jpeg = None
                             self._frame_captured_at = None
-                        break
+                        continue  # the page stays usable: uploads and Back to camera still work
+                    if self.paused and self._last_frame is not None:
+                        self._show_paused(self._last_frame)  # a paused video sends no frames
                     self._stop.wait(0.01)
                     continue
+                position = getattr(self.capture, "position", 0.0)
+                self._last_frame = frame
                 with self._lock:
                     self._last_frame_at = time.monotonic()
                     paused = self.paused
                     mode = self.mode
+                    view = self.view if self.video is not None or not self._is_camera else "alert"
                     if self._reset_policy:
                         self.policy.reset()
                         self._reset_policy = False
@@ -625,6 +826,7 @@ class PipelineState:
                 error = ""
                 batch = None
                 result = None
+                recognition = []
                 spoken_at = None
                 annotated = debug_annotated = frame
 
@@ -642,13 +844,25 @@ class PipelineState:
                         self._fall_back(exc)
                         continue
                     error = str(exc)
-                if batch is not None:
+                if batch is not None and view == "recognition":
+                    try:
+                        # Recognition view (video only): every trained detection, no gate,
+                        # no cooldown and no speech. The alert policy is not touched.
+                        check_fresh('Inference result is stale; discarded')
+                        hazards_seen = assess(batch.detections, (frame.shape[1], frame.shape[0]),
+                                              self.settings['alert_gate'], self.settings['severity'])
+                        recognition = media.recognition_dicts(hazards_seen)
+                        annotated = debug_annotated = annotate_recognition(frame, hazards_seen)
+                    except Exception as exc:
+                        error = str(exc)
+                elif batch is not None:
                     try:
                         # One decision per frame: banner, list, highlight and speech all
                         # come from these gated hazards (decision D6).
                         with self._detect_lock:
                             result = decide(frame, batch, self.policy, self.depth_estimator,
                                             check=lambda: check_fresh('Inference result is stale; discarded'))
+                        recognition = media.recognition_dicts(result.hazards)
                         annotated, debug_annotated = annotate(frame, result)
                         if result.speak is not None and self._speak(result.speak):
                             spoken_at = time.time()
@@ -657,6 +871,7 @@ class PipelineState:
                         error = str(exc)
                 if error:
                     batch = result = None
+                    recognition = []
                     annotated = debug_annotated = frame
 
                 now = time.monotonic()
@@ -682,6 +897,11 @@ class PipelineState:
                     self.status["latency_ms"] = batch.latency_ms if batch else None
                     self.status["round_trip_ms"] = batch.round_trip_ms if batch else None
                     self.status["detections"] = [self._detection_dict(hazard, frame.shape[0]) for hazard in hazards]
+                    self.status["recognition"] = recognition
+                    if self.video is not None and batch is not None:
+                        self.summary.add(position, recognition)
+                    if self.video is not None:
+                        self.video_position = position
         except Exception as exc:
             with self._lock:
                 self.status['error'] = f'Pipeline stopped: {exc}'
@@ -736,6 +956,8 @@ def create_app(state: PipelineState) -> Flask:
 
     @app.errorhandler(413)
     def too_large(_):
+        if request.path == "/source":
+            return jsonify(error="The video is larger than 150 MB."), 413
         return jsonify(error=f"The upload is too large: at most {media.MAX_BATCH} images, "
                              "each up to 10 MB."), 413
 
@@ -747,6 +969,8 @@ def create_app(state: PipelineState) -> Flask:
                        shortcuts={"Space": "pause", "M": "mute", "C": "mode"},
                        max_upload_bytes=MAX_UPLOAD_BYTES, max_batch=media.MAX_BATCH,
                        classes=list(CLASS_NAMES), views=list(VIEWS),
+                       max_video_bytes=media.MAX_VIDEO_BYTES, max_video_seconds=media.MAX_VIDEO_SECONDS,
+                       video_types=list(media.VIDEO_SUFFIXES),
                        accuracy_note=getattr(state, "accuracy_note", None) or media.accuracy_note(load_config()))
 
     @app.get("/samples")
@@ -822,6 +1046,30 @@ def create_app(state: PipelineState) -> Flask:
                 return jsonify(error=run["error"], **batch), 503
             return jsonify({**batch, **run, "name": entry["name"], "image": run["images"][view]})
         return jsonify(batch)
+
+    @app.post("/source")
+    def source():
+        """Play a video through the live pipeline instead of the camera: multipart
+        field `video` (MP4, MOV or WebM, at most 150 MB and 120 s). The file gets a
+        random private name and is deleted when it is replaced, on Back to camera,
+        on an error and when the app stops."""
+        request.max_content_length = media.MAX_VIDEO_BYTES + 1024 * 1024
+        try:
+            if "video" in request.files:
+                return jsonify(state.upload_video(request.files["video"]))
+            raise UploadError("Choose a video file.")
+        except UploadError as exc:
+            return jsonify(error=str(exc)), exc.status
+
+    @app.post("/source/control")
+    def source_control():
+        """JSON `action` (restart or camera) and/or `view` (recognition or alert)."""
+        try:
+            return jsonify(state.source_control(request.get_json(silent=True)))
+        except ControlConflict as exc:
+            return jsonify(error=str(exc), **state.source_state()), 409
+        except ValueError as exc:
+            return jsonify(error=str(exc)), 400
 
     @app.post("/mode")
     def mode():

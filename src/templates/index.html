@@ -170,6 +170,20 @@
   }
   .drop.over { border-color: var(--accent); border-style: solid; color: var(--text); }
   .accuracy-note { color: var(--muted); font-size: 0.8rem; }
+  .source-bar {
+    display: flex; flex-wrap: wrap; gap: 0.35rem 0.6rem; align-items: center; padding: 0.35rem 0.75rem;
+    border-radius: 8px; border: 2px solid var(--accent); font-size: 0.9rem;
+  }
+  .source-bar progress { flex: 1 1 5rem; height: 0.8rem; accent-color: var(--accent); }
+  .source-bar .time { font-variant-numeric: tabular-nums; }
+  .source-name { font-weight: 700; overflow-wrap: anywhere; }
+  .video-summary {
+    position: absolute; inset: 0; overflow-y: auto; padding: 1rem 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+    background: var(--overlay-bg); color: var(--overlay-text);
+  }
+  .video-summary h2 { margin: 0; font-size: 1.3rem; }
+  .video-summary table.dets { font-size: 0.95rem; max-width: 46rem; }
+  .video-summary .accuracy-note, .video-summary table.dets th { color: var(--muted); }
   .gallery {
     position: absolute; inset: 0; overflow-y: auto; background: var(--bg); padding: 0.6rem;
     display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 0.6rem; align-content: start;
@@ -238,6 +252,28 @@
       <div class="fps-badge" id="fps-badge">-- FPS</div>
       <div class="video-overlay" id="video-overlay" hidden></div>
       <div class="gallery" id="gallery" hidden aria-label="Analysis results" tabindex="0"></div>
+      <section class="video-summary" id="video-summary" hidden aria-labelledby="summary-title">
+        <h2 id="summary-title">Video finished</h2>
+        <div id="summary-frames"></div>
+        <table class="dets" id="summary-table"></table>
+        <p class="accuracy-note" id="summary-note"></p>
+        <div class="row">
+          <button type="button" id="summary-replay">Replay</button>
+          <button type="button" id="summary-camera">Back to camera</button>
+        </div>
+      </section>
+    </div>
+    <div class="source-bar" id="source-bar" hidden>
+      <span class="source-name" id="source-name">Video</span>
+      <progress id="video-progress" max="1" value="0" aria-label="Video position"></progress>
+      <span class="time" id="video-time">0:00 / 0:00</span>
+      <div class="switch" role="group" aria-label="Video view">
+        <button type="button" id="vview-alert" data-view="alert" aria-pressed="true">Alert</button>
+        <button type="button" id="vview-recognition" data-view="recognition" aria-pressed="false">Recognition</button>
+      </div>
+      <button type="button" id="video-restart">Restart</button>
+      <button type="button" id="video-camera">Back to camera</button>
+      <span class="hint" id="video-rate"></span>
     </div>
     <div class="view-badge" id="view-badge" hidden>
       <span id="view-text">Showing an analysed image</span>
@@ -285,6 +321,7 @@
     <h2 id="upload-title">Upload</h2>
     <div class="switch" role="group" aria-labelledby="upload-title">
       <button type="button" id="tab-images" data-panel="panel-images" aria-pressed="true">Images</button>
+      <button type="button" id="tab-video" data-panel="panel-video" aria-pressed="false">Video</button>
     </div>
     <div class="upload-panel" id="panel-images">
       <div class="drop" id="drop-images">
@@ -312,6 +349,17 @@
         <button type="button" id="analyze-sample">Analyse sample</button>
         <button type="button" id="analyze-all-samples">All samples</button>
       </div>
+    </div>
+    <div class="upload-panel" id="panel-video" hidden>
+      <div class="drop" id="drop-video">
+        <span>Drop one MP4, MOV or WebM video here (up to 150 MB and 120 seconds, deleted after use)</span>
+        <button type="button" id="choose-video">Choose video</button>
+      </div>
+      <label for="video-file" class="visually-hidden">Video file</label>
+      <input type="file" id="video-file" class="visually-hidden" tabindex="-1"
+             accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm">
+      <div class="status-line" id="video-upload-status">The video plays through the live pipeline, with alerts and speech in Alert view.</div>
+      <div class="hint">Landscape recordings work best. For a portrait phone video, Recognition view is more useful.</div>
     </div>
   </section>
 </main>
@@ -341,6 +389,10 @@
   const viewBadge = $("view-badge"), viewText = $("view-text");
   const imageView = $("image-view"), expectedSelect = $("expected"), compareBox = $("compare"), compareRow = $("compare-row");
   const videoWrap = document.querySelector(".video-wrap");
+  const sourceBar = $("source-bar"), sourceName = $("source-name"), videoProgress = $("video-progress");
+  const videoTime = $("video-time"), videoRate = $("video-rate"), videoSummary = $("video-summary");
+  const videoInput = $("video-file"), videoUploadStatus = $("video-upload-status");
+  const videoViewButtons = {alert: $("vview-alert"), recognition: $("vview-recognition")};
   const gallery = $("gallery"), viewButtons = {recognition: $("aview-recognition"), alert: $("aview-alert")};
   const liveSrc = debug ? "/video_feed?debug=1" : "/video_feed";
   const MAX_UPLOAD = 10 * 1024 * 1024;
@@ -350,6 +402,7 @@
   let analysis = null;      // Last /analyze result while the analysis view is shown.
   let shownView = "recognition"; // Decision V1: images open in Recognition view.
   let maxBatch = 20;
+  let maxVideo = 150 * 1024 * 1024;
   let actionMessage = null; // Result of the last button press, shown until the next one.
   let bandLabels = {"near": "Warning", "mid-close": "Caution", "mid": "Note"};
 
@@ -403,6 +456,7 @@
   fetch("/config").then(r => r.json()).then(config => {
     bandLabels = config.band_labels || bandLabels;
     maxBatch = config.max_batch || maxBatch;
+    maxVideo = config.max_video_bytes || maxVideo;
     for (const name of config.classes || []) {
       const option = document.createElement("option");
       option.value = name;
@@ -516,16 +570,120 @@
     button.addEventListener("click", () => { imageView.value = view; setShownView(view); pollStatus(); });
   }
   imageView.addEventListener("change", () => { if (analysis) { setShownView(imageView.value); pollStatus(); } });
-  $("back-live").addEventListener("click", () => {
+  function backToLive() {
     analysis = null;
     videoWrap.classList.remove("gallery-open");
     video.hidden = false;
     gallery.hidden = true;
     gallery.replaceChildren();
     video.src = liveSrc;
-    video.alt = "Live annotated camera feed";
-    pollStatus();
+    video.alt = "Live annotated feed";
+  }
+  $("back-live").addEventListener("click", () => { backToLive(); pollStatus(); });
+
+  // Upload choices: Images, Video, Demo library.
+  const tabs = [...document.querySelectorAll("button[data-panel]")];
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => {
+      for (const other of tabs) {
+        other.setAttribute("aria-pressed", String(other === tab));
+        $(other.dataset.panel).hidden = other !== tab;
+      }
+    });
+  }
+
+  // Video: uploaded once, then played by the live pipeline like a camera.
+  function sendVideo(file) {
+    if (!file) return;
+    if (file.size > maxVideo) { note("error", "The video is larger than 150 MB."); return; }
+    const form = new FormData();
+    form.append("video", file);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/source");
+    xhr.upload.onprogress = event => {
+      if (event.lengthComputable) videoUploadStatus.textContent = `Uploading ${Math.round(100 * event.loaded / event.total)}%`;
+    };
+    xhr.upload.onload = () => { videoUploadStatus.textContent = "Checking the video..."; };
+    xhr.onload = () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch (e) {}
+      if (xhr.status === 200) {
+        videoUploadStatus.textContent = `Playing: ${data.source.name}`;
+        actionMessage = null;
+        backToLive();
+      } else {
+        videoUploadStatus.textContent = "";
+        note("error", data.error || "The video could not be used.");
+      }
+      pollStatus();
+    };
+    xhr.onerror = () => { videoUploadStatus.textContent = ""; note("error", "Upload failed. Check that the app is running."); };
+    videoUploadStatus.textContent = "Uploading...";
+    xhr.send(form);
+  }
+  dropZone($("drop-video"), files => {
+    if (files.length > 1) note("warning", "One video at a time: playing the first file.");
+    sendVideo(files[0]);
   });
+  $("choose-video").addEventListener("click", () => videoInput.click());
+  videoInput.addEventListener("change", () => {
+    const file = videoInput.files[0];
+    videoInput.value = "";
+    sendVideo(file);
+  });
+  const sourceControl = body => post("/source/control", body);
+  for (const id of ["video-restart", "summary-replay"]) $(id).addEventListener("click", () => sourceControl({action: "restart"}));
+  for (const id of ["video-camera", "summary-camera"]) $(id).addEventListener("click", () => sourceControl({action: "camera"}));
+  for (const [view, button] of Object.entries(videoViewButtons)) button.addEventListener("click", () => sourceControl({view}));
+
+  function clock(seconds) {
+    const s = Math.max(0, Math.floor(seconds || 0));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  }
+
+  function renderSource(data) {
+    const src = data.source || {type: "camera"};
+    const playing = src.origin === "upload" || src.origin === "library";
+    sourceBar.hidden = !playing;
+    const home = src.home === "camera" ? "Back to camera" : "Back to start video";
+    $("video-camera").textContent = home;
+    $("summary-camera").textContent = home;
+    if (playing) {
+      const at = src.ended ? src.duration : src.position;
+      sourceName.textContent = `${src.origin === "library" ? "Library" : "Video"}: ${src.name}`;
+      videoProgress.max = src.duration || 1;
+      videoProgress.value = at || 0;
+      videoTime.textContent = `${clock(at)} / ${clock(src.duration)}`;
+      for (const [view, button] of Object.entries(videoViewButtons)) button.setAttribute("aria-pressed", String(data.view === view));
+      $("video-restart").disabled = !src.replay_available;
+      const slow = !src.ended && !data.paused && data.fps > 0 && src.fps && data.fps < 0.9 * src.fps;
+      videoRate.textContent = slow ? `Processing at ${data.fps.toFixed(1)} FPS (video is ${Math.round(src.fps)} FPS), so some frames are skipped.` : "";
+    }
+    const ended = playing && src.ended;
+    videoSummary.hidden = !ended || !!analysis;
+    if (ended) renderSummary(data, src);
+    return {playing, ended};
+  }
+
+  function renderSummary(data, src) {
+    $("summary-title").textContent = `Video finished: ${src.name}`;
+    $("summary-frames").textContent = `${data.frames_processed ?? 0} frames analysed in ${data.view} view` +
+      " (frames are skipped when processing is slower than the video).";
+    const table = $("summary-table");
+    const head = document.createElement("tr");
+    for (const h of ["Class", "Seen", "First seen", "Last seen", "Frames", "Best confidence"]) head.appendChild(cell("th", h));
+    const rows = (data.video_summary || []).map(r => {
+      const tr = document.createElement("tr");
+      tr.append(cell("td", r.class), cell("td", r.seen ? "Yes" : "Not seen"),
+                cell("td", r.seen ? clock(r.first_seen) : ""), cell("td", r.seen ? clock(r.last_seen) : ""),
+                cell("td", String(r.frames)), cell("td", r.seen ? r.max_confidence.toFixed(2) : ""));
+      return tr;
+    });
+    table.replaceChildren(head, ...rows);
+    $("summary-note").textContent = data.accuracy_note + " Pillar is the weakest class and is often missed.";
+    $("summary-replay").disabled = !src.replay_available;
+    $("summary-replay").textContent = src.replay_available ? "Replay" : "Replay (upload it again)";
+  }
 
   // Results gallery: one card per image, a detections table under each.
   function expectedTag(expected) {
@@ -650,7 +808,10 @@
 
   function renderMessages(data) {
     const items = [...(data.health || [])];
-    if (data.mode === "cloud") items.push({severity: "info", message: "Cloud mode: camera frames are sent to the server."});
+    if (data.mode === "cloud") {
+      const what = data.source && data.source.type === "video" ? "video frames" : "camera frames";
+      items.push({severity: "info", message: `Cloud mode: ${what} are sent to the server.`});
+    }
     if (actionMessage) items.unshift(actionMessage);
     messages.replaceChildren(...items.map(h => {
       const div = document.createElement("div");
@@ -757,11 +918,17 @@
       renderControls(data);
       renderMessages(data);
       renderLog(data.spoken_log);
+      const source = renderSource(data);
       // In analysis view the banner and lists describe the analysed image (one image)
       // or the batch summary (gallery). Recognition view lists every detection.
       const run = analysis && analysis.single;
-      const recognising = !!analysis && shownView === "recognition";
+      const recognising = analysis ? shownView === "recognition" : source.playing && data.view === "recognition";
       let view = data;
+      if (!analysis && source.ended) {
+        view = {...data, alert: "Video finished. See the summary.", detections: [], selected: null};
+      } else if (!analysis && recognising) {
+        view = {...data, alert: recognitionText(data.recognition || []), detections: asRows(data.recognition || []), selected: null};
+      }
       if (run) {
         view = {...data, alert: recognising ? recognitionText(run.recognition) : run.alert,
                 alerts: run.alerts, detections: recognising ? asRows(run.recognition) : run.detections,
@@ -790,7 +957,7 @@
       const problem = blocking ? blocking.message : view.error;
       alertText.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") || view.alert || "No hazards";
       // Recognition results and batch summaries are information, not alerts.
-      const informational = recognising || (analysis && !run);
+      const informational = recognising || (analysis && !run) || (!analysis && source.ended);
       alertBanner.className = "alert-banner " + (problem ? "level-warning" : informational ? "level-clear"
                                                  : levelClassFor(view.alert, top && top.band));
       // The level is written out, never shown by colour alone.
