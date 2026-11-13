@@ -858,8 +858,10 @@ Real stack: the 40 s golden clip (640x640, 10 fps) uploaded through the page in
 headless Chrome played at 10 fps, 399 of 400 frames processed, Escalator spoken
 and highlighted at 0:06. Summary: Escalator, People, Stair and Wet Floor Sign
 seen, Pillar not seen (local Pillar recall is weak). The temporary copy was mode
-600 in a mode 700 folder; restarting the app after a kill removed the leftover
-folder.
+600 in a mode 700 folder. Stopping the app with `kill` (SIGTERM) first left the
+folder behind, because SIGTERM skipped the shutdown code; the app now handles
+SIGTERM like Ctrl+C and the copy was deleted on a real kill. A folder left by a
+crash (for example `kill -9`) is removed at the next start, also checked.
 
 ## Phase 3: demo library
 

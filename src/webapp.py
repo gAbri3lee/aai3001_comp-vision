@@ -1150,7 +1150,11 @@ def parse_args():
 
 
 def main():
+    import signal
+    import sys
     args = parse_args()
+    # A plain kill (SIGTERM) runs the same shutdown as Ctrl+C, so uploaded videos are deleted.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     state = PipelineState(args)
     app = create_app(state)
     print(f"VisionAid web UI running at http://{args.host}:{args.port}")
