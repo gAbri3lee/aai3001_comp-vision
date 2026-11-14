@@ -5,255 +5,1120 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VisionAid</title>
 <style>
+  /* Colour tokens. scripts/check_contrast.py reads these and checks every text pair. */
   :root {
-    --bg: #0f1420;
-    --panel: #161d2e;
-    --panel-border: #262f45;
-    --text: #e8ecf6;
-    --muted: #8892a8;
-    --accent: #4f8cff;
-    --warn: #ff4d4d;
-    --caution: #ffb84d;
-    --note: #7c8aa5;
-    --ok: #34c77b;
+    --bg: #0b0f19;
+    --panel: #141b2b;
+    --card: #0f1526;
+    --border: #2a3550;
+    --text: #eef2fa;
+    --muted: #a3adc2;
+    --accent: #6ea8ff;
+    --on-accent: #08101f;
+    --button: #24304a;
+    --focus: #ffd84d;
+    --warn-bg: #4a1220;
+    --warn-line: #ff6b6b;
+    --warn-text: #ffdada;
+    --caution-bg: #3f2e0c;
+    --caution-line: #ffb84d;
+    --caution-text: #ffe6b8;
+    --on-caution: #1a1205;
+    --note-bg: #1a2540;
+    --note-line: #8fa6cf;
+    --note-text: #dde6f8;
+    --spoken: #ff8cff;
+    --video-bg: #000000;
+    --overlay-text: #ffffff;
+    --overlay-bg: #080b12;
+    color-scheme: dark;
   }
   * { box-sizing: border-box; }
+  /* Type scales with the window: about 16 px on a 1366 px laptop, 20 px on a 1920 px projector. */
+  html { font-size: clamp(14px, 0.62vw + 7.5px, 20px); }
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    padding: 24px 16px 40px;
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.35;
   }
-  header {
-    max-width: 1080px;
-    margin: 0 auto 20px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
+  .app { display: flex; flex-direction: column; min-height: 100vh; padding: 0.6rem 1rem 0.4rem; gap: 0.5rem; }
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; }
+  header h1 { margin: 0; font-size: 1.45rem; letter-spacing: 0.02em; }
+  .tagline { color: var(--muted); font-size: 0.8rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; }
+  button, select {
+    font: inherit; font-size: 0.9rem; color: var(--text); background: var(--button);
+    border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.75rem; cursor: pointer;
   }
-  header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    letter-spacing: 0.02em;
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+  button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+    outline: 3px solid var(--focus); outline-offset: 2px;
   }
-  header .tagline {
-    color: var(--muted);
-    font-size: 0.85rem;
+  .switch { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .switch button { border: 0; border-radius: 0; }
+  .switch button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+  #pause[aria-pressed="true"], #mute[aria-pressed="true"] { background: var(--caution-line); color: var(--on-caution); font-weight: 700; }
+  kbd {
+    font: 600 0.72rem ui-monospace, Menlo, monospace; padding: 0 0.3rem; margin-left: 0.3rem;
+    border: 1px solid currentColor; border-radius: 4px;
   }
-  main {
-    max-width: 1080px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
-    gap: 20px;
+  .hint { color: var(--muted); font-size: 0.8rem; }
+  .mode-badge {
+    font-weight: 700; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 8px;
+    border: 2px solid var(--accent); color: var(--text);
   }
-  @media (max-width: 820px) {
-    main { grid-template-columns: 1fr; }
-  }
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
-    border-radius: 12px;
-    padding: 16px;
+  .mode-badge.cloud { border-color: var(--caution-line); }
+  .messages { display: grid; gap: 0.35rem; }
+  .messages:empty { display: none; }
+  .message { padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid; font-size: 0.95rem; }
+  .message::before { font-weight: 700; margin-right: 0.4rem; }
+  .message.error { border-color: var(--warn-line); background: var(--warn-bg); color: var(--warn-text); }
+  .message.error::before { content: "Problem:"; }
+  .message.warning { border-color: var(--caution-line); background: var(--caution-bg); color: var(--caution-text); }
+  .message.warning::before { content: "Warning:"; }
+  .message.info { border-color: var(--note-line); background: var(--note-bg); color: var(--note-text); }
+  .message.info::before { content: "Note:"; }
+
+  /* Wide screens: video column plus a side column; neither makes the page scroll. */
+  main { flex: 1 1 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(19rem, 25rem); gap: 0.8rem; min-height: 0; }
+  .stage { display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; }
+  .side {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem 0.8rem;
+    display: flex; flex-direction: column; gap: 0.45rem; min-height: 0; overflow-y: auto;
   }
   .video-wrap {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #000;
-    aspect-ratio: 4 / 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: relative; flex: 1 1 auto; min-height: 12rem; border-radius: 10px; overflow: hidden;
+    background: var(--video-bg); display: flex; align-items: center; justify-content: center;
   }
-  .video-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
+  .video-wrap > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
   .fps-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.55);
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    color: var(--muted);
+    position: absolute; top: 0.5rem; right: 0.5rem; background: var(--overlay-bg); color: var(--overlay-text);
+    padding: 0.15rem 0.55rem; border-radius: 20px; font-size: 0.75rem;
+  }
+  .video-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 1rem; font-size: 1.5rem; font-weight: 700; background: var(--overlay-bg); color: var(--overlay-text);
+  }
+  .video-overlay[hidden], .view-badge[hidden], .level-chip[hidden], .video-wrap > img[hidden] { display: none; }
+  .view-badge {
+    display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; align-items: center; justify-content: space-between; padding: 0.35rem 0.75rem;
+    border-radius: 8px; border: 2px dashed var(--accent); font-weight: 600;
   }
   .alert-banner {
-    margin-top: 14px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    background: #1b2338;
-    border: 1px solid var(--panel-border);
-    font-weight: 600;
-    font-size: 1.05rem;
-    transition: background 0.2s, border-color 0.2s;
+    padding: 0.6rem 0.9rem; border-radius: 10px; border: 3px solid var(--border); background: var(--card);
+    font-weight: 700; font-size: 1.7rem; min-height: 3.4rem; display: flex; align-items: center; flex-wrap: wrap;
   }
-  .alert-banner.level-warning { background: #3a1620; border-color: var(--warn); color: #ffb3b3; }
-  .alert-banner.level-caution { background: #3a2c14; border-color: var(--caution); color: #ffd9a0; }
-  .alert-banner.level-note    { background: #1c2436; border-color: var(--note); color: #c4cbdb; }
-  .alert-banner.level-clear   { color: var(--muted); font-weight: 400; }
+  .alert-banner.level-warning { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn-text); }
+  .alert-banner.level-caution { background: var(--caution-bg); border-color: var(--caution-line); color: var(--caution-text); }
+  .alert-banner.level-note    { background: var(--note-bg); border-color: var(--note-line); color: var(--note-text); }
+  .alert-banner.level-clear   { color: var(--muted); font-weight: 600; }
+  .level-chip {
+    margin-right: 0.7rem; padding: 0 0.5rem; border-radius: 6px; font-size: 0.6em;
+    letter-spacing: 0.08em; text-transform: uppercase; border: 2px solid currentColor;
+  }
+  .legend-wrap { display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; align-items: center; font-size: 0.85rem; }
+  .legend-title { color: var(--muted); }
+  ol.legend { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; margin: 0; padding: 0; counter-reset: rank; }
+  ol.legend li { counter-increment: rank; padding: 0.1rem 0.5rem; border-radius: 6px; border: 1px solid var(--border); color: var(--muted); }
+  ol.legend li::before { content: counter(rank) ". "; }
+  ol.legend li.current { color: var(--text); border: 2px solid var(--text); font-weight: 700; text-decoration: underline; }
 
-  .panel h2 {
-    margin: 0 0 12px;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
+  .side h2 {
+    margin: 0.35rem 0 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
   }
-  .actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 18px;
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.65rem; font-size: 0.9rem; }
+  .status-line { color: var(--muted); font-size: 0.8rem; }
+  .scroll { overflow-y: auto; min-height: 3rem; }
+  .hazard-box { flex: 1 0 7rem; }  /* never squeezed: the side panel scrolls instead */
+  ul.hazards { list-style: none; padding: 0; margin: 0; }
+  ul.hazards li {
+    display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; align-items: baseline; padding: 0.35rem 0.55rem; margin-bottom: 0.3rem;
+    border-radius: 8px; background: var(--card); border: 1px solid var(--border); font-size: 0.9rem;
   }
-  button.action {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.05s;
+  ul.hazards li.spoken { border: 2px solid var(--spoken); }
+  ul.hazards .name { font-weight: 700; }
+  ul.hazards .meta { color: var(--muted); font-size: 0.8rem; }
+  .band { font-size: 0.75rem; padding: 0 0.45rem; border-radius: 10px; border: 1px solid; }
+  .band.near { color: var(--warn-text); border-color: var(--warn-line); }
+  .band.mid-close { color: var(--caution-text); border-color: var(--caution-line); }
+  .band.mid, .band.none { color: var(--note-text); border-color: var(--note-line); }
+  .band.far { color: var(--muted); border-color: var(--border); }
+  .spoken-tag { font-size: 0.75rem; color: var(--spoken); font-weight: 700; }
+  details.ignored { color: var(--muted); font-size: 0.85rem; }
+  details.ignored summary { cursor: pointer; padding: 0.15rem 0; }
+  details.ignored ul { max-height: 8rem; overflow-y: auto; margin-top: 0.3rem; }
+  .row { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; font-size: 0.9rem; }
+  .row label { color: var(--text); }
+  input[type="range"] { flex: 1 1 8rem; accent-color: var(--accent); }
+  input[type="file"] { max-width: 100%; color: var(--text); font-size: 0.85rem; }
+  input[type="checkbox"] { flex: none; width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
+  .check { display: flex; gap: 0.45rem; align-items: flex-start; font-size: 0.9rem; }
+  .check[hidden] { display: none; }
+  .log-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+  ol.log { list-style: none; margin: 0; padding: 0; font-size: 0.85rem; max-height: 7.5rem; overflow-y: auto; flex: 0 0 auto; }
+  ol.log li { display: flex; flex-wrap: wrap; gap: 0 0.5rem; padding: 0.15rem 0; border-bottom: 1px solid var(--border); }
+  ol.log .time, ol.log .backend { color: var(--muted); font-variant-numeric: tabular-nums; }
+  ol.log .backend { margin-left: auto; }
+  /* Upload: images, video and the demo library. */
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
   }
-  button.action:active { transform: scale(0.98); }
-  button.action:disabled { opacity: 0.5; cursor: default; }
-  button.action small {
-    font-weight: 400;
-    font-size: 0.75rem;
-    opacity: 0.85;
+  .upload-panel { display: flex; flex-direction: column; gap: 0.4rem; }
+  .upload-panel[hidden], .gallery[hidden], .source-bar[hidden], .video-summary[hidden] { display: none; }
+  .drop {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; justify-content: space-between;
+    padding: 0.5rem 0.6rem; border: 2px dashed var(--muted); border-radius: 8px; color: var(--muted); font-size: 0.85rem;
   }
-  button.secondary { background: #2a3352; }
+  .drop.over { border-color: var(--accent); border-style: solid; color: var(--text); }
+  .accuracy-note { color: var(--muted); font-size: 0.8rem; }
+  .library-group h3 {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.4rem; margin: 0.35rem 0 0.25rem; font-size: 0.9rem;
+  }
+  .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr)); gap: 0.35rem; }
+  .thumbs button { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.2rem; font-size: 0.72rem; text-align: left; min-width: 0; }
+  .thumbs img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; background: var(--video-bg); }
+  .thumbs .label { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .video-list { display: flex; flex-direction: column; gap: 0.3rem; }
+  .video-list button { text-align: left; overflow-wrap: anywhere; }
+  .source-bar {
+    display: flex; flex-wrap: wrap; gap: 0.35rem 0.6rem; align-items: center; padding: 0.35rem 0.75rem;
+    border-radius: 8px; border: 2px solid var(--accent); font-size: 0.9rem;
+  }
+  .source-bar progress { flex: 1 1 5rem; height: 0.8rem; accent-color: var(--accent); }
+  .source-bar .time { font-variant-numeric: tabular-nums; }
+  .source-name { font-weight: 700; overflow-wrap: anywhere; }
+  .video-summary {
+    position: absolute; inset: 0; overflow-y: auto; padding: 1rem 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+    background: var(--overlay-bg); color: var(--overlay-text);
+  }
+  .video-summary h2 { margin: 0; font-size: 1.3rem; }
+  .video-summary table.dets { font-size: 0.95rem; max-width: 46rem; }
+  .video-summary .accuracy-note, .video-summary table.dets th { color: var(--muted); }
+  .gallery {
+    position: absolute; inset: 0; overflow-y: auto; background: var(--bg); padding: 0.6rem;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 0.6rem; align-content: start;
+  }
+  .gallery .summary { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 0.2rem; }
+  .gallery .summary strong { font-size: 1.1rem; }
+  .result-card { margin: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem; font-size: 0.85rem; }
+  .result-card.compare { grid-column: 1 / -1; }
+  .runs { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0.5rem; }
+  .result-card img { display: block; width: 100%; height: auto; border-radius: 6px; background: var(--video-bg); }
+  .run-head { display: flex; flex-wrap: wrap; gap: 0.15rem 0.5rem; align-items: baseline; margin: 0.2rem 0; }
+  .run-head .meta, .result-card .meta { color: var(--muted); font-size: 0.8rem; }
+  table.dets { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.3rem; }
+  table.dets th, table.dets td { text-align: left; padding: 0.1rem 0.3rem; border-bottom: 1px solid var(--border); }
+  table.dets th { color: var(--muted); font-weight: 600; }
+  .tag { font-size: 0.75rem; padding: 0 0.45rem; border-radius: 10px; border: 1px solid; font-weight: 700; }
+  .tag.ok { color: var(--note-text); border-color: var(--note-line); }
+  .tag.miss { color: var(--caution-text); border-color: var(--caution-line); }
+  .tag.err { color: var(--warn-text); border-color: var(--warn-line); }
+  footer { color: var(--muted); font-size: 0.75rem; }
+  footer details { display: inline; }
+  footer summary { display: inline; cursor: pointer; text-decoration: underline; }
 
-  .result-card {
-    background: #0f1526;
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    min-height: 1.4em;
-    word-break: break-word;
+  @media (min-width: 901px) {
+    .app { height: 100vh; }  /* the page itself never scrolls; long lists scroll in their boxes */
   }
-  .result-card .label {
-    display: block;
-    color: var(--muted);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 4px;
-  }
-  footer {
-    max-width: 1080px;
-    margin: 20px auto 0;
-    color: var(--muted);
-    font-size: 0.78rem;
+  /* Narrow screens: one column and normal page scrolling, never sideways. */
+  @media (max-width: 900px) {
+    main { grid-template-columns: minmax(0, 1fr); }
+    .video-wrap { flex: none; aspect-ratio: 16 / 10; min-height: 0; }
+    .side { overflow: visible; }
+    .video-wrap.gallery-open { aspect-ratio: auto; }
+    .video-wrap.gallery-open .gallery { position: static; width: 100%; max-height: 75vh; }
+    .alert-banner { font-size: 1.35rem; }
   }
 </style>
 </head>
 <body>
+<div class="app">
 <header>
   <div>
     <h1>VisionAid</h1>
-    <div class="tagline">Hazard-detection vision assistant — live demo console</div>
+    <div class="tagline">Hazard-awareness demo console. Alerts show here and are spoken when speech is on.</div>
   </div>
-  <div class="tagline">This is the operator/demo view. The real user-facing output is audio only.</div>
+  <div class="controls" role="group" aria-label="Detector">
+    <span class="mode-badge" id="mode-badge">LOCAL</span>
+    <div class="switch" role="group" aria-label="Detector mode">
+      <button type="button" id="mode-local" data-mode="local" aria-pressed="true">Local</button>
+      <button type="button" id="mode-cloud" data-mode="cloud" aria-pressed="false">Cloud</button>
+    </div>
+    <button type="button" id="retry-cloud" hidden>Retry cloud</button>
+    <span class="hint" aria-hidden="true"><kbd>C</kbd> switch</span>
+  </div>
+  <div class="controls" role="group" aria-label="Alerts">
+    <button type="button" id="pause" aria-pressed="false" aria-keyshortcuts="Space">Pause <kbd>Space</kbd></button>
+    <button type="button" id="mute" aria-pressed="false" aria-keyshortcuts="M">Mute <kbd>M</kbd></button>
+  </div>
 </header>
 
+<div class="messages" id="messages" role="status" aria-live="polite"></div>
+
 <main>
-  <section class="panel">
+  <section class="stage" aria-label="Camera and current alert">
     <div class="video-wrap">
-      <img src="/video_feed" alt="Live annotated camera feed">
+      <img id="video" src="/video_feed" alt="Live annotated camera feed">
       <div class="fps-badge" id="fps-badge">-- FPS</div>
+      <div class="video-overlay" id="video-overlay" hidden></div>
+      <div class="gallery" id="gallery" hidden aria-label="Analysis results" tabindex="0"></div>
+      <section class="video-summary" id="video-summary" hidden aria-labelledby="summary-title">
+        <h2 id="summary-title">Video finished</h2>
+        <div id="summary-frames"></div>
+        <table class="dets" id="summary-table"></table>
+        <p class="accuracy-note" id="summary-note"></p>
+        <div class="row">
+          <button type="button" id="summary-replay">Replay</button>
+          <button type="button" id="summary-camera">Back to camera</button>
+        </div>
+      </section>
     </div>
-    <div class="alert-banner level-clear" id="alert-banner">No hazards detected</div>
+    <div class="source-bar" id="source-bar" hidden>
+      <span class="source-name" id="source-name">Video</span>
+      <progress id="video-progress" max="1" value="0" aria-label="Video position"></progress>
+      <span class="time" id="video-time">0:00 / 0:00</span>
+      <div class="switch" role="group" aria-label="Video view">
+        <button type="button" id="vview-alert" data-view="alert" aria-pressed="true">Alert</button>
+        <button type="button" id="vview-recognition" data-view="recognition" aria-pressed="false">Recognition</button>
+      </div>
+      <button type="button" id="video-restart">Restart</button>
+      <button type="button" id="video-camera">Back to camera</button>
+      <span class="hint" id="video-rate"></span>
+    </div>
+    <div class="view-badge" id="view-badge" hidden>
+      <span id="view-text">Showing an analysed image</span>
+      <div class="switch" role="group" aria-label="Analysis view">
+        <button type="button" id="aview-recognition" data-view="recognition" aria-pressed="true">Recognition</button>
+        <button type="button" id="aview-alert" data-view="alert" aria-pressed="false">Alert</button>
+      </div>
+      <button type="button" id="back-live">Back to live</button>
+    </div>
+    <div class="alert-banner level-clear" id="alert-banner" role="alert" aria-live="assertive" aria-atomic="true">
+      <span class="level-chip" id="level-chip" hidden></span><span id="alert-text">No hazards</span>
+    </div>
+    <div class="legend-wrap">
+      <span class="legend-title" id="legend-title">Priority, highest first:</span>
+      <ol class="legend" id="legend" aria-labelledby="legend-title"></ol>
+    </div>
   </section>
 
-  <section class="panel">
-    <h2>On-demand queries</h2>
-    <div class="actions">
-      <button class="action" id="btn-scan">
-        Scan text
-        <small>or say &ldquo;vision scan&rdquo;</small>
-      </button>
-      <button class="action secondary" id="btn-identify">
-        Identify item
-        <small>generic object classifier</small>
-      </button>
+  <section class="side" aria-label="Details and controls">
+    <div class="card"><strong id="model-status">Starting...</strong>
+      <div class="status-line" id="pipeline-status"></div></div>
+    <h2>Hazards</h2>
+    <div class="scroll hazard-box">
+      <ul class="hazards" id="object-alerts" aria-live="off"><li>No hazards</li></ul>
+      <details class="ignored" id="ignored">
+        <summary id="ignored-summary">Ignored detections (0)</summary>
+        <ul class="hazards" id="ignored-list"></ul>
+      </details>
     </div>
-
-    <div class="result-card">
-      <span class="label">Last text read</span>
-      <span id="ocr-text">—</span>
+    <h2>Speech</h2>
+    <div class="row">
+      <label for="rate">Rate <span id="rate-value">180</span> words per minute</label>
+      <input type="range" id="rate" min="120" max="260" step="10" value="180">
     </div>
-    <div class="result-card">
-      <span class="label">Last item identified</span>
-      <span id="product-text">—</span>
+    <div class="row">
+      <button type="button" id="test-voice">Test voice</button>
+      <button type="button" id="replay">Replay last alert</button>
+    </div>
+    <div class="status-line" id="last-spoken">Nothing spoken yet</div>
+    <div class="log-head">
+      <h2 id="log-title">Spoken log</h2>
+      <button type="button" id="clear-log">Clear</button>
+    </div>
+    <ol class="log" id="spoken-log" aria-labelledby="log-title" tabindex="0"></ol>
+    <h2 id="upload-title">Upload</h2>
+    <div class="switch" role="group" aria-labelledby="upload-title">
+      <button type="button" id="tab-images" data-panel="panel-images" aria-pressed="true">Images</button>
+      <button type="button" id="tab-video" data-panel="panel-video" aria-pressed="false">Video</button>
+      <button type="button" id="tab-library" data-panel="panel-library" aria-pressed="false">Demo library</button>
+    </div>
+    <div class="upload-panel" id="panel-images">
+      <div class="drop" id="drop-images">
+        <span>Drop up to 20 JPEG or PNG images here (10 MB each, not stored)</span>
+        <button type="button" id="choose-images">Choose images</button>
+      </div>
+      <label for="upload" class="visually-hidden">Image files</label>
+      <input type="file" id="upload" class="visually-hidden" accept="image/jpeg,image/png" multiple tabindex="-1">
+      <div class="row">
+        <label for="image-view">View</label>
+        <select id="image-view">
+          <option value="recognition">Recognition: every detection, no speech</option>
+          <option value="alert">Alert: live rules</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="expected">These images show</label>
+        <select id="expected"><option value="">Not set</option></select>
+      </div>
+      <label class="check" id="compare-row" hidden><input type="checkbox" id="compare"> <span>Compare local and cloud side by side (sends the images to the cloud)</span></label>
+      <label class="check"><input type="checkbox" id="speak-result"> <span>Speak result (Alert view, one image)</span></label>
+      <div class="row">
+        <label for="sample">Sample</label>
+        <select id="sample"><option value="">No samples</option></select>
+        <button type="button" id="analyze-sample">Analyse sample</button>
+        <button type="button" id="analyze-all-samples">All samples</button>
+      </div>
+    </div>
+    <div class="upload-panel" id="panel-video" hidden>
+      <div class="drop" id="drop-video">
+        <span>Drop one MP4, MOV or WebM video here (up to 150 MB and 120 seconds, deleted after use)</span>
+        <button type="button" id="choose-video">Choose video</button>
+      </div>
+      <label for="video-file" class="visually-hidden">Video file</label>
+      <input type="file" id="video-file" class="visually-hidden" tabindex="-1"
+             accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm">
+      <div class="status-line" id="video-upload-status">The video plays through the live pipeline, with alerts and speech in Alert view.</div>
+      <div class="hint">Landscape recordings work best. For a portrait phone video, Recognition view is more useful.</div>
+    </div>
+    <div class="upload-panel" id="panel-library" hidden>
+      <div class="row">
+        <span class="status-line" id="library-status">Loading the demo library...</span>
+        <button type="button" id="library-reload">Reload</button>
+      </div>
+      <div id="library"></div>
     </div>
   </section>
 </main>
 
 <footer>
-  Placeholder pretrained models — detection is not yet fine-tuned on a real hazard dataset, and item ID is a generic ImageNet classifier, not a currency-trained one.
+  Supplementary hazard awareness only: detection can miss hazards and "No hazards" does not mean the scene is safe.
+  Distance is an estimate from box size, not measured metres.
+  <details><summary>All limitations</summary>
+  Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Pillar is the weakest class and is often missed. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Depth, when enabled, is relative, not metres. Far detections, side objects and low-confidence general detections are shown as ignored and are not spoken. Other common objects are labelled Object by a general detector; objects outside its coverage can still be missed. Cloud mode uploads camera frames.
+  </details>
 </footer>
+</div>
 
+<script src="/static/shortcuts.js"></script>
 <script>
-  const alertBanner = document.getElementById("alert-banner");
-  const fpsBadge = document.getElementById("fps-badge");
-  const ocrText = document.getElementById("ocr-text");
-  const productText = document.getElementById("product-text");
-  const btnScan = document.getElementById("btn-scan");
-  const btnIdentify = document.getElementById("btn-identify");
+  const debug = new URLSearchParams(location.search).get("debug") === "1";
+  const $ = id => document.getElementById(id);
+  const alertBanner = $("alert-banner"), alertText = $("alert-text"), levelChip = $("level-chip");
+  const fpsBadge = $("fps-badge"), video = $("video"), videoOverlay = $("video-overlay");
+  const objectAlerts = $("object-alerts"), ignoredList = $("ignored-list"), ignoredSummary = $("ignored-summary");
+  const modelStatus = $("model-status"), pipelineStatus = $("pipeline-status"), messages = $("messages");
+  const modeBadge = $("mode-badge"), retryCloud = $("retry-cloud");
+  const modeButtons = {local: $("mode-local"), cloud: $("mode-cloud")};
+  const pauseButton = $("pause"), muteButton = $("mute"), rate = $("rate"), rateValue = $("rate-value");
+  const lastSpoken = $("last-spoken"), legend = $("legend"), spokenLog = $("spoken-log");
+  const uploadInput = $("upload"), sampleSelect = $("sample"), speakResult = $("speak-result");
+  const viewBadge = $("view-badge"), viewText = $("view-text");
+  const imageView = $("image-view"), expectedSelect = $("expected"), compareBox = $("compare"), compareRow = $("compare-row");
+  const videoWrap = document.querySelector(".video-wrap");
+  const sourceBar = $("source-bar"), sourceName = $("source-name"), videoProgress = $("video-progress");
+  const videoTime = $("video-time"), videoRate = $("video-rate"), videoSummary = $("video-summary");
+  const videoInput = $("video-file"), videoUploadStatus = $("video-upload-status");
+  const videoViewButtons = {alert: $("vview-alert"), recognition: $("vview-recognition")};
+  const gallery = $("gallery"), viewButtons = {recognition: $("aview-recognition"), alert: $("aview-alert")};
+  const liveSrc = debug ? "/video_feed?debug=1" : "/video_feed";
+  const MAX_UPLOAD = 10 * 1024 * 1024;
+  if (debug) { video.src = liveSrc; $("ignored").open = true; }
 
-  function levelClassFor(alert) {
+  let latest = null;        // Last /status response.
+  let analysis = null;      // Last /analyze result while the analysis view is shown.
+  let shownView = "recognition"; // Decision V1: images open in Recognition view.
+  let maxBatch = 20;
+  let maxVideo = 150 * 1024 * 1024;
+  let actionMessage = null; // Result of the last button press, shown until the next one.
+  let bandLabels = {"near": "Warning", "mid-close": "Caution", "mid": "Note"};
+
+  const BAND_LEVEL = {"near": "level-warning", "mid-close": "level-caution", "mid": "level-note"};
+  const REASON_TEXT = {"far": "far", "side": "at the side", "low_confidence": "low confidence"};
+  const POSITION_TEXT = {"left": "left", "center": "ahead", "right": "right"};
+
+  function span(cls, text) {
+    const el = document.createElement("span");
+    el.className = cls;
+    el.textContent = text;
+    return el;
+  }
+
+  // Requests ---------------------------------------------------------------
+  async function post(url, body) {
+    const res = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json"},
+                                  body: JSON.stringify(body)});
+    const data = await res.json().catch(() => ({}));
+    actionMessage = res.ok ? null : {severity: "error", message: data.error || "Request failed"};
+    pollStatus();
+    return res.ok;
+  }
+  const setMode = backend => post("/mode", {backend});
+  const control = body => post("/control", body);
+
+  modeButtons.local.addEventListener("click", () => setMode("local"));
+  modeButtons.cloud.addEventListener("click", () => setMode("cloud"));
+  retryCloud.addEventListener("click", () => setMode("cloud"));
+  pauseButton.addEventListener("click", () => control({paused: !(latest && latest.paused)}));
+  muteButton.addEventListener("click", () => control({muted: !(latest && latest.muted)}));
+  rate.addEventListener("input", () => { rateValue.textContent = rate.value; });
+  rate.addEventListener("change", () => control({rate: Number(rate.value)}));
+  $("test-voice").addEventListener("click", () => control({action: "test_voice"}));
+  $("replay").addEventListener("click", () => control({action: "replay_last"}));
+  $("clear-log").addEventListener("click", () => control({action: "clear_log"}));
+
+  // Keyboard shortcuts (decision U6), ignored while a form control has focus.
+  document.addEventListener("keydown", event => {
+    const action = shortcutFor(event);
+    if (!action || !latest) return;
+    event.preventDefault();
+    if (action === "pause") control({paused: !latest.paused});
+    else if (action === "mute") control({muted: !latest.muted});
+    else if (action === "mode" && (latest.cloud_available || latest.mode === "cloud")) {
+      setMode(latest.mode === "cloud" ? "local" : "cloud");
+    }
+  });
+
+  // The legend comes from the config (severity order), never from this page.
+  fetch("/config").then(r => r.json()).then(config => {
+    bandLabels = config.band_labels || bandLabels;
+    maxBatch = config.max_batch || maxBatch;
+    maxVideo = config.max_video_bytes || maxVideo;
+    for (const name of config.classes || []) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      expectedSelect.appendChild(option);
+    }
+    legend.replaceChildren(...config.priority.map(label => {
+      const li = document.createElement("li");
+      li.dataset.class = label;
+      li.textContent = label;
+      return li;
+    }));
+  }).catch(() => {});
+
+  // Image analysis. One image replaces the live view; several fill the results
+  // gallery. Both stay until "Back to live". Both views come back from the server,
+  // so switching view never sends the images again.
+  function note(severity, message) { actionMessage = {severity, message}; if (latest) renderMessages(latest); }
+
+  async function analyze(form, {library = false} = {}) {
+    form.append("view", imageView.value);
+    // Library images use their folder as the expected class (set by the server).
+    if (expectedSelect.value && !library) form.append("expected", expectedSelect.value);
+    if (compareBox.checked && !compareRow.hidden) form.append("compare", "1");
+    form.append("speak", speakResult.checked ? "1" : "0");
+    if (debug) form.append("debug", "1");
+    note("info", "Analysing...");
+    try {
+      const res = await fetch("/analyze", {method: "POST", body: form});
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Analysis failed");
+      actionMessage = data.cloud_used ? {severity: "info", message: "Cloud used: these images were sent to the server."} : null;
+      showAnalysis(data);
+    } catch (e) {
+      note("error", e.message);
+    }
+    pollStatus();
+  }
+
+  function showAnalysis(data) {
+    const first = data.results[0];
+    const single = data.results.length === 1 && !data.compare && first.runs && !first.runs[0].error;
+    analysis = {...data, single: single ? {...first.runs[0], name: first.name} : null};
+    setShownView(data.view);
+  }
+
+  function setShownView(view) {
+    shownView = view;
+    for (const [name, button] of Object.entries(viewButtons)) button.setAttribute("aria-pressed", String(name === view));
+    if (!analysis) return;
+    if (analysis.single) {
+      gallery.hidden = true;
+      video.src = analysis.single.images[view];
+      video.alt = `Analysed image ${analysis.single.name}, ${view} view`;
+      videoWrap.classList.remove("gallery-open");
+      video.hidden = false;
+    } else {
+      videoWrap.classList.add("gallery-open");
+      video.hidden = true;  // the gallery replaces the live picture
+      video.removeAttribute("src");
+      renderGallery();
+      gallery.hidden = false;
+    }
+  }
+
+  function sendImages(files) {
+    if (!files.length) return;
+    if (files.length > maxBatch) { note("error", `Upload at most ${maxBatch} images at once.`); return; }
+    const big = files.filter(f => f.size > MAX_UPLOAD);
+    const form = new FormData();
+    for (const file of files) if (file.size <= MAX_UPLOAD) form.append("image", file);
+    if (big.length) {
+      note("warning", `Not sent, larger than 10 MB: ${big.map(f => f.name).join(", ")}`);
+      if (big.length === files.length) return;
+    }
+    analyze(form);
+  }
+
+  function dropZone(zone, onFiles) {
+    zone.addEventListener("dragover", event => { event.preventDefault(); zone.classList.add("over"); });
+    zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+    zone.addEventListener("drop", event => {
+      event.preventDefault();
+      zone.classList.remove("over");
+      onFiles([...event.dataTransfer.files]);
+    });
+  }
+  // A file dropped anywhere else must not make the browser leave the page.
+  for (const type of ["dragover", "drop"]) document.addEventListener(type, event => event.preventDefault());
+
+  dropZone($("drop-images"), sendImages);
+  $("choose-images").addEventListener("click", () => uploadInput.click());
+  uploadInput.addEventListener("change", () => {
+    const files = [...uploadInput.files];
+    uploadInput.value = "";
+    sendImages(files);
+  });
+  $("analyze-sample").addEventListener("click", () => {
+    if (!sampleSelect.value) return;
+    const form = new FormData();
+    form.append("sample", sampleSelect.value);
+    analyze(form);
+  });
+  $("analyze-all-samples").addEventListener("click", () => {
+    const form = new FormData();
+    const ids = [...sampleSelect.options].map(o => o.value).filter(Boolean).slice(0, maxBatch);
+    if (!ids.length) return;
+    for (const id of ids) form.append("sample", id);
+    analyze(form);
+  });
+  for (const [view, button] of Object.entries(viewButtons)) {
+    button.addEventListener("click", () => { imageView.value = view; setShownView(view); pollStatus(); });
+  }
+  imageView.addEventListener("change", () => { if (analysis) { setShownView(imageView.value); pollStatus(); } });
+  function backToLive() {
+    analysis = null;
+    videoWrap.classList.remove("gallery-open");
+    video.hidden = false;
+    gallery.hidden = true;
+    gallery.replaceChildren();
+    video.src = liveSrc;
+    video.alt = "Live annotated feed";
+  }
+  $("back-live").addEventListener("click", () => { backToLive(); pollStatus(); });
+
+  // Upload choices: Images, Video, Demo library.
+  const tabs = [...document.querySelectorAll("button[data-panel]")];
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => {
+      for (const other of tabs) {
+        other.setAttribute("aria-pressed", String(other === tab));
+        $(other.dataset.panel).hidden = other !== tab;
+      }
+    });
+  }
+
+  // Video: uploaded once, then played by the live pipeline like a camera.
+  function sendVideo(file) {
+    if (!file) return;
+    if (file.size > maxVideo) { note("error", "The video is larger than 150 MB."); return; }
+    const form = new FormData();
+    form.append("video", file);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/source");
+    xhr.upload.onprogress = event => {
+      if (event.lengthComputable) videoUploadStatus.textContent = `Uploading ${Math.round(100 * event.loaded / event.total)}%`;
+    };
+    xhr.upload.onload = () => { videoUploadStatus.textContent = "Checking the video..."; };
+    xhr.onload = () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch (e) {}
+      if (xhr.status === 200) {
+        videoUploadStatus.textContent = `Playing: ${data.source.name}`;
+        actionMessage = null;
+        backToLive();
+      } else {
+        videoUploadStatus.textContent = "";
+        note("error", data.error || "The video could not be used.");
+      }
+      pollStatus();
+    };
+    xhr.onerror = () => { videoUploadStatus.textContent = ""; note("error", "Upload failed. Check that the app is running."); };
+    videoUploadStatus.textContent = "Uploading...";
+    xhr.send(form);
+  }
+  dropZone($("drop-video"), files => {
+    if (files.length > 1) note("warning", "One video at a time: playing the first file.");
+    sendVideo(files[0]);
+  });
+  $("choose-video").addEventListener("click", () => videoInput.click());
+  videoInput.addEventListener("change", () => {
+    const file = videoInput.files[0];
+    videoInput.value = "";
+    sendVideo(file);
+  });
+  const sourceControl = body => post("/source/control", body);
+  for (const id of ["video-restart", "summary-replay"]) $(id).addEventListener("click", () => sourceControl({action: "restart"}));
+  for (const id of ["video-camera", "summary-camera"]) $(id).addEventListener("click", () => sourceControl({action: "camera"}));
+  for (const [view, button] of Object.entries(videoViewButtons)) button.addEventListener("click", () => sourceControl({view}));
+
+  // Demo library: prepared images and videos, chosen by id (never by path).
+  function button(text, onClick, label) {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.textContent = text;
+    if (label) el.setAttribute("aria-label", label);
+    el.addEventListener("click", onClick);
+    return el;
+  }
+
+  async function playLibraryVideo(id, name) {
+    const form = new FormData();
+    form.append("demo", id);
+    note("info", `Starting ${name}...`);
+    try {
+      const res = await fetch("/source", {method: "POST", body: form});
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "The video could not be played.");
+      actionMessage = null;
+      backToLive();
+    } catch (e) {
+      note("error", e.message);
+    }
+    pollStatus();
+  }
+
+  async function loadLibrary() {
+    const box = $("library"), status = $("library-status");
+    try {
+      const lib = await (await fetch("/demo")).json();
+      if (lib.empty) {
+        status.textContent = lib.help;
+        box.replaceChildren();
+        return;
+      }
+      const total = lib.classes.reduce((n, group) => n + group.images.length, 0);
+      status.textContent = `${total} image${total === 1 ? "" : "s"}, ${lib.videos.length} video${lib.videos.length === 1 ? "" : "s"}`;
+      const groups = lib.classes.map(group => {
+        const section = document.createElement("div");
+        section.className = "library-group";
+        const heading = document.createElement("h3");
+        heading.appendChild(span("", `${group.class} (${group.images.length})`));
+        if (group.images.length) {
+          const first = group.images.length > maxBatch ? ` (first ${maxBatch})` : "";
+          heading.appendChild(button(`Analyse all${first}`, () => {
+            const form = new FormData();
+            form.append("demo_class", group.class);
+            analyze(form, {library: true});
+          }, `Analyse all ${group.class} images${first}`));
+        }
+        section.appendChild(heading);
+        if (!group.images.length) {
+          section.appendChild(span("hint", `No images yet. Add some to demo/${group.class}/.`));
+          return section;
+        }
+        const grid = document.createElement("div");
+        grid.className = "thumbs";
+        for (const item of group.images) {
+          const el = button("", () => {
+            const form = new FormData();
+            form.append("demo", item.id);
+            analyze(form, {library: true});
+          }, `Analyse ${item.name} (${group.class})`);
+          const img = document.createElement("img");
+          img.src = `/demo/thumb/${encodeURIComponent(item.id)}`;
+          img.alt = "";
+          img.loading = "lazy";
+          el.append(img, span("label", item.name));
+          grid.appendChild(el);
+        }
+        section.appendChild(grid);
+        return section;
+      });
+      const videos = document.createElement("div");
+      videos.className = "library-group";
+      const heading = document.createElement("h3");
+      heading.appendChild(span("", `Videos (${lib.videos.length})`));
+      videos.appendChild(heading);
+      const list = document.createElement("div");
+      list.className = "video-list";
+      for (const item of lib.videos) list.appendChild(button(`Play ${item.name}`, () => playLibraryVideo(item.id, item.name)));
+      if (!lib.videos.length) list.appendChild(span("hint", "No videos yet. Add some to demo/videos/."));
+      videos.appendChild(list);
+      box.replaceChildren(...groups, videos);
+    } catch (e) {
+      status.textContent = "Could not load the demo library.";
+    }
+  }
+  $("library-reload").addEventListener("click", loadLibrary);
+  loadLibrary();
+
+  function clock(seconds) {
+    const s = Math.max(0, Math.floor(seconds || 0));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  }
+
+  function renderSource(data) {
+    const src = data.source || {type: "camera"};
+    const playing = src.origin === "upload" || src.origin === "library";
+    sourceBar.hidden = !playing;
+    const home = src.home === "camera" ? "Back to camera" : "Back to start video";
+    $("video-camera").textContent = home;
+    $("summary-camera").textContent = home;
+    if (playing) {
+      const at = src.ended ? src.duration : src.position;
+      sourceName.textContent = `${src.origin === "library" ? "Library" : "Video"}: ${src.name}`;
+      videoProgress.max = src.duration || 1;
+      videoProgress.value = at || 0;
+      videoTime.textContent = `${clock(at)} / ${clock(src.duration)}`;
+      for (const [view, button] of Object.entries(videoViewButtons)) button.setAttribute("aria-pressed", String(data.view === view));
+      $("video-restart").disabled = !src.replay_available;
+      const slow = !src.ended && !data.paused && data.fps > 0 && src.fps && data.fps < 0.9 * src.fps;
+      videoRate.textContent = slow ? `Processing at ${data.fps.toFixed(1)} FPS (video is ${Math.round(src.fps)} FPS), so some frames are skipped.` : "";
+    }
+    const ended = playing && src.ended;
+    videoSummary.hidden = !ended || !!analysis;
+    if (ended) renderSummary(data, src);
+    return {playing, ended};
+  }
+
+  function renderSummary(data, src) {
+    $("summary-title").textContent = `Video finished: ${src.name}`;
+    $("summary-frames").textContent = `${data.frames_processed ?? 0} frames analysed in ${data.view} view` +
+      " (frames are skipped when processing is slower than the video).";
+    const table = $("summary-table");
+    const head = document.createElement("tr");
+    for (const h of ["Class", "Seen", "First seen", "Last seen", "Frames", "Best confidence"]) head.appendChild(cell("th", h));
+    const rows = (data.video_summary || []).map(r => {
+      const tr = document.createElement("tr");
+      tr.append(cell("td", r.class), cell("td", r.seen ? "Yes" : "Not seen"),
+                cell("td", r.seen ? clock(r.first_seen) : ""), cell("td", r.seen ? clock(r.last_seen) : ""),
+                cell("td", String(r.frames)), cell("td", r.seen ? r.max_confidence.toFixed(2) : ""));
+      return tr;
+    });
+    table.replaceChildren(head, ...rows);
+    $("summary-note").textContent = data.accuracy_note + " Pillar is the weakest class and is often missed.";
+    $("summary-replay").disabled = !src.replay_available;
+    $("summary-replay").textContent = src.replay_available ? "Replay" : "Replay (upload it again)";
+  }
+
+  // Results gallery: one card per image, a detections table under each.
+  function expectedTag(expected) {
+    if (!expected) return null;
+    return expected.recognised ? span("tag ok", `Recognised: ${expected.class} ${expected.confidence.toFixed(2)}`)
+                               : span("tag miss", `Not recognised: ${expected.class}`);
+  }
+
+  function cell(tag, text) {
+    const el = document.createElement(tag);
+    el.textContent = text;
+    return el;
+  }
+
+  function detectionTable(run) {
+    const recognition = shownView === "recognition";
+    const table = document.createElement("table");
+    table.className = "dets";
+    const caption = cell("caption", recognition ? "Every detection" : "Alert decision");
+    caption.className = "visually-hidden";
+    const head = document.createElement("tr");
+    for (const h of recognition ? ["Class", "Confidence", "Where"] : ["Class", "Confidence", "Where", "Alert"]) head.appendChild(cell("th", h));
+    table.append(caption, head);
+    const rows = recognition ? run.recognition : run.detections;
+    for (const d of rows) {
+      const tr = document.createElement("tr");
+      const name = d.class + (d.source === "general" && d.class !== "Object" ? " (general)" : "");
+      tr.append(cell("td", name), cell("td", d.confidence.toFixed(2)), cell("td", POSITION_TEXT[d.position] || d.position));
+      if (!recognition) {
+        tr.appendChild(cell("td", d.gated ? (bandLabels[d.band] || "Alert") + (isSpoken(d, run.selected) ? ", selected" : "")
+                                          : "ignored: " + (REASON_TEXT[d.reason] || d.reason)));
+      }
+      table.appendChild(tr);
+    }
+    if (!rows.length) {
+      const tr = document.createElement("tr");
+      const td = cell("td", recognition ? "Nothing detected" : "No detections");
+      td.colSpan = recognition ? 3 : 4;
+      tr.appendChild(td);
+      table.appendChild(tr);
+    }
+    return table;
+  }
+
+  function runBlock(run, name) {
+    const div = document.createElement("div");
+    const head = document.createElement("div");
+    head.className = "run-head";
+    head.appendChild(span("meta", `${run.mode}: ${run.model}`));
+    if (run.error) {
+      head.appendChild(span("tag err", "Failed"));
+      div.append(head, span("meta", run.error));
+      return div;
+    }
+    const timing = run.round_trip_ms ?? run.latency_ms;
+    if (timing != null) head.appendChild(span("meta", `${timing.toFixed(0)} ms`));
+    const tag = expectedTag(run.expected);
+    if (tag) head.appendChild(tag);
+    if (shownView === "alert") head.appendChild(span("meta", run.alert || "No alert"));
+    const img = document.createElement("img");
+    img.src = run.images[shownView];
+    img.alt = `${name}, ${run.mode}, ${shownView} view`;
+    div.append(head, img, detectionTable(run));
+    return div;
+  }
+
+  function renderGallery() {
+    const head = document.createElement("div");
+    head.className = "summary";
+    const count = analysis.results.length;
+    head.appendChild(cell("strong", `${count} image${count === 1 ? "" : "s"} analysed, ${shownView} view` +
+                                     (analysis.compare ? ", local and cloud side by side" : "")));
+    for (const s of analysis.summary) {
+      head.appendChild(span("", (analysis.compare ? `${s.backend}: ` : "") + s.text +
+                                (s.skipped ? ` (${s.skipped} not analysed)` : "")));
+    }
+    if (analysis.summary.length) head.appendChild(span("accuracy-note", analysis.accuracy_note));
+    const cards = analysis.results.map(entry => {
+      const card = document.createElement("figure");
+      card.className = "result-card" + (analysis.compare ? " compare" : "");
+      const caption = document.createElement("figcaption");
+      caption.className = "run-head";
+      caption.appendChild(span("name", entry.name));
+      card.appendChild(caption);
+      if (entry.error) {
+        caption.appendChild(span("tag err", "Not analysed"));
+        card.appendChild(span("meta", entry.error));
+        return card;
+      }
+      const runs = document.createElement("div");
+      runs.className = "runs";
+      for (const run of entry.runs) runs.appendChild(runBlock(run, entry.name));
+      card.appendChild(runs);
+      return card;
+    });
+    gallery.replaceChildren(head, ...cards);
+  }
+
+  fetch("/samples").then(r => r.json()).then(samples => {
+    if (!samples.length) return;
+    sampleSelect.replaceChildren(...samples.map(s => {
+      const option = document.createElement("option");
+      option.value = s.id;
+      option.textContent = s.name;
+      return option;
+    }));
+  }).catch(() => {});
+
+  // Rendering --------------------------------------------------------------
+  function renderMode(data) {
+    modeBadge.textContent = data.mode_label || data.backend;
+    modeBadge.className = "mode-badge " + data.mode;
+    for (const [mode, button] of Object.entries(modeButtons)) {
+      button.setAttribute("aria-pressed", String(data.mode === mode));
+    }
+    modeButtons.cloud.disabled = !data.cloud_available;
+    modeButtons.cloud.textContent = data.cloud_available ? "Cloud" : "Cloud unavailable";
+    modeButtons.cloud.title = data.cloud_unavailable_reason || "";
+    retryCloud.hidden = !data.fallback_active;
+    compareRow.hidden = !data.cloud_available;  // decision V6
+  }
+
+  function renderMessages(data) {
+    const items = [...(data.health || [])];
+    if (data.mode === "cloud") {
+      const what = data.source && data.source.type === "video" ? "video frames" : "camera frames";
+      items.push({severity: "info", message: `Cloud mode: ${what} are sent to the server.`});
+    }
+    if (actionMessage) items.unshift(actionMessage);
+    messages.replaceChildren(...items.map(h => {
+      const div = document.createElement("div");
+      div.className = "message " + h.severity;
+      div.textContent = h.message;
+      return div;
+    }));
+  }
+
+  function renderControls(data) {
+    pauseButton.setAttribute("aria-pressed", String(!!data.paused));
+    pauseButton.firstChild.textContent = data.paused ? "Resume " : "Pause ";
+    muteButton.setAttribute("aria-pressed", String(!!data.muted));
+    muteButton.firstChild.textContent = data.muted ? "Unmute " : "Mute ";
+    rate.min = data.speech_rate_min; rate.max = data.speech_rate_max;
+    if (document.activeElement !== rate) { rate.value = data.speech_rate; rateValue.textContent = data.speech_rate; }
+    const speechOff = !data.speech_enabled;
+    $("test-voice").disabled = speechOff || data.muted;
+    $("replay").disabled = speechOff || data.muted || !data.last_spoken;
+    lastSpoken.textContent = speechOff ? "Speech is off (started with --no-tts)." :
+      data.muted ? "Speech is muted." :
+      data.last_spoken ? `Last spoken: ${data.last_spoken}` : "Nothing spoken yet";
+  }
+
+  function renderLegend(topClass) {
+    for (const li of legend.children) {
+      const current = li.dataset.class === topClass;
+      li.classList.toggle("current", current);
+      if (current) li.setAttribute("aria-current", "true"); else li.removeAttribute("aria-current");
+    }
+  }
+
+  function renderLog(entries) {
+    if (!entries || !entries.length) {
+      const li = document.createElement("li");
+      li.textContent = "Nothing spoken yet";
+      spokenLog.replaceChildren(li);
+      return;
+    }
+    spokenLog.replaceChildren(...entries.map(e => {
+      const li = document.createElement("li");
+      li.appendChild(span("time", new Date(e.time * 1000).toLocaleTimeString([], {hour12: false})));
+      li.appendChild(span("phrase", e.phrase));
+      li.appendChild(span("backend", e.backend + (e.kind && e.kind !== "alert" ? `, ${e.kind}` : "")));
+      return li;
+    }));
+  }
+
+  function levelClassFor(alert, band) {
     if (!alert) return "level-clear";
+    if (band && BAND_LEVEL[band]) return BAND_LEVEL[band];
     if (alert.startsWith("Warning")) return "level-warning";
     if (alert.startsWith("Caution")) return "level-caution";
     return "level-note";
   }
 
+  // Recognition view: detections as list rows, and a one-line summary for the banner.
+  function asRows(recognition) {
+    return recognition.map(d => ({...d, gated: true, band: null, source: "trained", priority: d.confidence}));
+  }
+  function recognitionText(recognition) {
+    if (!recognition.length) return "Recognition view: nothing recognised";
+    return "Recognised: " + recognition.map(d => `${d.class} ${d.confidence.toFixed(2)}`).join(", ");
+  }
+
+  function batchBanner(result) {
+    const summary = result.summary;
+    if (!summary.length) return `${result.results.length} images analysed`;
+    if (summary.length === 1) return summary[0].text;
+    return `${summary[0].class} recognised: ` + summary.map(s => `${s.backend} ${s.recognised} of ${s.total}`).join(", ");
+  }
+
+  function isSpoken(d, selected) {
+    return !!selected && d.gated && d.class === selected.class && d.position === selected.position;
+  }
+
+  function row(d, selected, muted) {
+    const li = document.createElement("li");
+    const name = d.class + (d.source === "general" && d.class !== "Object" ? " (general model)" : "");
+    li.appendChild(span("name", name));
+    li.appendChild(span("meta", `${(d.confidence * 100).toFixed(0)}%`));
+    li.appendChild(span("meta", POSITION_TEXT[d.position] || d.position));
+    if (d.band) li.appendChild(span("band " + d.band, d.band));
+    if (!d.gated) li.appendChild(span("meta", "ignored: " + (REASON_TEXT[d.reason] || d.reason)));
+    if (debug && d.size != null) li.appendChild(span("meta", `h=${d.size.toFixed(2)}`));
+    if (debug && "distance_est_m" in d) {
+      li.appendChild(span("meta", d.distance_est_m == null ? `distance: ${d.distance_note}`
+                                                           : `about ${d.distance_est_m} m (estimate)`));
+    }
+    if (isSpoken(d, selected)) {
+      li.classList.add("spoken");
+      // Selection is not proof of playback: speech may be disabled, failed,
+      // queued or skipped by cooldown. Actual announcements are in the log.
+      li.appendChild(span("spoken-tag", muted ? "selected (muted)" : "selected"));
+    }
+    return li;
+  }
+
   async function pollStatus() {
     try {
       const res = await fetch("/status");
+      if (!res.ok) throw new Error("Status unavailable");
       const data = await res.json();
-      fpsBadge.textContent = `${data.fps.toFixed(1)} FPS`;
+      latest = data;
+      renderMode(data);
+      renderControls(data);
+      renderMessages(data);
+      renderLog(data.spoken_log);
+      const source = renderSource(data);
+      // In analysis view the banner and lists describe the analysed image (one image)
+      // or the batch summary (gallery). Recognition view lists every detection.
+      const run = analysis && analysis.single;
+      const recognising = analysis ? shownView === "recognition" : source.playing && data.view === "recognition";
+      let view = data;
+      if (!analysis && source.ended) {
+        view = {...data, alert: "Video finished. See the summary.", detections: [], selected: null};
+      } else if (!analysis && recognising) {
+        view = {...data, alert: recognitionText(data.recognition || []), detections: asRows(data.recognition || []), selected: null};
+      }
+      if (run) {
+        view = {...data, alert: recognising ? recognitionText(run.recognition) : run.alert,
+                alerts: run.alerts, detections: recognising ? asRows(run.recognition) : run.detections,
+                selected: recognising ? null : run.selected, latency_ms: run.latency_ms,
+                round_trip_ms: run.round_trip_ms, model: run.model, backend: run.mode, error: "", paused: false};
+      } else if (analysis) {
+        view = {...data, alert: batchBanner(analysis),
+                alerts: [], detections: [], selected: null, error: "", paused: false};
+      }
+      viewBadge.hidden = !analysis;
+      if (analysis) {
+        const tag = run && run.expected ? (run.expected.recognised ? `, recognised as ${run.expected.class}`
+                                                                   : `, not recognised as ${run.expected.class}`) : "";
+        viewText.textContent = run ? `Showing: ${run.name}${tag}${run.spoken ? " (spoken)" : ""}`
+                                   : `Showing: ${analysis.results.length} analysed images`;
+      }
+      fpsBadge.textContent = analysis ? (run ? "Image" : "Images") : `${data.fps.toFixed(1)} FPS`;
 
-      alertBanner.textContent = data.alert || "No hazards detected";
-      alertBanner.className = "alert-banner " + levelClassFor(data.alert);
+      const detections = view.detections || [];
+      const gated = detections.filter(d => d.gated).sort((a, b) => b.priority - a.priority);
+      const ignored = detections.filter(d => !d.gated);
+      const top = gated.find(d => d.phrase === view.alert);
 
-      ocrText.textContent = data.ocr_text || "—";
-      productText.textContent = data.product_text || "—";
+      // A camera or video problem replaces the live banner: "No hazards" would be misleading.
+      const blocking = analysis ? null : (data.health || []).find(h => h.severity === "error");
+      const problem = blocking ? blocking.message : view.error;
+      alertText.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") || view.alert || "No hazards";
+      // Recognition results and batch summaries are information, not alerts.
+      const informational = recognising || (analysis && !run) || (!analysis && source.ended);
+      alertBanner.className = "alert-banner " + (problem ? "level-warning" : informational ? "level-clear"
+                                                 : levelClassFor(view.alert, top && top.band));
+      // The level is written out, never shown by colour alone.
+      const word = view.alert && ["Warning", "Caution", "Note"].find(w => view.alert.startsWith(w));
+      const level = problem ? "Problem" : informational ? "" : view.alert ? (top && bandLabels[top.band]) || word || "Alert" : "";
+      levelChip.hidden = !level;
+      levelChip.textContent = level;
+      renderLegend(!problem && top ? top.class : null);
+      video.style.opacity = problem ? "0.15" : "1";
+      videoOverlay.hidden = !blocking;
+      videoOverlay.textContent = blocking ? blocking.message : "";
+
+      const timing = view.round_trip_ms ?? view.latency_ms;
+      modelStatus.textContent = `${view.backend}: ${view.model}` + (timing == null ? "" :
+        ` · ${timing.toFixed(1)} ms${view.round_trip_ms == null ? " inference" : " round trip"}`);
+      const gate = data.gate_enabled === false ? "alert gate off" :
+                   "alert gate on" + (data.gate_calibrated ? "" : " (uncalibrated sizes)");
+      pipelineStatus.textContent = [gate, data.depth_enabled ? "depth on" : "depth off",
+                                    data.tts_enabled ? (data.muted ? "speech muted" : "speech on") : "speech off",
+                                    data.paused ? "paused" : null, debug ? "debug view" : null].filter(Boolean).join(" · ");
+
+      objectAlerts.replaceChildren();
+      if (analysis && !run) {
+        objectAlerts.appendChild(span("meta", "See the results gallery."));
+      } else if (problem) {
+        objectAlerts.appendChild(span("meta", problem));
+      } else if (!gated.length) {
+        const li = document.createElement("li");
+        li.textContent = recognising ? "Nothing recognised" : "No hazards";
+        objectAlerts.appendChild(li);
+      } else {
+        for (const d of gated) objectAlerts.appendChild(row(d, view.selected, data.muted && !analysis));
+      }
+      ignoredList.replaceChildren(...ignored.map(d => row(d, null)));
+      ignoredSummary.textContent = `Ignored detections (${ignored.length})`;
     } catch (e) {
-      // Server not reachable yet; ignore and retry on the next tick.
+      const div = document.createElement("div");
+      div.className = "message error";
+      div.textContent = "The VisionAid app is not responding. Check that it is still running.";
+      messages.replaceChildren(div);
+      alertText.textContent = "Service unavailable";
+      levelChip.hidden = true;
+      alertBanner.className = "alert-banner level-warning";
+      video.style.opacity = "0.15";
+      modelStatus.textContent = "Unavailable";
+      pipelineStatus.textContent = "";
+      objectAlerts.textContent = "Service unavailable";
+      ignoredList.replaceChildren();
     }
   }
-
-  function fireAction(button, url, busyLabel) {
-    const original = button.innerHTML;
-    button.disabled = true;
-    button.textContent = busyLabel;
-    fetch(url, { method: "POST" }).finally(() => {
-      setTimeout(() => {
-        button.disabled = false;
-        button.innerHTML = original;
-      }, 2500);
-    });
-  }
-
-  btnScan.addEventListener("click", () => fireAction(btnScan, "/scan_text", "Scanning..."));
-  btnIdentify.addEventListener("click", () => fireAction(btnIdentify, "/identify_item", "Identifying..."));
 
   setInterval(pollStatus, 500);
   pollStatus();

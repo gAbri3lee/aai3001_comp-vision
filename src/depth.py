@@ -1,10 +1,11 @@
 """
-Monocular depth estimation stage (MiDaS_small) — the software-only stand-in
-for a physical ToF sensor (see CLAUDE.md: no hardware exists, so this is the
-sole depth signal, not a fallback).
+Monocular depth estimation stage (MiDaS_small), experimental and off in the
+first-test commands. It is the software-only stand-in for a physical ToF sensor:
+no hardware exists, so this is the sole depth signal when enabled. It is slow on a
+laptop CPU (about 0.19 FPS for the full pipeline in Gabriel's measurement).
 
 Output is a per-frame RELATIVE proximity map, normalized to [0, 1] where
-higher = closer. It is NOT calibrated metric distance — MiDaS has no notion
+higher = closer. It is NOT calibrated metric distance: MiDaS has no notion
 of scale from a single monocular frame, so proximity values are only
 meaningful for comparing hazards *within the same frame*, which is exactly
 what the ranking in decision_engine.py needs.

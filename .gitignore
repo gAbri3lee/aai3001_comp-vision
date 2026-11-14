@@ -6,3 +6,23 @@ venv/
 runs/
 data/
 *.log
+
+# Deployment weights, exports and verification artifacts
+*.pth
+*.onnx
+*.engine
+*_openvino_model/
+.pytest_cache/
+artifacts/
+.env
+# Per-camera focal length from scripts/calibrate_distance.py
+camera_calibration.json
+
+# Demo videos stay on the demo laptop (third hand-over): never commit video files
+demo/videos/*
+!demo/videos/.gitkeep
+*.mp4
+*.mov
+*.MOV
+*.webm
+*.avi

@@ -1,127 +1,142 @@
-# VisionAid — Project Context for Claude Code
+# VisionAid: current project context
 
-**Module:** AAI3001, Singapore Institute of Technology (SIT)
-**Project:** VisionAid — a hazard-detection AI vision assistant, framed as a wearable "glasses attachment" concept for visually impaired users, aimed at supplementary environmental awareness.
+Software-only AAI3001 hazard-awareness prototype. The current training work is
+in the five trained notebooks. The dataset-builder and training CLI files have
+been removed; use the notebooks for training. Deployment utilities and the
+prepared-dataset validator remain available.
 
-**This is a software-only CV/DL project — there is no physical hardware build.** The "clips onto glasses" / sensor / edge-processor framing below is a conceptual product narrative used to justify design choices (e.g. why depth matters, why output is audio), not a fabrication target. Everything gradeable is software: dataset curation/annotation, model training, local+cloud deployment, and a UI. Do not propose hardware acquisition, physical prototyping, or treat any component list as a build/shopping list.
+## Final dataset and classes
 
-This file summarizes everything decided so far so a fresh Claude Code session can pick up implementation work without re-deriving the scope or architecture.
+Roboflow `potatos-workspace-kequm/version2-nvt5l` v4, scene-based split fingerprint
+`49601080aac1f838190341d331785578`. Train/valid/test: 8247/925/920 images.
+IDs must never be reordered: 0 Escalator, 1 People, 2 Pillar, 3 Stair,
+4 Wet Floor Sign. `visionaid_config.json` owns class names, thresholds, severity,
+model paths, input sizes, the alert gate and recorded benchmark metrics.
 
----
+## Runtime architecture
 
-## 1. Grading rubric (what actually matters)
+The default is local YOLOv8n (`models/local/yolov8n_v4.pt`), Ultralytics 8.4.183,
+640 px, confidence 0.35, NMS IoU 0.7. The optional remote detector is RF-DETR Nano
+(`models/cloud/rfdetr-nano_v4.pth`), RF-DETR 1.11.2, 384 px, confidence 0.40.
+RF-DETR has a separate Linux runtime; do not pass its `.pth` to Ultralytics YOLO.
+The `POST /detect` request and response contract must not change.
 
-The module rubric grades five things, all software:
+All demos consume shared Detection/DetectionBatch records. Boxes are xyxy pixels
+in the original frame. Checkpoint labels must match the canonical IDs at startup.
+A second, local COCO YOLOv8n (`src/scene_detector.py`) adds general detections with
+`class_id` -1: COCO people the trained model missed become `People`, everything
+else is `Object`. It is not open-world.
 
-| Row | Excellent | Satisfactory | Average |
-|---|---|---|---|
-| **Dataset** | Acquired own dataset or curated existing dataset; annotated own or existing dataset | Existing dataset; annotate existing dataset | Copying existing dataset and annotations |
-| **Model Development** | Architecture not previously used for this task, or a novel training strategy | Architecture/strategy already proven for similar tasks | Fully copying from existing work |
-| **Model Deployment** | Both cloud and local deployment, with an optimized model (e.g. TorchServe) | Either local or cloud deployment | No deployment (algorithm only) |
-| **User Interface** | Intuitive, well-designed, outstanding UX | Relatively user-friendly, some rough edges | Not intuitive, significant usability issues |
-| **Scalability** | Clear avenues for future enhancement/expansion | Somewhat scalable, some limitations | Minimal, needs major rework to extend |
+The pipeline is capture, detector plus general model, optional relative depth
+(experimental, off in first-test commands), then `AlertPolicy` in
+`src/decision_engine.py`: alert gate, ranking, cooldown and one spoken-hazard
+choice per frame, then audio. Local and cloud detections go through the same gate.
 
-Implications to keep in mind:
-- **Dataset row is graded on the real artifact at submission time.** A placeholder/pretrained model can be used during development, but the final submission needs an actually-acquired-and-annotated dataset, or this row caps at "Average."
-- **Plain fine-tuning of a stock architecture (e.g. YOLOv8n) on your own data likely caps at "Satisfactory"** for Model Development — reaching "Excellent" needs something genuinely novel on top (e.g. a fused detection+depth head, a hazard-proximity-weighted loss, an architecture not previously applied to hazard/obstacle detection), not just a newer YOLO version number.
-- **Deployment means software deployment** — a local inference service/script plus a cloud-hosted demo (e.g. a web app on Vercel-equivalent + an optimized serving backend like TorchServe) — not deployment onto physical edge hardware.
+## Alert gate and audio policy
 
----
+- Size is box height / frame height. Below the class `min_size` a hazard is far
+  and never spoken. Left and right thirds need `min_size x side_multiplier`. Generic
+  Objects are spoken only in the centre third. General-model detections need
+  confidence `object_min_confidence` (0.5).
+- Bands from `size / near_size`: near ("Warning"), mid-close ("Caution"), mid
+  ("Note"). With depth on, bands come from depth only. Never speak metres.
+- Any trained hazard outranks any Object. Cooldown key is (label, position, band):
+  4 s trained, 8 s general. A proximity jump of 0.15 re-alerts early.
+- Banner is the top gated hazard. Speech is the highest gated hazard off cooldown.
+  The spoken hazard is marked in `/status` (`selected`) and highlighted. The
+  speaker keeps one pending phrase, replaces it with the newest and drops it after
+  1 s.
+- Gate sizes in config are placeholders (`"calibrated": false`), except that Wet
+  Floor Sign `min_size` was raised from 0.15 to 0.18 from test data (decision U1);
+  with that, a Wet Floor Sign is never in the "Note" band. Data for them is
+  in `docs/GUI_TEST_REPORT.md` (Phase D); a tape-measure log is in
+  `docs/DISTANCE_TEST_SHEET.md`. `--no-gate` restores the old ungated behaviour.
+- An optional distance estimate (`src/distance.py`, git-ignored
+  `camera_calibration.json`) appears only in the debug panel for People and
+  Wet Floor Sign, labelled as an estimate. It is never spoken.
 
-## 2. Scope — what's in, what's out
+The local UI remains the camera/audio host in cloud mode. Camera frames leave the
+device only when cloud is explicitly selected; in local mode the cloud client is
+never called (tested). With `--endpoint` both detectors are built and share one
+general model; the app starts local unless `--backend cloud`. A cloud error or the
+3 s deadline falls back to local (last good result held at most 1 s) and stays
+local until a successful Retry; it never switches to cloud by itself, and the two
+detectors are never fused. Switching mode clears the cooldown (U3). One request is
+allowed at a time; newest frames replace buffered frames and obsolete cloud
+responses are discarded. Recorded video sources are paced at their own frame rate.
 
-The project started as a broad "smart glasses that do many things" idea and was deliberately narrowed. Don't casually re-expand scope without noting it here.
+## Web app endpoints (`src/webapp.py`)
 
-| Area | Decision |
-|---|---|
-| Core framing | Safety-focused hazard-detection vision assistant, **not** a general-purpose smart-glasses platform |
-| Main deep-learning task | **Hazard detection** — this is the project's actual research/DL contribution |
-| Depth sensing | Keep, but **software-only**: monocular depth estimation (e.g. MiDaS / Depth Anything) run on the video feed — there is no physical ToF sensor to fuse with |
-| OCR (text reading) | Keep, but **secondary** — on-demand only, not part of the continuous safety loop |
-| Face recognition | **Removed from core scope entirely** |
-| Currency / product ID | **Optional** — on-demand only |
-| Navigation | **Avoided** — full wayfinding is out of scope; only local obstacle guidance |
-| Voice commands | Keep, kept simple |
-| Text-to-speech / audio feedback | Definitely keep — this is the primary output channel (simulated via normal speakers/browser audio) |
-| Model strategy | **One** strong, fine-tuned CV pipeline (own dataset, own annotations) rather than many independent bolted-on models |
+- `GET /status`: live result plus `mode`, `mode_label`, `cloud_available`,
+  `fallback_active`, `last_error`, `health` (list of `{code, severity, message}`),
+  `paused`, `muted`, `speech_rate`, `speech_enabled`, `last_spoken`,
+  `spoken_log` (last 10, newest first, memory only), `recognition` (every trained
+  detection this frame), `view`, `source` (`type` camera or video, `origin`
+  camera/file/upload/library, display `name` that is never a path, `duration`,
+  `position`, `fps`, `ended`, `replay_available`), `video_summary` (per class:
+  first/last seen, frames, best confidence), `frames_processed` and `accuracy_note`.
+- `POST /mode` `{"backend": "local" | "cloud"}`: cloud only after its `/health`
+  succeeds (this is also Retry cloud). 400 for anything else, 503 if unavailable.
+- `POST /control`: any of `paused`, `muted` (booleans), `rate` (clamped to 120 to
+  260 words per minute, default 180) and `action` (`test_voice`, `replay_last`,
+  `clear_log`). Validated before anything changes; 409 when muted or speech is off.
+- `POST /analyze`: up to 20 of multipart `image` (JPEG or PNG, 10 MB each), form
+  `sample` (ids from `GET /samples`, images from `golden/images`), `demo` (ids from
+  `GET /demo`) or `demo_class`. Optional `view` (`recognition` or `alert`, API
+  default alert, page default recognition), `expected` (a class), `compare=1`,
+  `speak=1`. Every response has `results` (one per image; a bad file is a row with
+  `error`), `summary`, `accuracy_note`; one image also keeps the old top-level
+  fields and HTTP error codes. Same detector, `decide()` and `annotate()` as the
+  live loop with a fresh `AlertPolicy`; images are never written to disk. Images
+  reach the cloud only in cloud mode or with `compare`.
+- `POST /source`: multipart `video` (MP4, MOV or WebM, 150 MB, 120 s) or form
+  `demo` (a library video id). The upload is saved under a random name in a
+  private temp folder (`media.TempStore`) and handed to the live loop, which plays
+  it like the camera. `POST /source/control` JSON `action` (`restart`, `camera`)
+  and/or `view`. Recognition view skips the gate and never speaks; the camera
+  always uses Alert view. The copy is deleted on replace, Back to camera, error,
+  app stop or 10 minutes after the end.
+- `GET /demo` lists `demo/<class>/` images and `demo/videos/` by id and name only,
+  from an allow-list built per request; `GET /demo/thumb/<id>` is a 240 px JPEG.
+- Shared-code rule: uploads, library files and videos go through the same
+  detector, `decide()`, cooldown, speaker and annotation code as the camera. Add
+  shared helpers (`media.py`, `capture.py`, `detection.py`) rather than copies.
+- `GET /config`: priority order from the config severities (then Object), band
+  labels and control ranges for the page.
+- Health codes: `camera_missing` (camera retried every 2 s), `no_video` (3 s),
+  `cloud_unreachable`, `general_unavailable`, `speech_unavailable`,
+  `source_ended`, `pipeline_stopped`, `video_ended`, `video_deleted`. Missing weights or a class-order mismatch
+  still stop the app at startup, as does a missing video file.
+- Keyboard shortcuts live in `src/static/shortcuts.js` (tested with node).
+  `scripts/check_contrast.py` and `scripts/check_layout.mjs` check the page.
 
-Key constraints to keep visible in any written report: real-time latency, low-light / crowded-scene accuracy, information overload, privacy, and the explicit framing that this is **supplementary, not guaranteed, safety**.
+## Training and evaluation
 
----
+Do not retrain to integrate these checkpoints or change the finalized class set.
+Keep notebook outputs and the recorded train/valid/test split. API credentials
+come from the `ROBOFLOW_API_KEY` environment variable or Kaggle secret. The
+previously exposed Roboflow key is still in git history and must be revoked in
+its Roboflow account; source cleanup does not revoke it. The app itself does not
+need a key. The five notebooks preserve their training/evaluation outputs.
 
-## 3. Software pipeline
+`src/evaluation.py` reproduces the notebook's COCO AP and greedy IoU-0.5 alert
+metrics. `scripts/verify_detector.py` verifies golden parity, evaluates a supplied
+fixed test split and benchmarks batch-one inference. AP uses detections >=0.001;
+alert metrics use the existing validation-selected threshold, never retuned on
+test. Keep Ultralytics `.val()` results separately labelled if measured.
+Score captions use `split_images.test` and `expected.test_map50` from the config.
+`scripts/recall_by_size.py`, `scripts/compare_pillar.py` and
+`scripts/replay_alerts.py` analyse size, Pillar and local versus cloud alerts.
 
-Five-stage pipeline, conceptually running in a loop (1→2→3→4→5→back to 1, every frame). All stages are software; hardware terms below describe what a stage *stands in for* in the product narrative, not something being built.
+## Boundaries and limitations
 
-1. **Capture** — video/webcam frame input (stands in for camera+mic).
-2. **AI processing** — two tracks:
-   - **Continuous / every frame** (the core hazard-safety loop):
-     - *Object detection* — YOLOv8n, **fine-tuned on a curated Open Images V7 subset** for the 16 hazard classes below (`models/hazard_yolov8n.pt`, see Section 4) → outputs class + bounding box + confidence. Not first-person/glasses-perspective yet (see caveat in Section 4) — that would need the "own captured photos" path that was deferred.
-     - *Depth estimation* — monocular depth model (MiDaS or similar) on the same frame → estimated distance to each detected hazard.
-   - **Secondary / on-demand only** (triggered by the spoken phrase **"vision scan"**, or a push-to-talk key in the prototype):
-     - *OCR* — lightweight OCR engine → reads short signs/text labels. **Not scoped for dense documents** — webcam resolution/distance/steadiness isn't enough for a full page, and low-confidence reads there tend to come out as gibberish; the implementation filters by confidence and only targets short text.
-     - *Currency / product ID* — MobileNetV3-Small (ImageNet-pretrained), top-1 label + confidence. Generic object classifier, **not** trained on currency — a placeholder for this optional branch (see Section 6).
-3. **Safety decision & response engine** — rule-based logic, **not** a trained model. Fuses detection + depth, ranks hazards by proximity/type and position in the walking path, applies cooldown/tracking to avoid repeat alerts, and routes on-demand query results (OCR/currency ID) to output.
-4. **Text-to-speech** — converts the prioritised message to speech (e.g. Coqui TTS / eSpeak-NG), played through normal audio output.
-5. **Output / user action** — audio delivered to the user; a voice command loops back to stage 1 for on-demand queries.
+Depth is frame-relative, not metres. Distance bands come from box size and are
+estimates. Pillar recall is weak (about 17 percent local, 29 percent cloud); a
+missed pillar is a training limitation, not a bug. A Wet Floor Sign is a warning
+sign, not proof of a spill. A lack of detections is not a declaration that a scene
+is safe. This is supplementary hazard awareness. There is no measured distance,
+stair direction classifier, floor-wetness sensor, OCR, voice input, item
+identification, face recognition, route navigation, physical wearable build or
+currency model.
 
-> Model names above (YOLOv8-nano, MiDaS, Coqui TTS/eSpeak-NG, MobileNet) are plausible starting choices, not benchmarked. YOLOv10-nano/v11-nano were also discussed as more efficient (NMS-free, lower-latency) alternatives, at the cost of less mature export/deployment tooling than YOLOv8n.
-
-**Model swap strategy (validated, now executed):** Built and tested the full pipeline (deployment, UI, decision engine, TTS) against a pretrained/placeholder checkpoint first, keeping the class list and inference interface config-driven rather than hardcoded. A fine-tuned checkpoint now exists (`models/hazard_yolov8n.pt`) and is the default `--model` everywhere — see Section 4 for how it was built and its real metrics.
-
-**Gotcha hit during the swap:** the fine-tuned checkpoint's class names come out Title Case (`"Person"`, `"Car"`, from Open Images) while the placeholder COCO model and all the hazard-class/severity lookups in the code were written lowercase (`"person"`, `"car"`). Every place that reads `names[int(box.cls)]` now lowercases it before comparing against `HAZARD_CLASSES` or `SEVERITY` — without that, the decision engine would have silently fallen back to default severity for everything after the swap. Keep lowercasing at that boundary for any future model swap too, rather than relying on a specific checkpoint's naming convention.
-
----
-
-## 4. Dataset + training (`scripts/`, `data/`, `models/`)
-
-The actual DL contribution: a curated hazard-detection dataset and a fine-tuned YOLOv8n checkpoint, not just the placeholder pipeline.
-
-| File/dir | Purpose |
-|---|---|
-| `scripts/build_hazard_dataset.py` | Curates a dataset from Open Images V7 for the 16 hazard classes (person, bicycle, car, motorcycle, bus, truck, traffic light, fire hydrant, stop sign, bench, chair, dog, backpack, suitcase, potted plant/houseplant, couch). Pulls each class with its **own** capped query rather than one combined query, so common classes (person, car) don't crowd out rare ones (fire hydrant, stop sign) in the sample budget — this is the "curation" that distinguishes it from a raw dump. Exports directly to YOLO format. |
-| `data/hazard_dataset/` | Output of the above: 2001 curated images (1701 train / 300 val), all 16 classes represented (137-639 boxes each). Gitignored (binary/large) — rerun the build script to regenerate. |
-| `scripts/train_hazard_model.py` | Fine-tunes YOLOv8n (COCO-pretrained start) on the curated dataset. CPU-only run used 40 epochs at 320px, ~90 min. |
-| `models/hazard_yolov8n.pt` | **The trained checkpoint** — default `--model` for all runtime scripts now. Validation: precision 0.634, recall 0.456, **mAP50 0.495, mAP50-95 0.36**. A real first fine-tune, not a fully converged model — a longer/higher-resolution run would improve it further before treating it as submission-final. |
-
-**Known caveat on this dataset:** it's the "curated existing dataset" rubric path (Open Images V7, third-person stock photos), not "own dataset" with first-person/glasses-perspective photos — that stronger path was explicitly deferred by choice (see the dataset-approach decision) in favor of a faster fully-automated baseline. Revisit if there's time before submission to strengthen the Dataset rubric row further.
-
-To rebuild/retrain: `python scripts/build_hazard_dataset.py --per-class 130` then `python scripts/train_hazard_model.py --epochs 40`.
-
----
-
-## 6. Prototype code (`src/`)
-
-| File | Purpose |
-|---|---|
-| `src/webcam_hazard_demo.py` | Detection-only test: webcam → YOLO → annotated window. Simplest way to sanity-check the model/camera. |
-| `src/depth.py` | `DepthEstimator` — MiDaS_small monocular depth, returns a per-frame proximity map (0-1, higher = closer, relative not metric). |
-| `src/decision_engine.py` | Rule-based hazard ranking (severity × proximity) + `AlertCooldown` so alerts don't repeat every frame. |
-| `src/tts.py` | Background-threaded speech output (pyttsx3/SAPI5). |
-| `src/ocr.py` | `OcrReader` — EasyOCR wrapper with 1.6x upscale + grayscale+CLAHE preprocessing, confidence filtering (`MIN_CONFIDENCE`), and reading-order sort. Scoped to short text, not documents (see Section 3); stylized brand/logo text (foil packaging etc.) is a known hard case even with tuning. |
-| `src/voice_trigger.py` | Background thread listening for the spoken trigger phrase via Google's free Web Speech API (needs internet; not a true low-latency wake-word engine). |
-| `src/product_id.py` | `ProductIdentifier` — MobileNetV3-Small pretrained on ImageNet, top-1 label + confidence. Generic object classifier, **not** trained on currency — placeholder for the optional currency/product ID branch. |
-| `src/live_pipeline_demo.py` | CLI/OpenCV-window version of the full pipeline: capture → detection+depth → decision engine → TTS, plus OCR on-demand via the `o` key or saying **"vision scan"**. Useful for quick local debugging. |
-| `src/webapp.py` + `src/templates/index.html` | **Primary UI.** Flask web app running the same full pipeline, streamed to a browser at `http://127.0.0.1:5000`: live annotated video, a color-coded alert banner, and buttons for "Scan text" (OCR) and "Identify item" (product ID) alongside the voice trigger. Run with `python src/webapp.py` from the repo root. This is also the "local deployment" half of the Model Deployment rubric row — a real running service, not just a script. |
-
-Setup note: `easyocr`'s dependency chain pulls in `opencv-python-headless`, which silently overwrites the GUI-enabled `opencv-python` build and breaks `cv2.imshow`. If reinstalling from a clean environment, install `requirements.txt` first, then run:
-```
-pip uninstall -y opencv-python-headless opencv-python
-pip install --force-reinstall --no-deps opencv-python
-```
-
-Known limitations of the current prototype: CPU-only inference runs the full pipeline (detection+depth) at roughly 10-15 FPS on a typical laptop; OCR is synchronous and briefly freezes the video feed while running; the voice trigger requires internet and a working microphone; product ID is a generic ImageNet classifier, not a real currency/product model.
-
----
-
-## 7. Status & next steps
-
-- Scope is settled: software-only CV/DL project, no physical build.
-- **Done:** curated hazard dataset (2001 images, 16 classes) and a real fine-tuned YOLOv8n checkpoint (`models/hazard_yolov8n.pt`, mAP50 0.495) now wired in as the default model everywhere — see Section 4. Plus the full prototype pipeline: webcam capture, object detection, monocular depth estimation, rule-based decision engine with cooldown, TTS output, on-demand OCR with voice/key trigger, on-demand product ID (generic classifier), and a browser-based UI (`webapp.py`) replacing the OpenCV debug window — see Section 6.
-- **Not yet done:**
-  - Strengthen the Dataset rubric row further with first-person/glasses-perspective own-captured photos (deferred in favor of the faster curated-only path — see Section 4's caveat).
-  - Improve the trained model: more epochs / higher resolution / more images than the current CPU baseline (40 epochs, 320px, ~2000 images).
-  - Decide and implement the "novel" element for the Model Development rubric row (architecture tweak or training strategy) — the current fine-tune is a standard transfer-learning run, which per the rubric notes above likely caps at "Satisfactory" on its own.
-  - Cloud deployment (the Flask app currently only runs locally) + an optimized serving setup (e.g. TorchServe) for the Model Deployment rubric row's "Excellent" tier.
-  - Fine-tune the product ID classifier on a small real currency/product dataset if that branch is worth pursuing further (currently a generic ImageNet classifier, not trained on currency).
-  - Earlier planning produced several block-diagram deliverables (hardware/sensing rationale doc, simple/detailed/editable diagrams, an edited 6-box diagram with Passive Safety/Active Assistant modes) in a prior session — unconfirmed whether any were ever added to this repo, and unconfirmed which was actually submitted to xSITe Dropbox. Worth tracking down if they're needed for the report's narrative section.
+See README.md for setup, commands, cloud container and export verification.

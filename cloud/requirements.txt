@@ -1,0 +1,9 @@
+# RF-DETR runs in a separate Linux/Python 3.12 environment.
+rfdetr==1.11.2
+torch==2.9.0
+torchvision==0.24.0
+transformers==5.1.0
+numpy<3
+Pillow
+flask>=3.1,<4
+gunicorn>=23,<24
