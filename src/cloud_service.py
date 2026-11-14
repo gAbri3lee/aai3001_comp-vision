@@ -43,7 +43,7 @@ def create_app(detector=None, config=None):
                 if source.width * source.height > 16_000_000:
                     raise ValueError('Image too large')
                 image = source.convert('RGB')
-        except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
+        except (UnidentifiedImageError, OSError, ValueError, ImportError, Image.DecompressionBombError):
             return jsonify(error='Invalid JPEG image'), 400
         if not lock.acquire(blocking=False):
             return jsonify(error='Detector busy; submit a newer frame'), 503

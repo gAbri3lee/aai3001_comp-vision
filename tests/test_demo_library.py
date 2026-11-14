@@ -21,7 +21,11 @@ def library(tmp_path):
     (root / 'People' / 'empty_room.jpg').write_bytes(encoded(np.zeros((720, 1280, 3), np.uint8), 'jpg'))
     outside = tmp_path / 'secret.jpg'
     outside.write_bytes(encoded(scene(), 'jpg'))
-    os.symlink(outside, root / 'Stair' / 'escape.jpg')  # leads out of the library: ignored
+    try:
+        os.symlink(outside, root / 'Stair' / 'escape.jpg')  # leads out of the library: ignored
+    except OSError as exc:
+        if getattr(exc, 'winerror', None) != 1314:
+            raise  # Windows may require Developer Mode just to create this fixture.
     scene_video(root / 'videos' / 'walk.mp4', frames=40)
     return root
 

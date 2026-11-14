@@ -10,6 +10,7 @@ A box cut off by the top or bottom of the frame is shorter than the object, whic
 makes the estimate too far, so no estimate is given for it.
 """
 import json
+import math
 import statistics
 
 from config import resolve_path
@@ -22,16 +23,30 @@ def load_calibration(path=None):
     path = resolve_path(path or CALIBRATION_FILE)
     if not path.exists():
         return None
-    data = json.loads(path.read_text())
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+    if not isinstance(data, dict):
+        return None
     samples = data.get('samples', [])
     if not samples:
         return None
-    return dict(focal_px=statistics.median(s['focal_px'] for s in samples),
-                frame_height=samples[-1]['frame_height'], samples=len(samples))
+    try:
+        if not all(isinstance(s, dict) and all(isinstance(s.get(k), (int, float))
+                   and math.isfinite(s[k]) and s[k] > 0 for k in ('focal_px', 'frame_height')) for s in samples):
+            return None
+        height = samples[-1]['frame_height']
+        # Normalize each measurement BEFORE the median; samples may have been
+        # recorded at different camera resolutions.
+        focal = statistics.median(s['focal_px'] / s['frame_height'] for s in samples) * height
+        return dict(focal_px=focal, frame_height=height, samples=len(samples))
+    except (TypeError, KeyError):
+        return None
 
 
 def focal_from_measurement(box_height_px, distance_m, real_height_m):
-    if box_height_px <= 0 or distance_m <= 0 or real_height_m <= 0:
+    if not all(math.isfinite(v) and v > 0 for v in (box_height_px, distance_m, real_height_m)):
         raise ValueError('Box height, distance and real height must be positive')
     return box_height_px * distance_m / real_height_m
 
@@ -46,6 +61,9 @@ def estimate(label, xyxy, frame_height, calibration, known_heights):
         return None, 'not calibrated'
     if label not in known_heights:
         return None, 'no known height for this class'
+    if (not all(math.isfinite(v) for v in xyxy) or xyxy[3] <= xyxy[1]
+            or xyxy[2] <= xyxy[0]):
+        return None, 'invalid box'
     if is_truncated(xyxy, frame_height):
         return None, 'box cut off by frame edge'
     # Focal length in pixels scales with the frame resolution.

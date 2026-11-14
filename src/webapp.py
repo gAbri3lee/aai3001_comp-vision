@@ -85,9 +85,11 @@ def decode_upload(data: bytes):
         raise UploadError("The file is empty.")
     if len(data) > MAX_UPLOAD_BYTES:
         raise UploadError("The image is larger than 10 MB.", 413)
+    if not (data.startswith(b'\xff\xd8\xff') or data.startswith(b'\x89PNG\r\n\x1a\n')):
+        raise UploadError("Upload a JPEG or PNG image.", 415)
     try:
         image = Image.open(io.BytesIO(data))
-    except (UnidentifiedImageError, OSError, Image.DecompressionBombError):
+    except (UnidentifiedImageError, OSError, ImportError, Image.DecompressionBombError):
         raise UploadError("Upload a JPEG or PNG image.", 415)
     with image:
         if image.format not in ("JPEG", "PNG"):

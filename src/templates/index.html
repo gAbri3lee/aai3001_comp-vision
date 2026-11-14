@@ -1012,7 +1012,9 @@
     }
     if (isSpoken(d, selected)) {
       li.classList.add("spoken");
-      li.appendChild(span("spoken-tag", muted ? "selected (muted)" : "spoken"));
+      // Selection is not proof of playback: speech may be disabled, failed,
+      // queued or skipped by cooldown. Actual announcements are in the log.
+      li.appendChild(span("spoken-tag", muted ? "selected (muted)" : "selected"));
     }
     return li;
   }

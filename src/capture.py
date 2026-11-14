@@ -52,6 +52,10 @@ class LatestFrameCapture:
                 if self.frame_interval:
                     self.stop.wait(max(0.0, next_frame_at - time.monotonic()))
                     next_frame_at += self.frame_interval
+                if self.stop.is_set():
+                    break
+                if not self._running.is_set():
+                    continue
                 ok, frame = self.cap.read()
                 if not ok:
                     break

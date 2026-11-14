@@ -204,11 +204,36 @@ class TempStore:
         for folder in Path(tempfile.gettempdir()).glob(TEMP_PREFIX + "*"):
             try:
                 pid = int(folder.name[len(TEMP_PREFIX):].split("-", 1)[0])
-                if folder.is_symlink() or not folder.is_dir() or folder.stat().st_uid != os.getuid():
+                if (folder.is_symlink() or getattr(folder, 'is_junction', lambda: False)()
+                        or not folder.is_dir()):
+                    continue
+                if hasattr(os, 'getuid') and folder.stat().st_uid != os.getuid():
                     continue
                 if pid == os.getpid():
                     continue
-                os.kill(pid, 0)  # still running: leave it alone
+                if os.name == 'nt':
+                    # os.getuid is absent and os.kill is not a POSIX existence
+                    # probe on Windows. Query only; never signal another process.
+                    import ctypes
+                    from ctypes import wintypes
+                    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+                    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+                    kernel.OpenProcess.restype = wintypes.HANDLE
+                    kernel.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+                    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+                    handle = kernel.OpenProcess(0x1000, False, pid)
+                    if not handle:
+                        if ctypes.get_last_error() in (87, 1168):
+                            raise ProcessLookupError(pid)
+                        continue  # access denied/unknown: leave the folder alone
+                    try:
+                        code = wintypes.DWORD()
+                        if kernel.GetExitCodeProcess(handle, ctypes.byref(code)) and code.value != 259:
+                            raise ProcessLookupError(pid)
+                    finally:
+                        kernel.CloseHandle(handle)
+                else:
+                    os.kill(pid, 0)  # still running: leave it alone
             except ProcessLookupError:
                 shutil.rmtree(folder, ignore_errors=True)
             except (ValueError, OSError):

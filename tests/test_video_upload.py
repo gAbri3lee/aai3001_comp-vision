@@ -130,7 +130,9 @@ def test_temporary_copies_are_deleted_on_replace_camera_expiry_and_stop(tmp_path
         assert copy_a.suffix == '.mp4' and copy_a.name != 'a.mp4'  # a random name
         assert send(client, second).status_code == 200
         assert wait_for(lambda: source(client)['name'] == 'b.webm')
-        assert not copy_a.exists() and len(temp_files(state)) == 1
+        # /status reports the queued source immediately; disposal happens in
+        # the loop thread when that switch is applied.
+        assert wait_for(lambda: not copy_a.exists() and len(temp_files(state)) == 1)
         assert client.post('/source/control', json={'action': 'camera'}).status_code == 200
         assert wait_for(lambda: temp_files(state) == [])
         # An ended upload is kept for Replay for a while, then deleted.

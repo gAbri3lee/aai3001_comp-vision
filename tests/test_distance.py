@@ -31,3 +31,21 @@ def test_calibration_file_uses_the_median_sample(tmp_path):
     assert distance.load_calibration(path) is None
     path.write_text(json.dumps({'samples': [dict(focal_px=f, frame_height=720) for f in (880, 900, 1500)]}))
     assert distance.load_calibration(path) == dict(focal_px=900, frame_height=720, samples=3)
+
+
+def test_calibration_normalizes_mixed_resolutions_and_rejects_corrupt_files(tmp_path):
+    path = tmp_path / 'calibration.json'
+    path.write_text(json.dumps({'samples': [dict(focal_px=900, frame_height=720),
+                                          dict(focal_px=450, frame_height=360)]}))
+    assert distance.load_calibration(path)['focal_px'] == pytest.approx(450)
+    for data in ('broken json', '[]', '{"samples":[{"focal_px": 2,"frame_height": 0}]}'):
+        path.write_text(data)
+        assert distance.load_calibration(path) is None
+    for value in (float('nan'), float('inf'), -1):
+        with pytest.raises(ValueError):
+            distance.focal_from_measurement(value, 3, 1.7)
+
+
+def test_zero_height_box_has_no_distance_estimate():
+    assert distance.estimate('People', (10, 100, 20, 100), 720,
+                             dict(focal_px=900, frame_height=720), {'People': 1.7}) == (None, 'invalid box')

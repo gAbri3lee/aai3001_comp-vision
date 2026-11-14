@@ -18,7 +18,8 @@ def run_window(state, title):
                         cv2.FONT_HERSHEY_SIMPLEX, .55, (0, 200, 255), 2)
             cv2.imshow(title, frame)
             key = cv2.waitKey(10) & 0xff
-            if key == ord('q') or (state.capture.finished and not state._thread.is_alive()):
+            capture = state.capture  # may be None while the camera is disconnected
+            if key == ord('q') or (capture is not None and capture.finished and not state._thread.is_alive()):
                 break
             time.sleep(.01)
     finally:
