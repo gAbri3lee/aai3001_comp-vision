@@ -1,0 +1,245 @@
+{
+  "scope": "60 stratified train-only images visually inspected; 7 selected frame corrections, not exhaustive reannotation; independent human review pending",
+  "repairs": {
+    "v4_3c12c55f3d38bbbe13e936ef": {
+      "review_id": "T024",
+      "sha256": "3c12c55f3d38bbbe13e936ef62b0da941073bf97ce63d0d30cd3d1d75dd17859",
+      "original_labels": [
+        [
+          1.0,
+          0.434375,
+          0.273438,
+          0.132812,
+          0.30625
+        ],
+        [
+          1.0,
+          0.55,
+          0.265625,
+          0.128125,
+          0.221875
+        ]
+      ],
+      "replacement_labels": [
+        [
+          1.0,
+          0.434375,
+          0.273438,
+          0.132812,
+          0.30625
+        ],
+        [
+          1.0,
+          0.55,
+          0.265625,
+          0.128125,
+          0.221875
+        ],
+        [
+          3,
+          0.3609375,
+          0.3921875,
+          0.065625,
+          0.125
+        ]
+      ],
+      "reason": "Missing visible retained-class targets in raw-frame AI review; original annotations preserved"
+    },
+    "v4_c3eee98c6c1d3776eae1c9a3": {
+      "review_id": "T042",
+      "sha256": "c3eee98c6c1d3776eae1c9a3d5ebb8243df7f60b5dbadeb6c8a05ce1ee54774c",
+      "original_labels": [
+        [
+          3.0,
+          0.451562,
+          0.426563,
+          0.0875,
+          0.125
+        ]
+      ],
+      "replacement_labels": [
+        [
+          3.0,
+          0.451562,
+          0.426563,
+          0.0875,
+          0.125
+        ],
+        [
+          1,
+          0.35078125,
+          0.4890625,
+          0.3015625,
+          0.540625
+        ]
+      ],
+      "reason": "Missing visible retained-class targets in raw-frame AI review; original annotations preserved"
+    },
+    "v4_963eb63c7ad2dc0c39dd17a2": {
+      "review_id": "T045",
+      "sha256": "963eb63c7ad2dc0c39dd17a2cc3221bbe1e8cc77eff079ab58d369e069d12e06",
+      "original_labels": [
+        [
+          3.0,
+          0.3375,
+          0.420312,
+          0.05625,
+          0.06875
+        ]
+      ],
+      "replacement_labels": [
+        [
+          3.0,
+          0.3375,
+          0.420312,
+          0.05625,
+          0.06875
+        ],
+        [
+          1,
+          0.19765625,
+          0.46640625,
+          0.0953125,
+          0.2265625
+        ],
+        [
+          1,
+          0.29375,
+          0.5234375,
+          0.128125,
+          0.29375
+        ],
+        [
+          1,
+          0.67890625,
+          0.59140625,
+          0.1234375,
+          0.3828125
+        ]
+      ],
+      "reason": "Missing visible retained-class targets in raw-frame AI review; original annotations preserved"
+    },
+    "v4_5718f3e70c5a43b13d2d8e06": {
+      "review_id": "T048",
+      "sha256": "5718f3e70c5a43b13d2d8e0689422ea30aa30fbe269332358943ae55b90f4db9",
+      "original_labels": [
+        [
+          3.0,
+          0.195312,
+          0.35,
+          0.046875,
+          0.067187
+        ]
+      ],
+      "replacement_labels": [
+        [
+          3.0,
+          0.195312,
+          0.35,
+          0.046875,
+          0.067187
+        ],
+        [
+          1,
+          0.715625,
+          0.50078125,
+          0.409375,
+          0.5640625
+        ],
+        [
+          1,
+          0.6171875,
+          0.3609375,
+          0.134375,
+          0.284375
+        ]
+      ],
+      "reason": "Missing visible retained-class targets in raw-frame AI review; original annotations preserved"
+    },
+    "v4_55e893c1f32befabbaafa00a": {
+      "review_id": "T056",
+      "sha256": "55e893c1f32befabbaafa00a7fbb92a93d82e2444e9296547eec5c71c851cf49",
+      "original_labels": [],
+      "replacement_labels": [
+        [
+          1,
+          0.2734375,
+          0.11796875,
+          0.046875,
+          0.1140625
+        ],
+        [
+          1,
+          0.321875,
+          0.12578125,
+          0.04375,
+          0.1078125
+        ],
+        [
+          1,
+          0.47109375,
+          0.13125,
+          0.0421875,
+          0.125
+        ],
+        [
+          1,
+          0.54921875,
+          0.1265625,
+          0.0453125,
+          0.1
+        ],
+        [
+          1,
+          0.61953125,
+          0.11328125,
+          0.0484375,
+          0.1359375
+        ]
+      ],
+      "reason": "Missing visible retained-class targets in raw-frame AI review; original annotations preserved"
+    },
+    "v4_442482037f8d7546f4e218bc": {
+      "review_id": "T058",
+      "sha256": "442482037f8d7546f4e218bcaaf20ba60f575592b8bd4eaea290d0766541c83c",
+      "original_labels": [],
+      "replacement_labels": [
+        [
+          1,
+          0.29609375,
+          0.39140625,
+          0.0484375,
+          0.0640625
+        ]
+      ],
+      "reason": "Missing visible retained-class targets in raw-frame AI review; original annotations preserved"
+    },
+    "v4_a60cde99eadf4a133c24fe49": {
+      "review_id": "T060",
+      "sha256": "a60cde99eadf4a133c24fe4990804d59a6ea9a0011d9391a0e340f4a7b641690",
+      "original_labels": [],
+      "replacement_labels": [
+        [
+          1,
+          0.7265625,
+          0.4703125,
+          0.034375,
+          0.078125
+        ]
+      ],
+      "reason": "Missing visible retained-class targets in raw-frame AI review; original annotations preserved"
+    }
+  },
+  "deferred": [
+    {
+      "id": "T027",
+      "reason": "Wooden surface could be real steps; original Stair retained. No confirmed false Stair label removed."
+    },
+    {
+      "id": "T024",
+      "reason": "Suspected orange rectangle in contact sheet was not a Stair label; only confirmed missing sign added"
+    }
+  ],
+  "limitation": "Other unreviewed partial labels and small/ambiguous targets may remain. Do not claim complete label cleanup or population error rate.",
+  "review_summary": "60 train-only images inspected. Confirmed missing sign/person labels in 7 frames corrected. Initial suspected floor labels were not confirmed at full resolution and were retained; all originals preserved."
+}

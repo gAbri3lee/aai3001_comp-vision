@@ -1,0 +1,1619 @@
+{
+  "date": "2026-11-17",
+  "tests": ".................................................................................................................................... [ 73%]\n...............................................                          [100%]\n179 passed, 12 subtests passed in 31.41s",
+  "weights": {
+    "trained_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe",
+    "supplied_trained_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe",
+    "general_sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36"
+  },
+  "performance": {
+    "before-general": {
+      "platform": "Windows-11-10.0.26200-SP0",
+      "general": "on",
+      "frames": 60,
+      "warmup_frames": 10,
+      "source_fps": 30,
+      "startup_and_run_seconds": 13.64100000000326,
+      "observed_processed_fps": 7.91627532533227,
+      "capture_to_http_observed_ms": {
+        "median": 155.9999999590218,
+        "p95": 188.00000002374873
+      },
+      "detector_ms": {
+        "median": 107.30584998964332,
+        "p95": 135.39131497091148
+      },
+      "status_http_ms": {
+        "median": 2.9191499925218523,
+        "p95": 26.36540500971023
+      },
+      "preview_jpeg_bytes": {
+        "median": 167302.0,
+        "p95": 273715.3
+      },
+      "errors": [],
+      "health": [],
+      "includes": [
+        "paced file capture",
+        "trained model",
+        "general COCO model",
+        "alert decisions",
+        "annotation",
+        "preview JPEG",
+        "publication",
+        "localhost HTTP status"
+      ],
+      "excludes": [
+        "physical camera exposure/driver latency",
+        "native speech playback",
+        "browser image paint",
+        "network outside localhost"
+      ]
+    },
+    "after-general": {
+      "platform": "Windows-11-10.0.26200-SP0",
+      "general": "on",
+      "frames": 60,
+      "warmup_frames": 10,
+      "source_fps": 30,
+      "startup_and_run_seconds": 17.594000000040978,
+      "observed_processed_fps": 5.215239105469788,
+      "capture_to_http_observed_ms": {
+        "median": 233.99999999674037,
+        "p95": 266.7500000010477
+      },
+      "detector_ms": {
+        "median": 159.44584997487254,
+        "p95": 191.89133003237657
+      },
+      "status_http_ms": {
+        "median": 5.806050001410767,
+        "p95": 27.339675038820133
+      },
+      "preview_jpeg_bytes": {
+        "median": 67738.5,
+        "p95": 98654.0
+      },
+      "errors": [],
+      "health": [],
+      "includes": [
+        "paced file capture",
+        "trained model",
+        "general COCO model",
+        "alert decisions",
+        "annotation",
+        "preview JPEG",
+        "publication",
+        "localhost HTTP status"
+      ],
+      "excludes": [
+        "physical camera exposure/driver latency",
+        "native speech playback",
+        "browser image paint",
+        "network outside localhost"
+      ]
+    },
+    "after-general-repeat": {
+      "platform": "Windows-11-10.0.26200-SP0",
+      "general": "on",
+      "frames": 60,
+      "warmup_frames": 10,
+      "source_type": "paced file",
+      "startup_and_run_seconds": 13.938000000023749,
+      "observed_processed_fps": 7.706374085725678,
+      "capture_to_http_observed_ms": {
+        "median": 156.00000001722947,
+        "p95": 172.0000000204891
+      },
+      "detector_ms": {
+        "median": 102.48509995290078,
+        "p95": 114.39405501878353
+      },
+      "pipeline_ms": {
+        "median": 148.49999998114072,
+        "p95": 172.0000000204891
+      },
+      "processing_ms": {
+        "median": 125.0,
+        "p95": 141.00000000325963
+      },
+      "preview_encode_ms": {
+        "median": 16.00000000325963,
+        "p95": 31.000000017229468
+      },
+      "status_http_ms": {
+        "median": 3.728500014403835,
+        "p95": 19.38004498369991
+      },
+      "preview_jpeg_bytes": {
+        "median": 67756.5,
+        "p95": 98627.4
+      },
+      "errors": [],
+      "health": [],
+      "includes": [
+        "paced file capture",
+        "trained model",
+        "general COCO model",
+        "alert decisions",
+        "annotation",
+        "preview JPEG",
+        "publication",
+        "localhost HTTP status"
+      ],
+      "excludes": [
+        "physical camera exposure/driver latency",
+        "native speech playback",
+        "browser image paint",
+        "network outside localhost"
+      ]
+    },
+    "laptop-camera": {
+      "platform": "Windows-11-10.0.26200-SP0",
+      "general": "on",
+      "frames": 60,
+      "warmup_frames": 10,
+      "source_type": "camera",
+      "startup_and_run_seconds": 15.969000000040978,
+      "observed_processed_fps": 7.492063492063492,
+      "capture_to_http_observed_ms": {
+        "median": 156.00000001722947,
+        "p95": 187.04999997862615
+      },
+      "detector_ms": {
+        "median": 127.06905000959523,
+        "p95": 162.21120004775003
+      },
+      "pipeline_ms": {
+        "median": 141.00000000325963,
+        "p95": 186.99999997625127
+      },
+      "processing_ms": {
+        "median": 125.0,
+        "p95": 172.0000000204891
+      },
+      "preview_encode_ms": {
+        "median": 0.0,
+        "p95": 16.00000000325963
+      },
+      "status_http_ms": {
+        "median": 4.197100002784282,
+        "p95": 24.01370500447228
+      },
+      "preview_jpeg_bytes": {
+        "median": 39675.5,
+        "p95": 45911.65
+      },
+      "errors": [],
+      "health": [],
+      "includes": [
+        "camera frame read",
+        "trained model",
+        "general COCO model",
+        "alert decisions",
+        "annotation",
+        "preview JPEG",
+        "publication",
+        "localhost HTTP status"
+      ],
+      "excludes": [
+        "physical camera exposure/driver latency",
+        "native speech playback",
+        "browser image paint",
+        "network outside localhost"
+      ]
+    },
+    "four-thread-trial": {
+      "platform": "Windows-11-10.0.26200-SP0",
+      "general": "on",
+      "frames": 60,
+      "torch_threads": 4,
+      "warmup_frames": 10,
+      "source_type": "paced file",
+      "startup_and_run_seconds": 16.03100000001723,
+      "observed_processed_fps": 6.840579710144928,
+      "capture_to_http_observed_ms": {
+        "median": 163.99999998975545,
+        "p95": 219.0000000409782
+      },
+      "detector_ms": {
+        "median": 108.68774997652508,
+        "p95": 161.03361498098815
+      },
+      "pipeline_ms": {
+        "median": 156.00000001722947,
+        "p95": 202.9999999795109
+      },
+      "processing_ms": {
+        "median": 140.00000001396984,
+        "p95": 202.9999999795109
+      },
+      "preview_encode_ms": {
+        "median": 16.00000000325963,
+        "p95": 32.00000000651926
+      },
+      "status_http_ms": {
+        "median": 4.542600014247,
+        "p95": 27.010239995433945
+      },
+      "preview_jpeg_bytes": {
+        "median": 67746.0,
+        "p95": 98654.85
+      },
+      "errors": [],
+      "health": [],
+      "includes": [
+        "paced file capture",
+        "trained model",
+        "general COCO model",
+        "alert decisions",
+        "annotation",
+        "preview JPEG",
+        "publication",
+        "localhost HTTP status"
+      ],
+      "excludes": [
+        "physical camera exposure/driver latency",
+        "native speech playback",
+        "browser image paint",
+        "network outside localhost"
+      ]
+    }
+  },
+  "devices": {
+    "camera": {
+      "opened": true,
+      "frames": 20,
+      "shape": [
+        480,
+        640,
+        3
+      ],
+      "median_read_ms": 30.999999988125637,
+      "median_pixel_std": 58.34946644721931,
+      "frames_saved": false,
+      "measured_distances_available": false,
+      "note": "Device 0 is a provisional laptop-camera candidate, not a calibrated distance trial."
+    },
+    "speech": {
+      "completion_callback": true,
+      "events": [
+        [
+          "started",
+          478912.968
+        ],
+        [
+          "finished",
+          478915.218,
+          true
+        ],
+        [
+          "started",
+          478915.218
+        ],
+        [
+          "finished",
+          478917.703,
+          true
+        ],
+        [
+          "started",
+          478917.703
+        ],
+        [
+          "finished",
+          478918.375,
+          false
+        ],
+        [
+          "started",
+          478918.625
+        ],
+        [
+          "finished",
+          478920.859,
+          true
+        ]
+      ],
+      "queue_to_start_ms": 125.0,
+      "error": null,
+      "audibility_confirmed_by_human": false,
+      "second_completion_callback": true,
+      "interrupt_started": true,
+      "interrupt_callback": true,
+      "stop_to_callback_ms": 672.0000000204891,
+      "recovery_callback": true,
+      "worker_closed": true,
+      "final_error": null,
+      "expected_completion_outcomes": true,
+      "utterance_durations_ms": [
+        2250.0,
+        2484.99999998603,
+        672.0000000204891,
+        2233.9999999967404
+      ]
+    }
+  },
+  "general_functional": {
+    "note": "Selected public functional examples; no representative accuracy claim.",
+    "inputs": [
+      {
+        "name": "bus.jpg",
+        "detections": [
+          {
+            "class_id": 1,
+            "class": "People",
+            "confidence": 0.8582039475440979,
+            "box_xyxy": [
+              36.52226257324219,
+              388.0650634765625,
+              216.74441528320312,
+              915.5643310546875
+            ]
+          },
+          {
+            "class_id": -1,
+            "class": "Object",
+            "confidence": 0.8433691263198853,
+            "box_xyxy": [
+              31.488704681396484,
+              230.7434844970703,
+              801.4141845703125,
+              775.7796020507812
+            ]
+          },
+          {
+            "class_id": 1,
+            "class": "People",
+            "confidence": 0.649629533290863,
+            "box_xyxy": [
+              213.00186157226562,
+              395.8575744628906,
+              359.39093017578125,
+              873.9431762695312
+            ]
+          },
+          {
+            "class_id": 1,
+            "class": "People",
+            "confidence": 0.62012779712677,
+            "box_xyxy": [
+              673.3468017578125,
+              430.23956298828125,
+              808.44775390625,
+              908.0914916992188
+            ]
+          },
+          {
+            "class_id": -1,
+            "class": "People",
+            "confidence": 0.4363079369068146,
+            "box_xyxy": [
+              0.44961977005004883,
+              549.8380737304688,
+              57.76948928833008,
+              868.3001098632812
+            ]
+          }
+        ],
+        "general_labels": [
+          "Object",
+          "People"
+        ],
+        "duplicate_general_trained_boxes": false,
+        "gated_labels": [
+          "People",
+          "Object"
+        ],
+        "error": null
+      },
+      {
+        "name": "zidane.jpg",
+        "detections": [
+          {
+            "class_id": -1,
+            "class": "People",
+            "confidence": 0.8269908428192139,
+            "box_xyxy": [
+              113.29220581054688,
+              196.93914794921875,
+              1113.22607421875,
+              711.2649536132812
+            ]
+          },
+          {
+            "class_id": 1,
+            "class": "People",
+            "confidence": 0.5309557318687439,
+            "box_xyxy": [
+              565.8212890625,
+              27.870361328125,
+              1253.80517578125,
+              718.887451171875
+            ]
+          }
+        ],
+        "general_labels": [
+          "People"
+        ],
+        "duplicate_general_trained_boxes": false,
+        "gated_labels": [
+          "People",
+          "People"
+        ],
+        "error": null
+      },
+      {
+        "name": "black blank",
+        "detections": [],
+        "general_labels": [],
+        "duplicate_general_trained_boxes": false,
+        "gated_labels": [],
+        "error": null
+      },
+      {
+        "name": "white blank",
+        "detections": [],
+        "general_labels": [],
+        "duplicate_general_trained_boxes": false,
+        "gated_labels": [],
+        "error": null
+      }
+    ],
+    "all_blank_inputs_empty": true,
+    "bus_general_object_seen": true
+  },
+  "real_uploads": {
+    "images": [
+      {
+        "expected": "Escalator",
+        "image": "761978818_826474_mp4-0092_jpg.rf.04ff9d4d20c43a5b007236075474ceb5.jpg",
+        "recognition": [
+          {
+            "box_xyxy": [
+              140.51919555664062,
+              1.72381591796875,
+              492.7727966308594,
+              639.002197265625
+            ],
+            "class": "Escalator",
+            "class_id": 0,
+            "confidence": 0.9294523596763611,
+            "position": "center",
+            "size": 0.9957474708557129
+          }
+        ],
+        "expected_class_seen": true
+      },
+      {
+        "expected": "People",
+        "image": "IMG_4112_MOV-0038_jpg.rf.2e4b003048aff247627a1e96a244ae4b.jpg",
+        "recognition": [
+          {
+            "box_xyxy": [
+              195.77606201171875,
+              63.50970458984375,
+              430.73248291015625,
+              640.0
+            ],
+            "class": "People",
+            "class_id": 1,
+            "confidence": 0.7965458631515503,
+            "position": "center",
+            "size": 0.9007660865783691
+          },
+          {
+            "box_xyxy": [
+              140.30101013183594,
+              205.57858276367188,
+              169.1855926513672,
+              322.4103698730469
+            ],
+            "class": "People",
+            "class_id": 1,
+            "confidence": 0.5513527989387512,
+            "position": "left",
+            "size": 0.18254966735839845
+          }
+        ],
+        "expected_class_seen": true
+      },
+      {
+        "expected": "Pillar",
+        "image": "IMG_9518_MOV-0045_jpg.rf.c0df6b87c8de6d6b7e2bb5fc120010a3.jpg",
+        "recognition": [],
+        "expected_class_seen": false
+      },
+      {
+        "expected": "Stair",
+        "image": "IMG_0037_jpg.rf.5294171bc3aa7b072d25b54de663de18.jpg",
+        "recognition": [
+          {
+            "box_xyxy": [
+              84.69146728515625,
+              0.0,
+              558.2603759765625,
+              603.2045288085938
+            ],
+            "class": "Stair",
+            "class_id": 3,
+            "confidence": 0.9658468961715698,
+            "position": "center",
+            "size": 0.9425070762634278
+          }
+        ],
+        "expected_class_seen": true
+      },
+      {
+        "expected": "Wet Floor Sign",
+        "image": "vlc-record-2026-04-06-15h00m29s-rtsp___192-168-137-100_554_Streaming_Channels_101-_15053_jpg.rf.3ec9709731728c8b5c5f9f9da34c421a.jpg",
+        "recognition": [
+          {
+            "box_xyxy": [
+              292.42767333984375,
+              397.184326171875,
+              440.16387939453125,
+              497.866455078125
+            ],
+            "class": "Wet Floor Sign",
+            "class_id": 4,
+            "confidence": 0.875612735748291,
+            "position": "center",
+            "size": 0.15731582641601563
+          }
+        ],
+        "expected_class_seen": true
+      }
+    ],
+    "video": {
+      "description": "10-second slideshow of actual labelled images; not field footage",
+      "frames_processed": 87,
+      "summary": [
+        {
+          "class": "Escalator",
+          "first_seen": 0.0,
+          "frames": 18,
+          "last_seen": 1.9,
+          "max_confidence": 0.93,
+          "seen": true
+        },
+        {
+          "class": "People",
+          "first_seen": 2.0,
+          "frames": 19,
+          "last_seen": 3.9,
+          "max_confidence": 0.79,
+          "seen": true
+        },
+        {
+          "class": "Pillar",
+          "first_seen": null,
+          "frames": 0,
+          "last_seen": null,
+          "max_confidence": null,
+          "seen": false
+        },
+        {
+          "class": "Stair",
+          "first_seen": 4.0,
+          "frames": 32,
+          "last_seen": 7.9,
+          "max_confidence": 0.97,
+          "seen": true
+        },
+        {
+          "class": "Wet Floor Sign",
+          "first_seen": 8.0,
+          "frames": 18,
+          "last_seen": 9.9,
+          "max_confidence": 0.88,
+          "seen": true
+        }
+      ]
+    },
+    "corrupt_file_isolated": true,
+    "replay_accepted": true,
+    "cleanup_passed": true
+  },
+  "http": {
+    "page_served": true,
+    "real_image_and_isolated_corruption": true,
+    "alert_rows": [
+      {
+        "band": "mid-close",
+        "box_xyxy": [
+          36.52226257324219,
+          388.0650634765625,
+          216.74441528320312,
+          915.5643310546875
+        ],
+        "class": "People",
+        "class_id": 1,
+        "confidence": 0.8582039475440979,
+        "gated": false,
+        "phrase": null,
+        "position": "left",
+        "priority": 0.45351051989896796,
+        "proximity": 0.8140420795958719,
+        "reason": "side",
+        "size": 0.48842524775752316,
+        "source": "trained"
+      },
+      {
+        "band": "mid-close",
+        "box_xyxy": [
+          31.488704681396484,
+          230.7434844970703,
+          801.4141845703125,
+          775.7796020507812
+        ],
+        "class": "Object",
+        "class_id": -1,
+        "confidence": 0.8433691263198853,
+        "gated": true,
+        "phrase": "Object detected ahead",
+        "position": "center",
+        "priority": 0.2876353832206341,
+        "proximity": 0.9175692214708938,
+        "reason": null,
+        "size": 0.5046630718089916,
+        "source": "general"
+      },
+      {
+        "band": "mid-close",
+        "box_xyxy": [
+          213.00186157226562,
+          395.8575744628906,
+          359.39093017578125,
+          873.9431762695312
+        ],
+        "class": "People",
+        "class_id": 1,
+        "confidence": 0.649629533290863,
+        "gated": true,
+        "phrase": "Caution, People ahead",
+        "position": "center",
+        "priority": 0.43444660563527804,
+        "proximity": 0.7377864225411122,
+        "reason": null,
+        "size": 0.44267185352466726,
+        "source": "trained"
+      },
+      {
+        "band": "mid-close",
+        "box_xyxy": [
+          673.3468017578125,
+          430.23956298828125,
+          808.44775390625,
+          908.0914916992188
+        ],
+        "class": "People",
+        "class_id": 1,
+        "confidence": 0.62012779712677,
+        "gated": false,
+        "phrase": null,
+        "position": "right",
+        "priority": 0.43435645397798517,
+        "proximity": 0.7374258159119406,
+        "reason": "side",
+        "size": 0.44245548954716435,
+        "source": "trained"
+      },
+      {
+        "band": "mid",
+        "box_xyxy": [
+          0.44961977005004883,
+          549.8380737304688,
+          57.76948928833008,
+          868.3001098632812
+        ],
+        "class": "People",
+        "class_id": -1,
+        "confidence": 0.4363079369068146,
+        "gated": false,
+        "phrase": null,
+        "position": "left",
+        "priority": 0.3728634398660542,
+        "proximity": 0.4914537594642168,
+        "reason": "low_confidence",
+        "size": 0.2948722556785301,
+        "source": "general"
+      }
+    ],
+    "controls": true,
+    "invalid_inputs_and_unavailable_cloud_rejected": true,
+    "network_mjpeg_and_video_pause_resume": true,
+    "real_mall_video_processed_frames": 84,
+    "video_end_replay_and_return_to_camera": true
+  },
+  "singapore_uploads": {
+    "model": "yolov8n_v4.pt",
+    "labels": "Not fully annotated; no mAP/class-accuracy claim",
+    "camera": false,
+    "speech": false,
+    "cloud": false,
+    "general_detector": true,
+    "video_source": {
+      "id": "SG003",
+      "venue": "VivoCity",
+      "role": "external_challenge_video",
+      "title": "File:Vivo City Escalators.ogv",
+      "status": "downloaded_pending_annotation",
+      "file": "SG003.ogv",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Vivo_City_Escalators.ogv",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Vivo_City_Escalators.ogv?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Vivo_City_Escalators.ogv?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "original_sha1": "413ab3d463ba01e3e880fb5c3be3615ee10033fd",
+      "sha256": "d9fb9aec4decf595820058df55deea8a7acdcb8e19a126cb1267dc9ddde80444",
+      "author": "ElHeineken",
+      "licence": "CC BY 3.0",
+      "licence_url": "https://creativecommons.org/licenses/by/3.0",
+      "modification": "Downloaded original video",
+      "attribution": "",
+      "annotation_status": "pending",
+      "duplicate_audit_status": "pending",
+      "model_prediction_used_for_selection": false
+    },
+    "video_modification": "Converted Theora to MP4 without audio; no frame scaling/cropping",
+    "source_frames": 284,
+    "source_fps": 30.0,
+    "images": [
+      {
+        "id": "SG001",
+        "venue": "VivoCity",
+        "role": "external_challenge",
+        "recognition": [],
+        "alert_detections": [
+          {
+            "band": "near",
+            "box_xyxy": [
+              148.60400390625,
+              215.4630126953125,
+              1105.4652099609375,
+              773.5870361328125
+            ],
+            "class": "Object",
+            "class_id": -1,
+            "confidence": 0.3922883868217468,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.3,
+            "proximity": 1.0,
+            "reason": "low_confidence",
+            "size": 0.5813791910807292,
+            "source": "general"
+          }
+        ]
+      },
+      {
+        "id": "SG002",
+        "venue": "VivoCity",
+        "role": "external_challenge",
+        "recognition": [],
+        "alert_detections": []
+      },
+      {
+        "id": "SG004",
+        "venue": "Nex",
+        "role": "external_challenge",
+        "recognition": [],
+        "alert_detections": [
+          {
+            "band": "far",
+            "box_xyxy": [
+              352.6604309082031,
+              8.80474853515625,
+              405.6117858886719,
+              164.3153076171875
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.5457707643508911,
+            "gated": false,
+            "phrase": null,
+            "position": "left",
+            "priority": 0.33999453650580513,
+            "proximity": 0.3599781460232205,
+            "reason": "far",
+            "size": 0.21598688761393228,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              910.017822265625,
+              640.237060546875,
+              965.343017578125,
+              696.56884765625
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.48437032103538513,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.2825994138364439,
+            "proximity": 0.13039765534577547,
+            "reason": "low_confidence",
+            "size": 0.07823859320746528,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              750.9692993164062,
+              291.1822509765625,
+              829.3137817382812,
+              408.6881103515625
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.4680471122264862,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.31800107602719907,
+            "proximity": 0.2720043041087963,
+            "reason": "low_confidence",
+            "size": 0.16320258246527777,
+            "source": "general"
+          }
+        ]
+      },
+      {
+        "id": "SG005",
+        "venue": "Marina Bay Sands",
+        "role": "development_candidate",
+        "recognition": [],
+        "alert_detections": []
+      },
+      {
+        "id": "SG006",
+        "venue": "Marina Bay Sands",
+        "role": "development_candidate",
+        "recognition": [],
+        "alert_detections": [
+          {
+            "band": "far",
+            "box_xyxy": [
+              495.46417236328125,
+              360.1264953613281,
+              534.4837036132812,
+              466.5993347167969
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.5387915372848511,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.2782751326098016,
+            "proximity": 0.11310053043920625,
+            "reason": "far",
+            "size": 0.06786031826352375,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              533.9674682617188,
+              1233.599365234375,
+              585.690673828125,
+              1367.1312255859375
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.4617060422897339,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.2854609784235082,
+            "proximity": 0.14184391369403285,
+            "reason": "low_confidence",
+            "size": 0.0851063482164197,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              735.1057739257812,
+              1145.1387939453125,
+              782.9971923828125,
+              1284.861083984375
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.46090707182884216,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.28710492087291867,
+            "proximity": 0.14841968349167464,
+            "reason": "low_confidence",
+            "size": 0.08905181009500478,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              698.4135131835938,
+              1145.819091796875,
+              741.185791015625,
+              1273.9366455078125
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.45527639985084534,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.2840231447075997,
+            "proximity": 0.13609257883039888,
+            "reason": "low_confidence",
+            "size": 0.08165554729823933,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              563.5120849609375,
+              1148.0277099609375,
+              619.9165649414062,
+              1352.3643798828125
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.42597654461860657,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.3042640402384414,
+            "proximity": 0.21705616095376565,
+            "reason": "low_confidence",
+            "size": 0.1302336965722594,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              482.2215270996094,
+              1191.890380859375,
+              541.0983276367188,
+              1338.689453125
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.4097305238246918,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.2889842448124137,
+            "proximity": 0.15593697924965477,
+            "reason": "low_confidence",
+            "size": 0.09356218754979286,
+            "source": "general"
+          }
+        ]
+      },
+      {
+        "id": "SG007",
+        "venue": "Marina Bay Sands",
+        "role": "development_candidate",
+        "recognition": [
+          {
+            "box_xyxy": [
+              446.347900390625,
+              280.55078125,
+              462.133056640625,
+              313.81878662109375
+            ],
+            "class": "People",
+            "class_id": 1,
+            "confidence": 0.6057060360908508,
+            "position": "center",
+            "size": 0.03895550980221751
+          }
+        ],
+        "alert_detections": [
+          {
+            "band": "far",
+            "box_xyxy": [
+              446.347900390625,
+              280.55078125,
+              462.133056640625,
+              313.81878662109375
+            ],
+            "class": "People",
+            "class_id": 1,
+            "confidence": 0.6057060360908508,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.2662314624175906,
+            "proximity": 0.06492584967036251,
+            "reason": "far",
+            "size": 0.03895550980221751,
+            "source": "trained"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              595.3179931640625,
+              540.7648315429688,
+              624.323974609375,
+              617.4498901367188
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.455328106880188,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.287414646074234,
+            "proximity": 0.149658584296936,
+            "reason": "low_confidence",
+            "size": 0.08979515057816159,
+            "source": "general"
+          }
+        ]
+      },
+      {
+        "id": "SG008",
+        "venue": "Plaza Singapura",
+        "role": "development_candidate",
+        "recognition": [],
+        "alert_detections": [
+          {
+            "band": "far",
+            "box_xyxy": [
+              678.606201171875,
+              741.9509887695312,
+              708.286865234375,
+              819.1383666992188
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.6938145756721497,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.2877038774568618,
+            "proximity": 0.15081550982744726,
+            "reason": "far",
+            "size": 0.09048930589646835,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              255.66407775878906,
+              652.8095092773438,
+              275.673828125,
+              707.7999877929688
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.39823901653289795,
+            "gated": false,
+            "phrase": null,
+            "position": "left",
+            "priority": 0.27686131228781996,
+            "proximity": 0.10744524915127979,
+            "reason": "low_confidence",
+            "size": 0.06446714949076787,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              198.91644287109375,
+              800.1297607421875,
+              267.4923095703125,
+              851.8400268554688
+            ],
+            "class": "Object",
+            "class_id": -1,
+            "confidence": 0.3596557676792145,
+            "gated": false,
+            "phrase": null,
+            "position": "left",
+            "priority": 0.16653317684534197,
+            "proximity": 0.1102211789689465,
+            "reason": "low_confidence",
+            "size": 0.060621648432920575,
+            "source": "general"
+          }
+        ]
+      },
+      {
+        "id": "SG009",
+        "venue": "Suntec City",
+        "role": "development_candidate",
+        "recognition": [
+          {
+            "box_xyxy": [
+              1072.92578125,
+              701.5106811523438,
+              1123.935546875,
+              808.9705200195312
+            ],
+            "class": "People",
+            "class_id": 1,
+            "confidence": 0.49986448884010315,
+            "position": "right",
+            "size": 0.11193733215332032
+          },
+          {
+            "box_xyxy": [
+              127.15606689453125,
+              203.6112060546875,
+              381.6499938964844,
+              562.09228515625
+            ],
+            "class": "Pillar",
+            "class_id": 2,
+            "confidence": 0.4471302926540375,
+            "position": "left",
+            "size": 0.3734177907307943
+          },
+          {
+            "box_xyxy": [
+              1104.84814453125,
+              492.9205322265625,
+              1221.2919921875,
+              623.4183349609375
+            ],
+            "class": "Pillar",
+            "class_id": 2,
+            "confidence": 0.3531523644924164,
+            "position": "right",
+            "size": 0.13593521118164062
+          }
+        ],
+        "alert_detections": [
+          {
+            "band": "far",
+            "box_xyxy": [
+              1206.1058349609375,
+              661.510986328125,
+              1240.6927490234375,
+              750.4453125
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.8250556588172913,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.28859996795654297,
+            "proximity": 0.15439987182617188,
+            "reason": "far",
+            "size": 0.09263992309570312,
+            "source": "general"
+          },
+          {
+            "band": "far",
+            "box_xyxy": [
+              1241.68896484375,
+              669.2723388671875,
+              1267.400390625,
+              755.3944091796875
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.6706823110580444,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.2873793707953559,
+            "proximity": 0.1495174831814236,
+            "reason": "far",
+            "size": 0.08971048990885416,
+            "source": "general"
+          },
+          {
+            "band": "far",
+            "box_xyxy": [
+              1241.255615234375,
+              794.667724609375,
+              1279.461669921875,
+              914.004638671875
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.6520503759384155,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.3017955356174045,
+            "proximity": 0.20718214246961808,
+            "reason": "far",
+            "size": 0.12430928548177084,
+            "source": "general"
+          },
+          {
+            "band": "far",
+            "box_xyxy": [
+              761.1509399414062,
+              629.6864624023438,
+              799.4757690429688,
+              733.4818725585938
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.6227855682373047,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.29505009121365017,
+            "proximity": 0.1802003648546007,
+            "reason": "far",
+            "size": 0.10812021891276041,
+            "source": "general"
+          },
+          {
+            "band": "far",
+            "box_xyxy": [
+              1202.0948486328125,
+              572.1893920898438,
+              1223.5509033203125,
+              631.4050903320312
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.5237908363342285,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.2757012579176161,
+            "proximity": 0.10280503167046441,
+            "reason": "far",
+            "size": 0.06168301900227865,
+            "source": "general"
+          },
+          {
+            "band": "far",
+            "box_xyxy": [
+              1072.92578125,
+              701.5106811523438,
+              1123.935546875,
+              808.9705200195312
+            ],
+            "class": "People",
+            "class_id": 1,
+            "confidence": 0.49986448884010315,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.2966405550638835,
+            "proximity": 0.18656222025553387,
+            "reason": "far",
+            "size": 0.11193733215332032,
+            "source": "trained"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              648.7564086914062,
+              286.50897216796875,
+              674.1699829101562,
+              354.39794921875
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.4672388434410095,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.2794657018449571,
+            "proximity": 0.11786280737982857,
+            "reason": "low_confidence",
+            "size": 0.07071768442789714,
+            "source": "general"
+          },
+          {
+            "band": "mid-close",
+            "box_xyxy": [
+              127.15606689453125,
+              203.6112060546875,
+              381.6499938964844,
+              562.09228515625
+            ],
+            "class": "Pillar",
+            "class_id": 2,
+            "confidence": 0.4471302926540375,
+            "gated": false,
+            "phrase": null,
+            "position": "left",
+            "priority": 0.5678270445929633,
+            "proximity": 0.6223629845513239,
+            "reason": "side",
+            "size": 0.3734177907307943,
+            "source": "trained"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              1240.4461669921875,
+              667.5946044921875,
+              1279.4735107421875,
+              755.9742431640625
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.41120046377182007,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.28835921817355686,
+            "proximity": 0.15343687269422743,
+            "reason": "low_confidence",
+            "size": 0.09206212361653646,
+            "source": "general"
+          },
+          {
+            "band": "far",
+            "box_xyxy": [
+              1104.84814453125,
+              492.9205322265625,
+              1221.2919921875,
+              623.4183349609375
+            ],
+            "class": "Pillar",
+            "class_id": 2,
+            "confidence": 0.3531523644924164,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.42929553985595703,
+            "proximity": 0.22655868530273438,
+            "reason": "far",
+            "size": 0.13593521118164062,
+            "source": "trained"
+          }
+        ]
+      },
+      {
+        "id": "SG010",
+        "venue": "Capitol Piazza",
+        "role": "development_candidate",
+        "recognition": [],
+        "alert_detections": [
+          {
+            "band": "near",
+            "box_xyxy": [
+              1086.15234375,
+              393.7064208984375,
+              1279.26904296875,
+              950.62548828125
+            ],
+            "class": "Object",
+            "class_id": -1,
+            "confidence": 0.47060471773147583,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.3,
+            "proximity": 1.0,
+            "reason": "low_confidence",
+            "size": 0.580124028523763,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              209.26785278320312,
+              736.5445556640625,
+              266.56317138671875,
+              832.4981689453125
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.4546622633934021,
+            "gated": false,
+            "phrase": null,
+            "position": "left",
+            "priority": 0.2916465335422092,
+            "proximity": 0.1665861341688368,
+            "reason": "low_confidence",
+            "size": 0.09995168050130208,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              1148.852294921875,
+              218.63824462890625,
+              1221.58447265625,
+              406.34930419921875
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.4106571078300476,
+            "gated": false,
+            "phrase": null,
+            "position": "right",
+            "priority": 0.3314718140496148,
+            "proximity": 0.3258872561984592,
+            "reason": "low_confidence",
+            "size": 0.1955323537190755,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              701.5628662109375,
+              246.34283447265625,
+              740.6824951171875,
+              358.23590087890625
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.3989965617656708,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.298564698961046,
+            "proximity": 0.19425879584418404,
+            "reason": "low_confidence",
+            "size": 0.11655527750651042,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              295.28961181640625,
+              737.2021484375,
+              377.33306884765625,
+              836.972412109375
+            ],
+            "class": "People",
+            "class_id": -1,
+            "confidence": 0.39831703901290894,
+            "gated": false,
+            "phrase": null,
+            "position": "left",
+            "priority": 0.29330306582980686,
+            "proximity": 0.17321226331922746,
+            "reason": "low_confidence",
+            "size": 0.10392735799153646,
+            "source": "general"
+          },
+          {
+            "band": "mid",
+            "box_xyxy": [
+              390.282470703125,
+              776.0025634765625,
+              480.1138916015625,
+              848.8682861328125
+            ],
+            "class": "Object",
+            "class_id": -1,
+            "confidence": 0.3687119781970978,
+            "gated": false,
+            "phrase": null,
+            "position": "center",
+            "priority": 0.17070048939098012,
+            "proximity": 0.1380032626065341,
+            "reason": "low_confidence",
+            "size": 0.07590179443359375,
+            "source": "general"
+          }
+        ]
+      },
+      {
+        "id": "SG011",
+        "venue": "Capitol Piazza",
+        "role": "development_candidate",
+        "recognition": [],
+        "alert_detections": []
+      },
+      {
+        "id": "SG012",
+        "venue": "National Gallery Singapore",
+        "role": "supplemental_non_mall_candidate",
+        "recognition": [
+          {
+            "box_xyxy": [
+              411.935791015625,
+              241.51324462890625,
+              1040.9276123046875,
+              593.8775024414062
+            ],
+            "class": "Stair",
+            "class_id": 3,
+            "confidence": 0.7124788165092468,
+            "position": "center",
+            "size": 0.4893948025173611
+          }
+        ],
+        "alert_detections": [
+          {
+            "band": "near",
+            "box_xyxy": [
+              411.935791015625,
+              241.51324462890625,
+              1040.9276123046875,
+              593.8775024414062
+            ],
+            "class": "Stair",
+            "class_id": 3,
+            "confidence": 0.7124788165092468,
+            "gated": true,
+            "phrase": "Warning, Stair ahead",
+            "position": "center",
+            "priority": 1.0,
+            "proximity": 1.0,
+            "reason": null,
+            "size": 0.4893948025173611,
+            "source": "trained"
+          }
+        ]
+      },
+      {
+        "id": "SG013",
+        "venue": "Resorts World Sentosa",
+        "role": "development_candidate",
+        "recognition": [],
+        "alert_detections": []
+      }
+    ],
+    "video": {
+      "ended": true,
+      "frames_processed": 109,
+      "recognition_summary": [
+        {
+          "class": "Escalator",
+          "first_seen": null,
+          "frames": 0,
+          "last_seen": null,
+          "max_confidence": null,
+          "seen": false
+        },
+        {
+          "class": "People",
+          "first_seen": null,
+          "frames": 0,
+          "last_seen": null,
+          "max_confidence": null,
+          "seen": false
+        },
+        {
+          "class": "Pillar",
+          "first_seen": null,
+          "frames": 0,
+          "last_seen": null,
+          "max_confidence": null,
+          "seen": false
+        },
+        {
+          "class": "Stair",
+          "first_seen": null,
+          "frames": 0,
+          "last_seen": null,
+          "max_confidence": null,
+          "seen": false
+        },
+        {
+          "class": "Wet Floor Sign",
+          "first_seen": null,
+          "frames": 0,
+          "last_seen": null,
+          "max_confidence": null,
+          "seen": false
+        }
+      ]
+    },
+    "replay_accepted": true,
+    "cleanup_passed": true
+  },
+  "unverified": [
+    "Physical metre accuracy and maximum range",
+    "Physical approach-to-audible-alert delay",
+    "Representative-user usability and audibility",
+    "Browser click-through blocked by desktop URL policy check",
+    "Experimental depth performance",
+    "Actual remote RF-DETR in this pass"
+  ]
+}

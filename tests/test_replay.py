@@ -13,7 +13,7 @@ CONFIG = load_config()
 
 def record(gated, reason, band):
     return dict(frame=0, width=1280, height=720, detections=[dict(
-        class_id=3, **{'class': 'Stair'}, confidence=.9, box_xyxy=[600, 432, 700, 720],
+        class_id=2, **{'class': 'Stair'}, confidence=.9, box_xyxy=[600, 432, 700, 720],
         position='center', band=band, gated=gated, reason=reason)])
 
 

@@ -1,0 +1,201 @@
+{
+  "detector": "yolov8n_v4.onnx",
+  "camera": "disabled",
+  "sample_selection": "largest labelled box per expected class; selected demonstration, not an accuracy estimate",
+  "images": [
+    {
+      "expected": "Escalator",
+      "image": "761978818_826474_mp4-0092_jpg.rf.04ff9d4d20c43a5b007236075474ceb5.jpg",
+      "recognition": [
+        {
+          "box_xyxy": [
+            140.5191650390625,
+            1.723876953125,
+            492.77276611328125,
+            639.002197265625
+          ],
+          "class": "Escalator",
+          "class_id": 0,
+          "confidence": 0.9294524192810059,
+          "position": "center",
+          "size": 0.9957473754882813
+        }
+      ],
+      "expected_class_seen": true
+    },
+    {
+      "expected": "People",
+      "image": "IMG_4112_MOV-0038_jpg.rf.2e4b003048aff247627a1e96a244ae4b.jpg",
+      "recognition": [
+        {
+          "box_xyxy": [
+            195.77606201171875,
+            63.5096435546875,
+            430.73248291015625,
+            640.0
+          ],
+          "class": "People",
+          "class_id": 1,
+          "confidence": 0.7965459823608398,
+          "position": "center",
+          "size": 0.9007661819458008
+        },
+        {
+          "box_xyxy": [
+            140.30099487304688,
+            205.57858276367188,
+            169.18557739257812,
+            322.4103698730469
+          ],
+          "class": "People",
+          "class_id": 1,
+          "confidence": 0.5513526797294617,
+          "position": "left",
+          "size": 0.18254966735839845
+        }
+      ],
+      "expected_class_seen": true
+    },
+    {
+      "expected": "Pillar",
+      "image": "IMG_9518_MOV-0045_jpg.rf.c0df6b87c8de6d6b7e2bb5fc120010a3.jpg",
+      "recognition": [],
+      "expected_class_seen": false
+    },
+    {
+      "expected": "Stair",
+      "image": "IMG_0037_jpg.rf.5294171bc3aa7b072d25b54de663de18.jpg",
+      "recognition": [
+        {
+          "box_xyxy": [
+            84.69146728515625,
+            0.0,
+            558.2603759765625,
+            603.2044677734375
+          ],
+          "class": "Stair",
+          "class_id": 3,
+          "confidence": 0.9658468961715698,
+          "position": "center",
+          "size": 0.942506980895996
+        }
+      ],
+      "expected_class_seen": true
+    },
+    {
+      "expected": "Wet Floor Sign",
+      "image": "vlc-record-2026-04-06-15h00m29s-rtsp___192-168-137-100_554_Streaming_Channels_101-_15053_jpg.rf.3ec9709731728c8b5c5f9f9da34c421a.jpg",
+      "recognition": [
+        {
+          "box_xyxy": [
+            292.42767333984375,
+            397.18438720703125,
+            440.16387939453125,
+            497.866455078125
+          ],
+          "class": "Wet Floor Sign",
+          "class_id": 4,
+          "confidence": 0.8756128549575806,
+          "position": "center",
+          "size": 0.15731573104858398
+        }
+      ],
+      "expected_class_seen": true
+    }
+  ],
+  "corrupt_file_isolated": true,
+  "distance_display_with_assumed_calibration": [
+    {
+      "band": "near",
+      "box_xyxy": [
+        195.77606201171875,
+        63.5096435546875,
+        430.73248291015625,
+        640.0
+      ],
+      "class": "People",
+      "class_id": 1,
+      "confidence": 0.7965459823608398,
+      "distance_est_m": null,
+      "distance_note": "box cut off by frame edge",
+      "gated": true,
+      "phrase": "Warning, People ahead",
+      "position": "center",
+      "priority": 0.5,
+      "proximity": 1.0,
+      "reason": null,
+      "size": 0.9007661819458008,
+      "source": "trained"
+    },
+    {
+      "band": "far",
+      "box_xyxy": [
+        140.30099487304688,
+        205.57858276367188,
+        169.18557739257812,
+        322.4103698730469
+      ],
+      "class": "People",
+      "class_id": 1,
+      "confidence": 0.5513526797294617,
+      "distance_est_m": 13.1,
+      "distance_note": "estimate",
+      "gated": false,
+      "phrase": null,
+      "position": "left",
+      "priority": 0.3260623613993327,
+      "proximity": 0.30424944559733075,
+      "reason": "far",
+      "size": 0.18254966735839845,
+      "source": "trained"
+    }
+  ],
+  "video": {
+    "description": "10-second slideshow of actual labelled images; not field footage",
+    "frames_processed": 100,
+    "summary": [
+      {
+        "class": "Escalator",
+        "first_seen": 0.0,
+        "frames": 20,
+        "last_seen": 1.9,
+        "max_confidence": 0.93,
+        "seen": true
+      },
+      {
+        "class": "People",
+        "first_seen": 2.0,
+        "frames": 20,
+        "last_seen": 3.9,
+        "max_confidence": 0.79,
+        "seen": true
+      },
+      {
+        "class": "Pillar",
+        "first_seen": null,
+        "frames": 0,
+        "last_seen": null,
+        "max_confidence": null,
+        "seen": false
+      },
+      {
+        "class": "Stair",
+        "first_seen": 4.0,
+        "frames": 40,
+        "last_seen": 7.9,
+        "max_confidence": 0.97,
+        "seen": true
+      },
+      {
+        "class": "Wet Floor Sign",
+        "first_seen": 8.0,
+        "frames": 20,
+        "last_seen": 9.9,
+        "max_confidence": 0.88,
+        "seen": true
+      }
+    ]
+  },
+  "replay_accepted": true,
+  "cleanup_passed": true
+}

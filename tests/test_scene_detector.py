@@ -8,6 +8,21 @@ from config import add_detector_arguments, detector_settings
 from detection import Detection, DetectionBatch
 
 
+def test_malformed_optional_output_preserves_trained_detections_and_recovers():
+    from scene_detector import SceneDetector
+    named = Detection(2, 'Stair', .8, (0, 30, 40, 60))
+    trained = SimpleNamespace(predict=lambda frame: DetectionBatch((named,), 10, 'trained'))
+    general = SimpleNamespace(predict=lambda *a, **k: [SimpleNamespace(boxes=None)])
+    with patch('scene_detector.create_detector', return_value=trained):
+        detector = SceneDetector({'device': 'cpu'}, general=general)
+        assert detector.predict(SimpleNamespace(shape=(60, 100, 3))).detections == (named,)
+        assert detector.general_error
+        rows = SimpleNamespace(cpu=lambda: SimpleNamespace(numpy=lambda: []))
+        general.predict = lambda *a, **k: [SimpleNamespace(boxes=SimpleNamespace(data=rows))]
+        assert detector.predict(SimpleNamespace(shape=(60, 100, 3))).detections == (named,)
+        assert detector.general_error is None
+
+
 def test_scene_detector_keeps_named_boxes_and_adds_only_unmatched_objects():
     from scene_detector import SceneDetector
     parser = argparse.ArgumentParser()
@@ -57,7 +72,7 @@ def test_empty_general_predictions_do_not_invent_an_object():
 
 def test_unmatched_coco_person_becomes_general_people():
     from scene_detector import SceneDetector
-    named = Detection(3, 'Stair', .8, (0, 30, 40, 60))
+    named = Detection(2, 'Stair', .8, (0, 30, 40, 60))
 
     class Trained:
         def predict(self, frame):

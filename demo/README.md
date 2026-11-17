@@ -9,7 +9,6 @@ can click a prepared image or video instead of using a file dialog on stage.
 |---|---|
 | `demo/Escalator/` | JPEG or PNG images that show an escalator |
 | `demo/People/` | images that show people |
-| `demo/Pillar/` | images that show a pillar |
 | `demo/Stair/` | images that show stairs |
 | `demo/Wet Floor Sign/` | images that show a wet floor sign |
 | `demo/videos/` | MP4, MOV or WebM videos (at most 150 MB and 120 seconds) |
@@ -26,14 +25,8 @@ shown. Hidden files and links that lead outside this folder are ignored.
 
 ## Which images to use
 
-- Prefer images from the **test split** (`test/` in the Roboflow v4 export) or
-  newly taken photos. Images the model was trained on look better than reality,
-  so they do not give an honest demo.
-- A check on a handful of images is not the model's accuracy. The tested result
-  on 920 test images is mAP50 0.658 for local YOLOv8n and 0.739 for cloud
-  RF-DETR Nano. The page shows this next to every score.
-- **Pillar is the weakest class** (recall about 17 percent local, 29 percent
-  cloud). A missed pillar is expected and is a training limitation, not a bug.
+The active library has four classes: Escalator, People, Stair and Wet Floor Sign.
+Prefer the cleaned **test split** or new held-out photos. Selected examples are demonstrations, not accuracy estimates. Historical five-class metrics are archived; see `docs/FOUR_CLASS_MIGRATION_2026-11-17.md` for current provenance and limits.
 
 ## Videos are not committed
 

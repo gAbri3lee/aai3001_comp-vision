@@ -28,10 +28,20 @@ def validate_dataset(data_yaml, expected_fingerprint=None):
         validate_names(spec.get('names', []), CLASS_NAMES)
     except (ValueError, TypeError) as exc:
         raise ValueError(f'Dataset classes must match {list(CLASS_NAMES)!r} in ID order') from exc
-    if spec.get('nc', 5) != 5:
-        raise ValueError('Dataset classes must match nc=5')
+    count = len(CLASS_NAMES)
+    if spec.get('nc', count) != count:
+        raise ValueError(f'Dataset classes must match nc={count}')
     root = Path(spec.get('path') or '.').expanduser()
     root = (data_yaml.parent / root).resolve()
+    # Roboflow video filenames can exceed Windows' legacy 260-character limit.
+    # Keep the extended prefix for subsequent stat/read calls as well as copies.
+    import os
+    needs_long_paths = os.name == 'nt' and any(
+        len(str(p)) >= 260 for key in ('train', 'val', 'test')
+        if isinstance(spec.get(key), str) and (root / spec[key]).is_dir()
+        for p in (root / spec[key]).iterdir())
+    if needs_long_paths and not str(root).startswith('\\\\?\\'):
+        root = Path('\\\\?\\' + str(root))
     splits = {}
     for split in ('train', 'val', 'test'):
         entry = spec.get(split)
@@ -59,7 +69,7 @@ def validate_dataset(data_yaml, expected_fingerprint=None):
         labels = directory.parent / 'labels'
         if not labels.is_dir():
             raise ValueError(f'Missing {split} labels directory: {labels}')
-        counts[split], backgrounds[split], boxes[split] = len(images), 0, [0] * 5
+        counts[split], backgrounds[split], boxes[split] = len(images), 0, [0] * count
         stems = set()
         for image in images:
             if image.stem in membership or image.resolve() in seen_paths:
@@ -77,8 +87,8 @@ def validate_dataset(data_yaml, expected_fingerprint=None):
                         raise ValueError('expected class ID and four box values (convert polygons in the notebook)')
                     cid = int(fields[0])
                     cx, cy, width, height = map(float, fields[1:])
-                    if not 0 <= cid < 5:
-                        raise ValueError('class ID must be between 0 and 4')
+                    if not 0 <= cid < count:
+                        raise ValueError(f'class ID must be between 0 and {count-1}')
                     if (not all(math.isfinite(v) for v in (cx, cy, width, height)) or
                             not 0 < width <= 1 or not 0 < height <= 1 or
                             cx - width / 2 < -1e-5 or cx + width / 2 > 1 + 1e-5 or
@@ -90,7 +100,7 @@ def validate_dataset(data_yaml, expected_fingerprint=None):
         if any(p.stem not in stems for p in labels.glob('*.txt')):
             raise ValueError(f'{split}: orphan label without a matching image')
         if not all(boxes[split]):
-            raise ValueError(f'{split}: labels must include all five classes')
+            raise ValueError(f'{split}: labels must include all configured classes')
 
     manifest = root / 'split_manifest.csv'
     if not manifest.is_file():
@@ -113,7 +123,7 @@ def validate_dataset(data_yaml, expected_fingerprint=None):
     fingerprint = hashlib.md5(text.encode()).hexdigest()
     if expected_fingerprint is not None and fingerprint != expected_fingerprint:
         raise ValueError(f'Split fingerprint does not match finalized notebook split: {fingerprint}')
-    resolved_yaml = dict(path=str(root), nc=5, names=list(CLASS_NAMES),
+    resolved_yaml = dict(path=str(root), nc=count, names=list(CLASS_NAMES),
                          **{split: str(directory) for split, directory in splits.items()})
     return dict(data=str(data_yaml), classes=list(CLASS_NAMES), images=counts,
                 boxes=boxes, backgrounds=backgrounds, split_fingerprint=fingerprint,

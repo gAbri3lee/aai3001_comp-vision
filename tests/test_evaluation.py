@@ -23,6 +23,8 @@ class EvaluationTests(unittest.TestCase):
             self.assertEqual(metrics['precision'], .5)
             self.assertEqual(metrics['recall'], 1.)
             self.assertEqual(metrics['per_class']['Pillar']['boxes'], 1)
+            self.assertEqual({key:metrics['per_class']['Pillar'][key] for key in ('tp','fp','fn')},
+                             {'tp':1,'fp':1,'fn':0})
             self.assertAlmostEqual(metrics['per_class']['Pillar']['ap50'], 1.)
             empty = {p.name: {'detections': []} for p in paths}
             metrics = score_detections(gt, paths, empty, names, .35, [])

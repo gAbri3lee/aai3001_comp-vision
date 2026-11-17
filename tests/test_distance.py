@@ -49,3 +49,26 @@ def test_calibration_normalizes_mixed_resolutions_and_rejects_corrupt_files(tmp_
 def test_zero_height_box_has_no_distance_estimate():
     assert distance.estimate('People', (10, 100, 20, 100), 720,
                              dict(focal_px=900, frame_height=720), {'People': 1.7}) == (None, 'invalid box')
+
+
+@pytest.mark.parametrize('value', [True, False, None, '3', 0, -1, float('inf'), float('nan')])
+def test_calibration_rejects_nonphysical_values(value, tmp_path):
+    with pytest.raises(ValueError):
+        distance.focal_from_measurement(100, value, 1.7)
+    path = tmp_path / 'bad.json'
+    path.write_text(json.dumps({'samples': [{'focal_px': value, 'frame_height': 480}]}))
+    assert distance.load_calibration(path) is None
+    assert distance.estimate('People', (10, 10, 20, 200), 480,
+                             {'focal_px': value, 'frame_height': 480}, {'People': 1.7})[0] is None
+
+
+def test_distance_math_across_ranges_and_resolutions():
+    # Synthetic geometry validates arithmetic, not physical camera accuracy.
+    for height in (480, 720, 1080):
+        focal = .5 * height
+        for metres in (1., 2., 3., 5.):
+            box_height = focal * .65 / metres
+            actual, note = distance.estimate('Wet Floor Sign', (10, 10, 30, 10 + box_height),
+                height, {'focal_px': focal, 'frame_height': height}, {'Wet Floor Sign': .65})
+            assert actual == pytest.approx(metres)
+            assert note == 'estimate'

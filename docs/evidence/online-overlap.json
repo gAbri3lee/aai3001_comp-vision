@@ -1,0 +1,127 @@
+{
+  "v4_images": 10092,
+  "online_images": 12,
+  "rows": [
+    {
+      "id": "SG001",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "IMG_0285_MOV-0064_jpg.rf.b185d73ff582016269aedc5eab6881c4.jpg"
+      },
+      "nearest_dhash_distance": 15,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG002",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "IMG_3487_MOV-0006_jpg.rf.3ea2c4a2ecbaa305545fe84204e892eb.jpg"
+      },
+      "nearest_dhash_distance": 14,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG004",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1400_jpg.rf.e23f16d8738638d479c77ca567cffb38.jpg"
+      },
+      "nearest_dhash_distance": 12,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG005",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "vlc-record-2026-02-09-12h58m52s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h58m52s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0048_jpg.rf.9e2fdb8920923209be0669114dff5b74.jpg"
+      },
+      "nearest_dhash_distance": 13,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG006",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "IMG_4113_MOV-0067_jpg.rf.00ae18681960520a2604fb90c65860f5.jpg"
+      },
+      "nearest_dhash_distance": 14,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG007",
+      "exact_matches": [],
+      "nearest": {
+        "split": "test",
+        "image": "6684e708-9e43-4977-9209-c3097ea05d37_mp4-0027_jpg.rf.04a93ea7b22979d92547736fd11c5422.jpg"
+      },
+      "nearest_dhash_distance": 12,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG008",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "IMG_0285_MOV-0024_jpg.rf.c514e534082d2e6e43be838613f51080.jpg"
+      },
+      "nearest_dhash_distance": 14,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG009",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "V_20250221_164454_ES3_1_mp4-0000_jpg.rf.e569620a3d3566c9970476d4c08f4d08.jpg"
+      },
+      "nearest_dhash_distance": 11,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG010",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "IMG_0843_MOV-0009_jpg.rf.ac01df620f8b564072d24fae753e2e8c.jpg"
+      },
+      "nearest_dhash_distance": 20,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG011",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "6672b02272023_Skirtings-19_06_2024_jpg.rf.bb953563573318fade24f9dc54d051b0.jpg"
+      },
+      "nearest_dhash_distance": 15,
+      "visual_review_required": false
+    },
+    {
+      "id": "SG012",
+      "exact_matches": [],
+      "nearest": {
+        "split": "test",
+        "image": "11_mp4-110_jpg.rf.1f9cc357a84eaec83d501447ead5b0d5.jpg"
+      },
+      "nearest_dhash_distance": 5,
+      "visual_review_required": true
+    },
+    {
+      "id": "SG013",
+      "exact_matches": [],
+      "nearest": {
+        "split": "train",
+        "image": "IMG_0640_MOV-0005_jpg.rf.f0ab7345f1f2b8950a19a865173316de.jpg"
+      },
+      "nearest_dhash_distance": 4,
+      "visual_review_required": true
+    }
+  ],
+  "limitation": "Heuristic duplicate screen only. Different crops/black bars can evade it; low-detail images can collide. Does not certify venue/pretraining independence or physical field validity."
+}

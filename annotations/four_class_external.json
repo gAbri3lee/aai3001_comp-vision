@@ -1,0 +1,628 @@
+{
+  "classes_scored": [
+    0,
+    1,
+    3,
+    4
+  ],
+  "scope": "All visually resolvable physical instances >=10% image height; adjacent escalator flights counted separately, adjacent fixed stairs form one staircase. Smaller instances excluded; predictions below size threshold excluded. Reflection and ambiguous rear-flight ignore regions explicit. Pillar excluded only from scoring; runtime IDs/config unchanged.",
+  "review": "AI full-image review; independent human review pending; box/count metrics provisional",
+  "excluded": [
+    {
+      "id": "R011",
+      "reason": "Outdoor entrance rather than intended indoor surroundings; excluded before predictions"
+    }
+  ],
+  "images": [
+    {
+      "id": "R001",
+      "path": "data/four_class_external/R001.jpg",
+      "venue": "SM City Iloilo, Philippines",
+      "sha256": "c2d87acbdc60cb96522302c603b9695fe80a48fb05708f599858ec239e610696",
+      "targets": [
+        {
+          "class_id": 4,
+          "label": "Wet Floor Sign",
+          "box_xyxy": [
+            577.28,
+            375.04,
+            737.28,
+            770.56
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            922.88,
+            0.0,
+            1089.28,
+            390.4
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            1049.6,
+            0.0,
+            1241.6,
+            414.72
+          ]
+        }
+      ],
+      "ignore": [],
+      "source_page": "https://commons.wikimedia.org/wiki/File:Wet_floor_sign_at_SM_City_Iloilo.jpg"
+    },
+    {
+      "id": "R002",
+      "path": "data/four_class_external/R002.jpg",
+      "venue": "Broen mall, Denmark",
+      "sha256": "9afd8ff8c3a6e61162f9cc3431e655bc55dfddd215092ccb62845f7dbe3e1042",
+      "targets": [
+        {
+          "class_id": 4,
+          "label": "Wet Floor Sign",
+          "box_xyxy": [
+            563.2,
+            0.0,
+            981.76,
+            888.32
+          ]
+        }
+      ],
+      "ignore": [],
+      "source_page": "https://commons.wikimedia.org/wiki/File:Wet_floor_sign,_Broen,_Esbjerg,_1.jpg"
+    },
+    {
+      "id": "R003",
+      "path": "data/four_class_external/R003.jpg",
+      "venue": "Broen mall, Denmark",
+      "sha256": "3911952bf4f3793659c273dedcbdfd8461ba30d20bd38c6f0cf21ba76ad478ea",
+      "targets": [
+        {
+          "class_id": 4,
+          "label": "Wet Floor Sign",
+          "box_xyxy": [
+            560.64,
+            0.0,
+            998.4,
+            940.8
+          ]
+        }
+      ],
+      "ignore": [],
+      "source_page": "https://commons.wikimedia.org/wiki/File:Wet_floor_sign,_Broen,_Esbjerg,_2.jpg"
+    },
+    {
+      "id": "R004",
+      "path": "data/four_class_external/R004.jpg",
+      "venue": "Hong Kong mall",
+      "sha256": "ac4ab248f5e111c82648ad89ab07ead75c4f8dd52bf56fa5fd27a5c6c764512c",
+      "targets": [
+        {
+          "class_id": 4,
+          "label": "Wet Floor Sign",
+          "box_xyxy": [
+            166.12,
+            361.91,
+            800.8,
+            1758.46
+          ]
+        }
+      ],
+      "ignore": [
+        {
+          "classes": [
+            4
+          ],
+          "box_xyxy": [
+            638.9351081530782,
+            242.69333333333333,
+            1075.540765391015,
+            1377.391111111111
+          ],
+          "reason": "Mirror reflection, not a second physical sign"
+        }
+      ],
+      "source_page": "https://commons.wikimedia.org/wiki/File:HK_Sheung_Wan_mall_interior_Wet_Floor_sign_n_mirror_Oct_2017_IX1.jpg"
+    },
+    {
+      "id": "R005",
+      "path": "data/four_class_external/R005.jpg",
+      "venue": "HarbourFront Centre, Singapore",
+      "sha256": "8d7d3c099de50dc8c4b6523814cf837c2f2d982efb0c9efae8115b71011e091d",
+      "targets": [
+        {
+          "class_id": 0,
+          "label": "Escalator",
+          "box_xyxy": [
+            321.28,
+            240.64,
+            806.4,
+            819.2
+          ]
+        },
+        {
+          "class_id": 0,
+          "label": "Escalator",
+          "box_xyxy": [
+            486.4,
+            239.36,
+            1068.8,
+            815.36
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            92.16,
+            574.72,
+            162.56,
+            724.48
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            177.92,
+            552.96,
+            258.56,
+            800.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            256.0,
+            564.48,
+            304.64,
+            691.2
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            779.52,
+            567.04,
+            903.68,
+            867.84
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            860.16,
+            600.32,
+            1003.52,
+            893.44
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            1072.64,
+            572.16,
+            1196.8,
+            851.2
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            723.2,
+            606.72,
+            782.08,
+            710.4
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            587.52,
+            505.6,
+            684.8,
+            696.32
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            528.64,
+            422.4,
+            614.4,
+            570.88
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            476.16,
+            344.32,
+            556.8,
+            467.2
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            609.28,
+            344.32,
+            666.88,
+            448.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            569.6,
+            270.08,
+            616.96,
+            375.04
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            504.32,
+            252.16,
+            561.92,
+            355.84
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            702.72,
+            426.24,
+            771.84,
+            568.32
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            753.92,
+            464.64,
+            817.92,
+            577.28
+          ]
+        }
+      ],
+      "ignore": [],
+      "source_page": "https://commons.wikimedia.org/wiki/File:HarbourFront_Centre.JPG"
+    },
+    {
+      "id": "R006",
+      "path": "data/four_class_external/R006.jpg",
+      "venue": "Changi Airport, Singapore (non-mall)",
+      "sha256": "aa807115e3d14fd133034d3638597ecad0e3e76dee8efa0764ebdb3e6a5bd78b",
+      "targets": [
+        {
+          "class_id": 0,
+          "label": "Escalator",
+          "box_xyxy": [
+            446.72,
+            213.76,
+            837.12,
+            634.88
+          ]
+        },
+        {
+          "class_id": 0,
+          "label": "Escalator",
+          "box_xyxy": [
+            592.64,
+            203.52,
+            899.84,
+            634.88
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            267.52,
+            524.8,
+            334.08,
+            641.28
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            359.68,
+            439.04,
+            451.84,
+            650.24
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            501.76,
+            469.76,
+            573.44,
+            611.84
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            559.36,
+            446.72,
+            614.4,
+            600.32
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            697.6,
+            280.32,
+            746.24,
+            378.88
+          ]
+        }
+      ],
+      "ignore": [
+        {
+          "classes": [
+            1
+          ],
+          "box_xyxy": [
+            684.8,
+            458.24,
+            760.32,
+            519.68
+          ],
+          "reason": "Partly occluded woman: visible extent below 10% height"
+        }
+      ],
+      "source_page": "https://commons.wikimedia.org/wiki/File:Singapore_Changi_Airport_Terminal_4_13-11-2023(108).jpg"
+    },
+    {
+      "id": "R007",
+      "path": "data/four_class_external/R007.jpg",
+      "venue": "Parklane, Singapore",
+      "sha256": "1f65f787f5010627b4cfb2e936082e7d92246da1e14fd594ad08e9729695aae9",
+      "targets": [
+        {
+          "class_id": 3,
+          "label": "Stair",
+          "box_xyxy": [
+            0.0,
+            738.56,
+            1280.0,
+            960.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            234.24,
+            454.4,
+            407.04,
+            906.24
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            445.44,
+            536.32,
+            567.04,
+            815.36
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            552.96,
+            522.24,
+            674.56,
+            820.48
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            1145.6,
+            112.64,
+            1218.56,
+            332.8
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            1082.88,
+            222.72,
+            1131.52,
+            337.92
+          ]
+        }
+      ],
+      "ignore": [
+        {
+          "classes": [
+            1
+          ],
+          "box_xyxy": [
+            947.2,
+            482.56,
+            990.72,
+            560.64
+          ],
+          "reason": "Occluded lower-floor person: visible extent below 10% height"
+        }
+      ],
+      "source_page": "https://commons.wikimedia.org/wiki/File:Parklane_McDonald%27s_01-12-2024(1).jpg"
+    },
+    {
+      "id": "R008",
+      "path": "data/four_class_external/R008.jpg",
+      "venue": "South City Mall, New Zealand",
+      "sha256": "01d50e01b1e63c61748302a44379d37a73f22af933a8bbb845e1d9baf92004f7",
+      "targets": [
+        {
+          "class_id": 3,
+          "label": "Stair",
+          "box_xyxy": [
+            572.16,
+            416.05,
+            858.88,
+            716.88
+          ]
+        }
+      ],
+      "ignore": [],
+      "source_page": "https://commons.wikimedia.org/wiki/File:South_City_Mall_Dunedin_double_staircase,_24_Jun_2026.jpg"
+    },
+    {
+      "id": "R009",
+      "path": "data/four_class_external/R009.jpg",
+      "venue": "Schiedam Passage, Netherlands",
+      "sha256": "d330905f17240953b88415ba0e702dea38c0a5260dd4c4ca327b5ba172a63d79",
+      "targets": [
+        {
+          "class_id": 3,
+          "label": "Stair",
+          "box_xyxy": [
+            724.48,
+            710.4,
+            1024.0,
+            960.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            810.24,
+            761.6,
+            911.36,
+            960.0
+          ]
+        }
+      ],
+      "ignore": [
+        {
+          "classes": [
+            0,
+            3
+          ],
+          "box_xyxy": [
+            396.8,
+            435.2,
+            684.8,
+            620.8
+          ],
+          "reason": "Distant rear flight ambiguous between fixed stair and escalator"
+        }
+      ],
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_the_Schiedam_Passage_mall.jpg"
+    },
+    {
+      "id": "R010",
+      "path": "data/four_class_external/R010.jpg",
+      "venue": "Sarasota Mall, USA",
+      "sha256": "bc27ae7f0fae47ef09b86dfc19f4fc74cef936ba9648d4f03fbd7cc283a3e37a",
+      "targets": [],
+      "ignore": [],
+      "source_page": "https://commons.wikimedia.org/wiki/File:Sarasota_Mall_at_UTC_corridor_6.jpg"
+    },
+    {
+      "id": "R012",
+      "path": "data/four_class_external/R012.jpg",
+      "venue": "VivoCity, Singapore",
+      "sha256": "62ae989a47e9f94540f27eea32bb45d3d10c76e98bc1b776249a0020aedafb52",
+      "targets": [
+        {
+          "class_id": 0,
+          "label": "Escalator",
+          "box_xyxy": [
+            401.92,
+            499.2,
+            618.24,
+            960.0
+          ]
+        },
+        {
+          "class_id": 0,
+          "label": "Escalator",
+          "box_xyxy": [
+            579.84,
+            496.64,
+            806.4,
+            960.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            0.0,
+            583.68,
+            437.76,
+            960.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            650.24,
+            698.88,
+            797.44,
+            960.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            650.24,
+            628.48,
+            785.92,
+            875.52
+          ]
+        }
+      ],
+      "ignore": [],
+      "source_page": "https://commons.wikimedia.org/wiki/File:VivoCity,_Singapore_%F0%9F%87%B8%F0%9F%87%AC_-_54245801424.jpg"
+    }
+  ],
+  "annotation_revision": {
+    "reason": "Post-prediction visual QC, no model/threshold tuning; initial annotations retained in artifacts/four-class-validation/annotations-before-review.json",
+    "changes": [
+      "R006: tightened child to visible extent excluding luggage; replaced occluded foreground woman below 10% visible height with one omitted resolvable upper-flight person; explicit small-person ignore region.",
+      "R007: tightened upper-floor person; replaced lower occluded person below 10% visible height with omitted upper-floor person; explicit small-person ignore region.",
+      "R009: tightened foreground person box; original included left railing."
+    ]
+  }
+}

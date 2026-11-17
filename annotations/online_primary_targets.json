@@ -1,0 +1,83 @@
+{
+  "scope": "Primary-target checks only; not exhaustive YOLO labels; do not train from these records",
+  "records": [
+    {
+      "id": "SG001",
+      "file": "SG001.jpg",
+      "image_sha256": "69ed2a801d449b7bf4653f9029929890a91fb67233213066f3c2a36e7db26e86",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Column_sign_in_the_car_park_of_VivoCity,_Singapore_-_20150524.jpg",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Jacklee",
+      "role": "external_challenge",
+      "target": {
+        "class_id": 2,
+        "label": "Pillar",
+        "box_xyxy": [
+          0,
+          0,
+          1135,
+          960
+        ],
+        "truncated": true
+      },
+      "annotation_method": "AI manual visual inspection of full image; not detector-generated",
+      "complete_image_annotation": false,
+      "training_ready": false,
+      "team_review": "pending",
+      "note": "Single primary structural column only; other small background objects are not exhaustively labelled."
+    },
+    {
+      "id": "SG002",
+      "file": "SG002.jpg",
+      "image_sha256": "919ac49c585d1e247e1c35fb82324336b8d1faf2953a57ee4ea9d0e4600a334b",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Column_sign_in_the_car_park_of_VivoCity,_Singapore_-_20151015.jpg",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Jacklee",
+      "role": "external_challenge",
+      "target": {
+        "class_id": 2,
+        "label": "Pillar",
+        "box_xyxy": [
+          180,
+          0,
+          1205,
+          960
+        ],
+        "truncated": true
+      },
+      "annotation_method": "AI manual visual inspection of full image; not detector-generated",
+      "complete_image_annotation": false,
+      "training_ready": false,
+      "team_review": "pending",
+      "note": "Single primary structural column only; other small background objects are not exhaustively labelled."
+    },
+    {
+      "id": "SG013",
+      "file": "SG013.jpg",
+      "image_sha256": "3340c864128b40e5f96bfc681d7eea3138d4bbffb212c833681a29f636ce6f2b",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Column_sign_in_the_car_park_of_Resorts_World_Sentosa,_Singapore_-_20151016.jpg",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Jacklee.",
+      "role": "development_candidate",
+      "target": {
+        "class_id": 2,
+        "label": "Pillar",
+        "box_xyxy": [
+          440,
+          285,
+          905,
+          1707
+        ],
+        "truncated": true
+      },
+      "annotation_method": "AI manual visual inspection of full image; not detector-generated",
+      "complete_image_annotation": false,
+      "training_ready": false,
+      "team_review": "pending",
+      "note": "Single primary structural column only; other small background objects are not exhaustively labelled."
+    }
+  ]
+}

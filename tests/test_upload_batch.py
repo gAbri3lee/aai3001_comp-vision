@@ -14,7 +14,7 @@ from helpers import ENDPOINT, FakeDetector, FakeSpeaker, H, W, running, wait_for
 from test_analyze import BrightBoxDetector, SceneCapture, encoded, key, scene
 
 # A Stair 0.1 of the frame height in the path: correct, but far, so the gate hides it.
-FAR_STAIR = Detection(3, 'Stair', .7, (600, 640, 680, 712))
+FAR_STAIR = Detection(2, 'Stair', .7, (600, 640, 680, 712))
 
 
 def post(client, files=(), **form):
@@ -102,8 +102,8 @@ def test_expected_class_marks_each_image_and_summarises_the_batch():
         assert summary['text'] == 'Stair: 2 of 3 recognised, mean confidence 0.80'
         assert summary['skipped'] == 1 and summary['backend'] == 'local'
         # The tested accuracy always sits next to the score, from the config.
-        assert body['accuracy_note'] == ('This is a check on these images only. Tested accuracy on 920 '
-                                         'test images: local mAP50 0.658, cloud mAP50 0.739.')
+        assert body['accuracy_note'].startswith('This is a check on these images only. Four-class scope.')
+        assert 'dataset cleanup did not retrain it' in body['accuracy_note']
         body = post(client, files[2:3], expected='People').json
         assert body['summary'][0]['text'] == 'People: 0 of 1 recognised'
         assert body['expected']['recognised'] is False

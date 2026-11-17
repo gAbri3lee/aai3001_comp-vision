@@ -29,7 +29,8 @@ import distance
 
 # Status fields cleared whenever results expire, fail or the source ends.
 EMPTY_RESULT = dict(alert="", alerts=[], detections=[], recognition=[], selected=None, fps=0.,
-                    latency_ms=None, round_trip_ms=None)
+                    latency_ms=None, round_trip_ms=None, pipeline_latency_ms=None,
+                    processing_ms=None, preview_encode_ms=None)
 BACKENDS = ("local", "cloud")
 MODEL_NAMES = {"local": "YOLOv8n", "cloud": "RF-DETR Nano"}
 # After a cloud failure the last good result stays on screen at most this long.
@@ -245,6 +246,7 @@ class PipelineState:
         self.fallback_active = False
         self.last_error = ""
         self._reset_policy = False
+        self._generation = 0  # Invalidates work started before a control/source change.
         self._hold_until = None
         gate = self.settings['alert_gate']
         self.status = {"fps": 0.0, "alert": "", "alerts": [], "selected": None, "spoken_at": None,
@@ -267,6 +269,9 @@ class PipelineState:
         self._pending = None
         self._last_frame = None
         self._upload_lock = threading.Lock()
+        # Decoder opening and source disposal share one transaction. Otherwise a
+        # camera switch can delete a file while Replay is still opening it.
+        self._source_io_lock = threading.RLock()
 
         self._source = int(args.source) if str(args.source).isdigit() else args.source
         self._is_camera = isinstance(self._source, int)
@@ -323,6 +328,10 @@ class PipelineState:
             if backend != self.mode:
                 # Decision U3: the first alert after a switch is spoken.
                 self._reset_policy = True
+                self._generation += 1
+                self.status.update(EMPTY_RESULT)
+                self._latest_jpeg = self._latest_debug_jpeg = None
+                self._frame_captured_at = None
             self.mode = backend
             self.fallback_active = False
             if backend == "cloud":
@@ -336,6 +345,7 @@ class PipelineState:
             self.fallback_active = True
             self.last_error = f"Cloud unreachable: {exc}"
             self._reset_policy = True
+            self._generation += 1
             if self._latest_jpeg is not None and self._hold_until is None:
                 self._hold_until = time.monotonic() + FALLBACK_HOLD_SECONDS
 
@@ -437,11 +447,15 @@ class PipelineState:
             if "paused" in body:
                 if body["paused"] != self.paused:
                     self._paused_shown = False
+                    self._generation += 1
+                    self._reset_policy = True
                 self.paused = body["paused"]
                 stop_speech |= self.paused
                 if self.paused:
                     self.status.update(EMPTY_RESULT)
             if "muted" in body:
+                if self.muted and not body["muted"]:
+                    self._reset_policy = True
                 self.muted = body["muted"]
                 stop_speech |= self.muted
             if rate is not None:
@@ -474,16 +488,19 @@ class PipelineState:
                 raise ControlConflict("No alert has been spoken yet.")
         self._speak(text, kind="test" if action == "test_voice" else "replay")
 
-    def _speak(self, text, kind="alert"):
+    def _speak(self, text, kind="alert", generation=None):
         """The only way speech is sent. Returns True if the phrase went to the speaker."""
         with self._lock:
-            if self.speaker is None or self.muted or (kind == "alert" and self.paused):
+            if (self.speaker is None or self.muted or self._stop.is_set()
+                    or (kind == "alert" and self.paused)
+                    or (generation is not None and generation != self._generation)):
                 return False
             if kind == "alert":
                 self.last_spoken = text
             self.spoken_log.appendleft({"time": time.time(), "phrase": text, "backend": self.mode, "kind": kind})
             speaker = self.speaker
-        speaker.say(text)
+            # Queueing is nonblocking; keep it ordered with mute/pause changes.
+            speaker.say(text)
         return True
 
     def _show_paused(self, frame):
@@ -576,11 +593,14 @@ class PipelineState:
                 "cloud_used": "cloud" in backends, "results": results, "summary": summary,
                 "accuracy_note": self.accuracy_note}
 
-    def _detection_dict(self, hazard, frame_height):
+    def _detection_dict(self, hazard, frame_height, *, calibration_applicable=False):
         item = hazard.to_dict()
         if self.calibration is not None and hazard.label in self.settings['alert_gate']['known_heights_m']:
-            value, note = distance.estimate(hazard.label, hazard.xyxy, frame_height, self.calibration,
-                                            self.settings['alert_gate']['known_heights_m'])
+            if calibration_applicable:
+                value, note = distance.estimate(hazard.label, hazard.xyxy, frame_height, self.calibration,
+                                                self.settings['alert_gate']['known_heights_m'])
+            else:
+                value, note = None, 'live camera calibration does not apply to uploaded/file media'
             item['distance_est_m'] = None if value is None else round(value, 1)
             item['distance_note'] = note
         return item
@@ -633,6 +653,10 @@ class PipelineState:
         return self.source_state()
 
     def _play(self, path, name, temporary):
+        with self._source_io_lock:
+            return self._play_locked(path, name, temporary)
+
+    def _play_locked(self, path, name, temporary):
         info = media.probe_video(path)
         try:
             capture = LatestFrameCapture(str(path), max_side=media.INFERENCE_MAX_SIDE)
@@ -641,6 +665,10 @@ class PipelineState:
         self._switch(capture, {"name": name, "path": path, "temporary": temporary, **info})
 
     def source_control(self, body) -> dict:
+        with self._source_io_lock:
+            return self._source_control_locked(body)
+
+    def _source_control_locked(self, body) -> dict:
         """`action`: restart (also Replay) or camera (back to the start source).
         `view`: recognition or alert. Validated before anything changes."""
         if not isinstance(body, dict) or not body:
@@ -657,6 +685,7 @@ class PipelineState:
             with self._lock:
                 if view != self.view:
                     self._reset_policy = True  # back in Alert view, the next hazard is spoken
+                    self._generation += 1
                 self.view = view
                 speaker = self.speaker
             if view == "recognition" and speaker is not None:
@@ -678,14 +707,24 @@ class PipelineState:
         return self.source_state()
 
     def _switch(self, capture, video):
+        with self._source_io_lock:
+            return self._switch_locked(capture, video)
+
+    def _switch_locked(self, capture, video):
         """Hand a new source to the loop thread, which swaps it in between frames.
         A switch that was still waiting is dropped and its file deleted."""
         with self._lock:
             replaced, self._pending = self._pending, (capture, video)
+            active = self.video
+            self._generation += 1
             if video is None:
                 self.view = "alert"  # the camera always uses the live rules
         if replaced is not None:
-            self._discard(*replaced, keep=video)
+            # A cancelled Replay can share the active video's file. Release its
+            # new decoder now; delete only after the loop retires the active one.
+            keep = active if (active is not None and replaced[1] is not None
+                              and active['path'] == replaced[1]['path']) else video
+            self._discard(*replaced, keep=keep)
 
     def _discard(self, capture, video, keep=None):
         if capture is not None:
@@ -694,6 +733,10 @@ class PipelineState:
             self.store.delete(video["path"])
 
     def _apply_pending(self):
+        with self._source_io_lock:
+            return self._apply_pending_locked()
+
+    def _apply_pending_locked(self):
         """Loop thread only: start the source asked for by upload, Replay or Back to camera."""
         with self._lock:
             pending, self._pending = self._pending, None
@@ -740,6 +783,11 @@ class PipelineState:
 
     def stop(self):
         self._stop.set()
+        if self.speaker is not None:
+            close = getattr(self.speaker, 'close', None)
+            stop_speech = close if close is not None else getattr(self.speaker, 'stop', None)
+            if stop_speech is not None:
+                stop_speech()
         self._thread.join(timeout=self.args.timeout + 3)
         if self.capture is not None:
             self.capture.release()
@@ -814,11 +862,13 @@ class PipelineState:
                     self._stop.wait(0.01)
                     continue
                 position = getattr(self.capture, "position", 0.0)
+                processing_started = time.monotonic()
                 self._last_frame = frame
                 with self._lock:
                     self._last_frame_at = time.monotonic()
                     paused = self.paused
                     mode = self.mode
+                    generation = self._generation
                     view = self.view if self.video is not None or not self._is_camera else "alert"
                     if self._reset_policy:
                         self.policy.reset()
@@ -836,9 +886,16 @@ class PipelineState:
                 def check_fresh(what):
                     if time.monotonic() - captured_at > self.args.max_frame_age:
                         raise StaleFrame(what)
+                def cancelled():
+                    with self._lock:
+                        return (self._stop.is_set() or self.paused or
+                                generation != self._generation or self._pending is not None)
                 try:
                     check_fresh('Captured frame is stale; discarded')
                     with self._detect_lock:
+                        check_fresh('Captured frame expired while waiting for inference; discarded')
+                        if cancelled():
+                            continue
                         batch = self.detectors[mode].predict(frame)
                 except StaleFrame as exc:
                     error = str(exc)
@@ -847,6 +904,8 @@ class PipelineState:
                         self._fall_back(exc)
                         continue
                     error = str(exc)
+                if cancelled():
+                    continue
                 if batch is not None and view == "recognition":
                     try:
                         # Recognition view (video only): every trained detection, no gate,
@@ -867,7 +926,7 @@ class PipelineState:
                                             check=lambda: check_fresh('Inference result is stale; discarded'))
                         recognition = media.recognition_dicts(result.hazards)
                         annotated, debug_annotated = annotate(frame, result)
-                        if result.speak is not None and self._speak(result.speak):
+                        if result.speak is not None and self._speak(result.speak, generation=generation):
                             spoken_at = time.time()
                     except Exception as exc:
                         # Never retain prior boxes/alerts after an inference failure.
@@ -877,14 +936,21 @@ class PipelineState:
                     recognition = []
                     annotated = debug_annotated = frame
 
+                encode_started = time.monotonic()
+                ok_jpeg, buffer = cv2.imencode('.jpg', limit_size(annotated, media.MAX_DISPLAY_SIDE),
+                                               [cv2.IMWRITE_JPEG_QUALITY, 85])
+                if debug_annotated is annotated:
+                    ok_debug, debug_buffer = ok_jpeg, buffer
+                else:
+                    ok_debug, debug_buffer = cv2.imencode('.jpg', limit_size(debug_annotated, media.MAX_DISPLAY_SIDE),
+                                                         [cv2.IMWRITE_JPEG_QUALITY, 85])
                 now = time.monotonic()
                 fps = 1.0 / max(now - prev_time, 1e-6)
                 prev_time = now
-
-                ok_jpeg, buffer = cv2.imencode(".jpg", annotated)
-                ok_debug, debug_buffer = cv2.imencode(".jpg", debug_annotated)
                 hazards = sorted(result.hazards, key=lambda h: h.index) if result else []
                 with self._lock:
+                    if self._stop.is_set() or self.paused or generation != self._generation:
+                        continue
                     self._hold_until = None
                     if ok_jpeg and ok_debug:
                         self._latest_jpeg = buffer.tobytes()
@@ -899,7 +965,11 @@ class PipelineState:
                     self.status["error"] = error
                     self.status["latency_ms"] = batch.latency_ms if batch else None
                     self.status["round_trip_ms"] = batch.round_trip_ms if batch else None
-                    self.status["detections"] = [self._detection_dict(hazard, frame.shape[0]) for hazard in hazards]
+                    self.status['pipeline_latency_ms'] = 1000 * (now-captured_at) if batch else None
+                    self.status['processing_ms'] = 1000 * (now-processing_started) if batch else None
+                    self.status['preview_encode_ms'] = 1000 * (now-encode_started) if batch else None
+                    self.status["detections"] = [self._detection_dict(hazard, frame.shape[0],
+                        calibration_applicable=self._is_camera and self.video is None) for hazard in hazards]
                     self.status["recognition"] = recognition
                     if self.video is not None and batch is not None:
                         self.summary.add(position, recognition)
@@ -925,7 +995,7 @@ def create_app(state: PipelineState) -> Flask:
 
     @app.route("/")
     def index():
-        return render_template("index.html")
+        return render_template("index.html", classes=getattr(state, 'settings', {}).get('classes', CLASS_NAMES))
 
     @app.route("/video_feed")
     def video_feed():
@@ -933,9 +1003,11 @@ def create_app(state: PipelineState) -> Flask:
         debug = request.args.get("debug") == "1"
 
         def generate():
-            while True:
+            previous = None
+            while not state._stop.is_set():
                 jpeg = state.get_jpeg(debug)
-                if jpeg is not None:
+                if jpeg is not None and jpeg is not previous:
+                    previous = jpeg
                     yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + jpeg + b"\r\n"
                 time.sleep(0.03)
 
