@@ -5,7 +5,7 @@ import sys
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-API = ROOT / 'deploy' / 'vercel' / 'api'
+API = ROOT / 'deploy' / 'vercel'
 sys.path.insert(0, str(ROOT / 'src'))
 
 try:
@@ -20,8 +20,8 @@ MODEL_READY = (API / 'model').is_dir() and any((API / 'model').glob('*.onnx')) a
 class VercelDetectorTests(unittest.TestCase):
     def setUp(self):
         sys.path.insert(0, str(API))
-        import _yolo_onnx
-        self.detector = _yolo_onnx
+        import yolo_onnx
+        self.detector = yolo_onnx
 
     def tearDown(self):
         sys.path.remove(str(API))

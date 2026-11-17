@@ -29,4 +29,4 @@ demo/videos/*
 *.avi
 
 # Vercel photo-check function ships its ONNX model (12 MB); allow it past the *.onnx rule
-!deploy/vercel/api/model/*.onnx
+!deploy/vercel/model/*.onnx

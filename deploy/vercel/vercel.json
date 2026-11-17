@@ -1,12 +1,3 @@
 {
-  "functions": {
-    "api/detect.py": { "includeFiles": "api/{model/*,config.json}", "maxDuration": 30 },
-    "api/health.py": { "includeFiles": "api/{model/*,config.json}", "maxDuration": 30 }
-  },
-  "headers": [
-    { "source": "/(.*)", "headers": [
-      { "key": "X-Content-Type-Options", "value": "nosniff" },
-      { "key": "Referrer-Policy", "value": "no-referrer" }
-    ] }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }

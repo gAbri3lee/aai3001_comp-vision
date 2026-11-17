@@ -1,16 +1,17 @@
 # VisionAid Photo Check: Vercel deployment
 
 Upload-a-photo version of VisionAid. A static page (`public/index.html`) shrinks the photo in
-the browser and POSTs it to a Python function (`api/detect.py`) that runs the YOLOv8n ONNX
+the browser and POSTs it to a small Flask app (`app.py`, served as a Vercel Python function) that runs the YOLOv8n ONNX
 export with only numpy, Pillow and onnxruntime (no torch), then draws the boxes.
 
 This folder is its own Vercel project: **deploy from here, not from the repo root.** The root
-`requirements.txt` pulls in torch and would exceed Vercel's function size limit.
+`requirements.txt` pulls in torch and would exceed Vercel's function size limit. Vercel detects it as a
+Python framework project, which needs a single web-app entrypoint, hence `app.py` (Flask).
 
 ## Deploy without GitHub
 
 ```sh
-python deploy/vercel/prepare.py        # copies the ONNX model + config subset into api/ (exports ONNX if needed)
+python deploy/vercel/prepare.py        # copies the ONNX model + config subset next to app.py (exports ONNX if needed)
 npm i -g vercel
 cd deploy/vercel
 vercel login
@@ -21,7 +22,7 @@ vercel --prod                           # production URL
 ## Check it
 
 ```sh
-python deploy/vercel/dev_server.py                      # local, no Vercel CLI: http://127.0.0.1:3000
+python deploy/vercel/app.py                             # local, no Vercel CLI: http://127.0.0.1:3000
 python deploy/vercel/check_deployment.py http://127.0.0.1:3000
 python deploy/vercel/check_deployment.py https://<your-app>.vercel.app   # golden parity + round-trip latency on the live site
 ```
