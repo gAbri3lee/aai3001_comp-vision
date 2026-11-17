@@ -142,7 +142,7 @@ def test_detector_errors_keep_the_loop_alive():
 def test_general_model_failures_do_not_hide_trained_detections():
     from scene_detector import SceneDetector
     from detection import Detection, DetectionBatch
-    stair = Detection(3, 'Stair', .8, (0, 0, 10, 10))
+    stair = Detection(2, 'Stair', .8, (0, 0, 10, 10))
     trained = SimpleNamespace(predict=lambda frame: DetectionBatch((stair,), 5, 'yolov8n'))
     with patch('scene_detector.create_detector', return_value=trained), \
          patch('scene_detector.load_general_model', side_effect=OSError('download failed')):

@@ -20,7 +20,7 @@ def box(x_centre, height, width=.1):
 
 
 FAR_PERSON = Detection(1, 'People', .9, box(.5, .1))
-NEAR_STAIR = Detection(3, 'Stair', .8, box(.5, .4))
+NEAR_STAIR = Detection(2, 'Stair', .8, box(.5, .4))
 MID_PERSON = Detection(1, 'People', .7, box(.45, .45))
 SIDE_CHAIR = Detection(-1, 'Object', .9, box(.1, .8))
 

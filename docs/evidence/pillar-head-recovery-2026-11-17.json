@@ -1,0 +1,345 @@
+{
+  "date": "2026-11-17",
+  "experiment": "Frozen-feature Pillar classifier retraining; all candidates rejected",
+  "input": {
+    "version": 2,
+    "weights_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe",
+    "manifest_sha256": "e40ac9ccc120ba56a2975333a5e19b526992cfc4d509dfe7b4dce863a952e4c8",
+    "quarantine_sha256": "dd3ffcc1bb6f616f05a09bfa31d510bd321a36b26d7b73b13080f50a3ff4090c",
+    "training_images": 2048,
+    "validation_images": 925,
+    "test_used": false,
+    "negative_cap": 4,
+    "training_members_sha256": "a85591dfe0a635647de406844f1ea7923f98afb19a96ace96eb2c7f7300c9f65"
+  },
+  "training": {
+    "rows": 214927,
+    "positive_rows": 18810,
+    "positive_scenes": 95,
+    "positive_weight": 10.0,
+    "regularization": 0.001,
+    "optimizer": "LBFGS",
+    "steps": 69,
+    "alphas": [
+      0.1,
+      0.25,
+      0.5,
+      1.0
+    ],
+    "train_images": 2048,
+    "test_used": false,
+    "trainable_parameters": 243,
+    "ground_truth_pillars": 1154,
+    "truths_with_overlapping_frozen_proposals": 1149,
+    "frozen_localization_recall_limit": 0.9956672443674177
+  },
+  "validation": [
+    {
+      "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+      "images": 925,
+      "alert_threshold": 0.35,
+      "map50": 0.7091212080909991,
+      "map50_95": 0.4434914985913161,
+      "precision": 0.7961832061068702,
+      "recall": 0.6777128005198181,
+      "f1": 0.7321867321867321,
+      "safety_recall": 0.7800827711761859,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.8244534463483024,
+          "tp": 95,
+          "fp": 12,
+          "fn": 26,
+          "precision": 0.8878504672897196,
+          "recall": 0.7851239669421488,
+          "boxes": 121
+        },
+        "People": {
+          "ap50": 0.7491156001169057,
+          "tp": 579,
+          "fp": 166,
+          "fn": 239,
+          "precision": 0.7771812080536913,
+          "recall": 0.7078239608801956,
+          "boxes": 818
+        },
+        "Pillar": {
+          "ap50": 0.3439150428605269,
+          "tp": 47,
+          "fp": 13,
+          "fn": 114,
+          "precision": 0.7833333333333333,
+          "recall": 0.2919254658385093,
+          "boxes": 161
+        },
+        "Stair": {
+          "ap50": 0.7426728644474714,
+          "tp": 219,
+          "fp": 66,
+          "fn": 102,
+          "precision": 0.7684210526315789,
+          "recall": 0.6822429906542056,
+          "boxes": 321
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8854490866817893,
+          "tp": 103,
+          "fp": 10,
+          "fn": 15,
+          "precision": 0.911504424778761,
+          "recall": 0.8728813559322034,
+          "boxes": 118
+        }
+      },
+      "alpha": 0.0
+    },
+    {
+      "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+      "images": 925,
+      "alert_threshold": 0.35,
+      "map50": 0.7098088910175807,
+      "map50_95": 0.443690400603879,
+      "precision": 0.789553368660106,
+      "recall": 0.6777128005198181,
+      "f1": 0.7293706293706294,
+      "safety_recall": 0.7800827711761859,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.824466862596337,
+          "tp": 95,
+          "fp": 12,
+          "fn": 26,
+          "precision": 0.8878504672897196,
+          "recall": 0.7851239669421488,
+          "boxes": 121
+        },
+        "People": {
+          "ap50": 0.7491313258302856,
+          "tp": 579,
+          "fp": 166,
+          "fn": 239,
+          "precision": 0.7771812080536913,
+          "recall": 0.7078239608801956,
+          "boxes": 818
+        },
+        "Pillar": {
+          "ap50": 0.34732054741333457,
+          "tp": 47,
+          "fp": 24,
+          "fn": 114,
+          "precision": 0.6619718309859155,
+          "recall": 0.2919254658385093,
+          "boxes": 161
+        },
+        "Stair": {
+          "ap50": 0.742674143640856,
+          "tp": 219,
+          "fp": 66,
+          "fn": 102,
+          "precision": 0.7684210526315789,
+          "recall": 0.6822429906542056,
+          "boxes": 321
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8854515756070898,
+          "tp": 103,
+          "fp": 10,
+          "fn": 15,
+          "precision": 0.911504424778761,
+          "recall": 0.8728813559322034,
+          "boxes": 118
+        }
+      },
+      "alpha": 0.1,
+      "gate_passed": false
+    },
+    {
+      "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+      "images": 925,
+      "alert_threshold": 0.35,
+      "map50": 0.7096587666593174,
+      "map50_95": 0.4437916007975683,
+      "precision": 0.7800149142431022,
+      "recall": 0.6796621182586094,
+      "f1": 0.7263888888888889,
+      "safety_recall": 0.7800827711761859,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.8244880670297041,
+          "tp": 95,
+          "fp": 12,
+          "fn": 26,
+          "precision": 0.8878504672897196,
+          "recall": 0.7851239669421488,
+          "boxes": 121
+        },
+        "People": {
+          "ap50": 0.7491380151803225,
+          "tp": 579,
+          "fp": 166,
+          "fn": 239,
+          "precision": 0.7771812080536913,
+          "recall": 0.7078239608801956,
+          "boxes": 818
+        },
+        "Pillar": {
+          "ap50": 0.3465082924812662,
+          "tp": 50,
+          "fp": 41,
+          "fn": 111,
+          "precision": 0.5494505494505495,
+          "recall": 0.3105590062111801,
+          "boxes": 161
+        },
+        "Stair": {
+          "ap50": 0.7426786902217205,
+          "tp": 219,
+          "fp": 66,
+          "fn": 102,
+          "precision": 0.7684210526315789,
+          "recall": 0.6822429906542056,
+          "boxes": 321
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8854807683835737,
+          "tp": 103,
+          "fp": 10,
+          "fn": 15,
+          "precision": 0.911504424778761,
+          "recall": 0.8728813559322034,
+          "boxes": 118
+        }
+      },
+      "alpha": 0.25,
+      "gate_passed": false
+    },
+    {
+      "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+      "images": 925,
+      "alert_threshold": 0.35,
+      "map50": 0.7089705939091085,
+      "map50_95": 0.44299283837355113,
+      "precision": 0.7462897526501767,
+      "recall": 0.6861598440545809,
+      "f1": 0.7149627623561272,
+      "safety_recall": 0.7800827711761859,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.8246146743422259,
+          "tp": 95,
+          "fp": 12,
+          "fn": 26,
+          "precision": 0.8878504672897196,
+          "recall": 0.7851239669421488,
+          "boxes": 121
+        },
+        "People": {
+          "ap50": 0.7487195210668638,
+          "tp": 579,
+          "fp": 166,
+          "fn": 239,
+          "precision": 0.7771812080536913,
+          "recall": 0.7078239608801956,
+          "boxes": 818
+        },
+        "Pillar": {
+          "ap50": 0.34328973780505445,
+          "tp": 60,
+          "fp": 105,
+          "fn": 101,
+          "precision": 0.36363636363636365,
+          "recall": 0.37267080745341613,
+          "boxes": 161
+        },
+        "Stair": {
+          "ap50": 0.7427174055516576,
+          "tp": 219,
+          "fp": 66,
+          "fn": 102,
+          "precision": 0.7684210526315789,
+          "recall": 0.6822429906542056,
+          "boxes": 321
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8855116307797412,
+          "tp": 103,
+          "fp": 10,
+          "fn": 15,
+          "precision": 0.911504424778761,
+          "recall": 0.8728813559322034,
+          "boxes": 118
+        }
+      },
+      "alpha": 0.5,
+      "gate_passed": false
+    },
+    {
+      "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+      "images": 925,
+      "alert_threshold": 0.35,
+      "map50": 0.6535059523366542,
+      "map50_95": 0.41396100601385494,
+      "precision": 0.04831831171686085,
+      "recall": 0.714100064977258,
+      "f1": 0.09051227145445562,
+      "safety_recall": 0.7800827711761859,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.8018845297619038,
+          "tp": 95,
+          "fp": 12,
+          "fn": 26,
+          "precision": 0.8878504672897196,
+          "recall": 0.7851239669421488,
+          "boxes": 121
+        },
+        "People": {
+          "ap50": 0.7300038144150433,
+          "tp": 579,
+          "fp": 166,
+          "fn": 239,
+          "precision": 0.7771812080536913,
+          "recall": 0.7078239608801956,
+          "boxes": 818
+        },
+        "Pillar": {
+          "ap50": 0.13651650333859747,
+          "tp": 103,
+          "fp": 21392,
+          "fn": 58,
+          "precision": 0.004791812049313794,
+          "recall": 0.639751552795031,
+          "boxes": 161
+        },
+        "Stair": {
+          "ap50": 0.7195900409566427,
+          "tp": 219,
+          "fp": 66,
+          "fn": 102,
+          "precision": 0.7684210526315789,
+          "recall": 0.6822429906542056,
+          "boxes": 321
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.879534873211084,
+          "tp": 103,
+          "fp": 10,
+          "fn": 15,
+          "precision": 0.911504424778761,
+          "recall": 0.8728813559322034,
+          "boxes": 118
+        }
+      },
+      "alpha": 1.0,
+      "gate_passed": false
+    }
+  ],
+  "application_changed": false,
+  "active_weights_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe",
+  "limitations": [
+    "Frozen features and box regression cannot repair missing visual features/localization",
+    "Class scope and annotation completeness remain inconsistent",
+    "Four validation-selected strengths are exploratory; no fresh final-test claim"
+  ],
+  "gpu_next_step": "Official Kaggle CLI installed in isolated workspace environment. User authentication pending; no GPU job submitted."
+}

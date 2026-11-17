@@ -53,7 +53,7 @@ def main():
     parser.add_argument('--output', default=CALIBRATION_FILE)
     args = parser.parse_args()
     known = load_config(args.config)['alert_gate']['known_heights_m']
-    real_height = args.real_height or known[args.label]
+    real_height = known[args.label] if args.real_height is None else args.real_height
 
     frame = cv2.imread(str(args.image)) if args.image else grab_frame(args.camera)
     if frame is None:
@@ -72,8 +72,13 @@ def main():
     else:
         box_height = args.box_height_px
 
+    if box_height > frame_height:
+        raise SystemExit('Box height cannot exceed the frame height.')
+
     focal = focal_from_measurement(box_height, args.distance, real_height)
     path = resolve_path(args.output)
+    if path.exists() and load_calibration(path) is None:
+        raise SystemExit('Existing calibration is invalid. Choose a new output path or repair it first.')
     data = json.loads(path.read_text()) if path.exists() else {'samples': []}
     data['samples'].append(dict(focal_px=focal, frame_height=frame_height, frame_width=frame.shape[1],
                                 label=args.label, distance_m=args.distance, real_height_m=real_height,

@@ -1,0 +1,24 @@
+{
+  "runtime": "yolo",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "device": "cpu",
+  "images": 20,
+  "input_size": 640,
+  "alert_threshold": 0.35,
+  "golden": {
+    "passed": true,
+    "matched": 20,
+    "total": 20,
+    "extra": 0,
+    "missing_images": [],
+    "unexpected_images": [],
+    "largest_confidence_difference": 4.746952056888798e-05
+  },
+  "detector_benchmark": {
+    "warmup_frames": 10,
+    "frames": 50,
+    "median_ms": 69.20895000803284,
+    "p95_ms": 79.53048002382275,
+    "fps": 15.765706465910272
+  }
+}

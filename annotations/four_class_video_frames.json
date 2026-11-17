@@ -1,0 +1,254 @@
+{
+  "source": "OpenCV vtest, outdoor supplemental video",
+  "review": "AI raw-frame annotation without seeing model overlays; human review pending. Initial app playback ran separately; this is not a blind fresh-video score.",
+  "images": [
+    {
+      "at_seconds": 0,
+      "path": "artifacts/four-class-validation/video-frame-0.png",
+      "sha256": "32f2a65a872cda2b8f274f6b8ba046ed994e7cbf7bac7b7ccd22f22ae922ad13",
+      "targets": [
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            251,
+            219,
+            285,
+            311
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            499,
+            156,
+            534,
+            235
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            638,
+            238,
+            688,
+            325
+          ]
+        }
+      ]
+    },
+    {
+      "at_seconds": 5,
+      "path": "artifacts/four-class-validation/video-frame-5.png",
+      "sha256": "7587c245c945af9ea1a546d9361dba8ff484e62de5f85c13cd93e77140d43cb0",
+      "targets": [
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            371,
+            176,
+            403,
+            261
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            430,
+            172,
+            463,
+            249
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            407,
+            184,
+            435,
+            264
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            503,
+            214,
+            545,
+            313
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            551,
+            212,
+            590,
+            306
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            667,
+            255,
+            716,
+            376
+          ]
+        }
+      ]
+    },
+    {
+      "at_seconds": 10,
+      "path": "artifacts/four-class-validation/video-frame-10.png",
+      "sha256": "50221d75b46d0dbbb28c4aa0e342d233b89fdb8d66740918b110856f626da73d",
+      "targets": [
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            345,
+            197,
+            385,
+            277
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            374,
+            174,
+            406,
+            259
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            425,
+            186,
+            452,
+            261
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            489,
+            146,
+            521,
+            224
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            517,
+            150,
+            543,
+            223
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            587,
+            150,
+            620,
+            239
+          ]
+        }
+      ]
+    },
+    {
+      "at_seconds": 15,
+      "path": "artifacts/four-class-validation/video-frame-15.png",
+      "sha256": "505fd1f419024af8713792a2b4444f57d3fb03f4c012f8335f604d301818f37e",
+      "targets": [
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            385,
+            192,
+            421,
+            281
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            428,
+            191,
+            461,
+            279
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            441,
+            176,
+            478,
+            261
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            587,
+            225,
+            630,
+            320
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            631,
+            103,
+            657,
+            168
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            654,
+            110,
+            683,
+            175
+          ]
+        },
+        {
+          "class_id": 1,
+          "label": "People",
+          "box_xyxy": [
+            709,
+            107,
+            732,
+            182
+          ]
+        }
+      ]
+    }
+  ]
+}

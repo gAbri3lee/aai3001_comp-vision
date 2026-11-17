@@ -1,11 +1,12 @@
-"""Single source of truth for the trained five-class deployment."""
+"""Four-class deployment contract, with explicit historical config support."""
 import argparse
 import json
 import math
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CLASS_NAMES = ('Escalator', 'People', 'Pillar', 'Stair', 'Wet Floor Sign')
+CLASS_NAMES = ('Escalator', 'People', 'Stair', 'Wet Floor Sign')
+LEGACY_CLASS_NAMES = ('Escalator', 'People', 'Pillar', 'Stair', 'Wet Floor Sign')
 
 
 def resolve_path(value):
@@ -15,18 +16,22 @@ def resolve_path(value):
 
 def load_config(path=None):
     config = json.loads(resolve_path(path or 'visionaid_config.json').read_text())
-    if config['classes'] != list(CLASS_NAMES):
-        raise ValueError('Class IDs must remain 0 Escalator, 1 People, 2 Pillar, 3 Stair, 4 Wet Floor Sign')
+    names = config['classes']
+    if names not in (list(CLASS_NAMES), list(LEGACY_CLASS_NAMES)):
+        raise ValueError('Class IDs must match the four-class contract or explicit historical five-class order')
     for backend in ('local', 'cloud'):
         spec = config[backend]
-        if set(spec['class_thresholds']) != set(CLASS_NAMES):
-            raise ValueError(f'{backend}: thresholds must cover exactly the five classes')
+        if set(spec['class_thresholds']) != set(names):
+            raise ValueError(f'{backend}: thresholds must cover exactly the configured classes')
+        source = spec.get('source_classes', names)
+        if source not in (names, list(LEGACY_CLASS_NAMES)) or not set(names).issubset(source):
+            raise ValueError(f'{backend}: unsupported checkpoint class mapping')
         for value in spec['class_thresholds'].values():
             if not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 <= value <= 1:
                 raise ValueError('Confidence thresholds must be finite and between 0 and 1')
-    if set(config['severity']) != set(CLASS_NAMES):
-        raise ValueError('Severity must cover exactly the five classes')
-    validate_alert_gate(config['alert_gate'])
+    if set(config['severity']) != set(names):
+        raise ValueError('Severity must cover exactly the configured classes')
+    validate_alert_gate(config['alert_gate'], names)
     return config
 
 
@@ -38,7 +43,8 @@ def _fraction(value, name, upper=1.0):
         raise ValueError(f'alert_gate.{name} must be a finite number in (0, {upper}]')
 
 
-def validate_alert_gate(gate):
+def validate_alert_gate(gate, names=CLASS_NAMES):
+    gate_labels = set(names) | {'Object'}
     if not isinstance(gate.get('enabled'), bool):
         raise ValueError('alert_gate.enabled must be true or false')
     if gate.get('size_metric') != 'box_height_over_frame_height':
@@ -49,11 +55,11 @@ def validate_alert_gate(gate):
         raise ValueError('alert_gate.centre_third must be [low, high] with low < high')
     _fraction(gate['side_multiplier'], 'side_multiplier', upper=10.0)
     for table in ('min_size', 'near_size'):
-        if set(gate[table]) != GATE_LABELS:
-            raise ValueError(f'alert_gate.{table} must cover the five classes and Object')
+        if set(gate[table]) != gate_labels:
+            raise ValueError(f'alert_gate.{table} must cover the configured classes and Object')
         for label, value in gate[table].items():
             _fraction(value, f'{table}.{label}')
-    for label in GATE_LABELS:
+    for label in gate_labels:
         if gate['near_size'][label] < gate['min_size'][label]:
             raise ValueError(f'alert_gate.near_size.{label} must not be below min_size')
     _fraction(gate['object_min_confidence'], 'object_min_confidence')
@@ -63,7 +69,7 @@ def validate_alert_gate(gate):
         _fraction(value, f'cooldown_seconds.{key}', upper=600.0)
     _fraction(gate['proximity_jump_to_realert'], 'proximity_jump_to_realert')
     for label, value in gate.get('known_heights_m', {}).items():
-        if label not in CLASS_NAMES:
+        if label not in names:
             raise ValueError(f'alert_gate.known_heights_m: unknown class {label}')
         _fraction(value, f'known_heights_m.{label}', upper=10.0)
 

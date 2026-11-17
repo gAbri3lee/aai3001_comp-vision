@@ -25,7 +25,7 @@ class BrightBoxDetector(FakeDetector):
         if not len(xs):
             return DetectionBatch((), 5, self.model)
         box = (float(xs.min()), float(ys.min()), float(xs.max() + 1), float(ys.max() + 1))
-        return DetectionBatch((Detection(3, 'Stair', .8, box),), 5, self.model)
+        return DetectionBatch((Detection(2, 'Stair', .8, box),), 5, self.model)
 
 
 class SceneCapture(Capture):

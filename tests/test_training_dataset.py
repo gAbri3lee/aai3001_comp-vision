@@ -1,6 +1,8 @@
 """Validate prepared notebook datasets without training or downloading data."""
 import hashlib
 import json
+import os
+from pathlib import Path
 
 import pytest
 import yaml
@@ -15,18 +17,18 @@ def prepared_dataset(tmp_path):
     for split in ('train', 'valid', 'test'):
         (tmp_path / split / 'images').mkdir(parents=True)
         (tmp_path / split / 'labels').mkdir()
-        # Five labelled images plus a background lacking a label file.
-        for cid in range(6):
+        # Four labelled images plus a background lacking a label file.
+        for cid in range(5):
             stem = f'{split}_{cid}'
             (tmp_path / split / 'images' / f'{stem}.jpg').write_bytes(b'fixture')
-            if cid < 5:
+            if cid < 4:
                 (tmp_path / split / 'labels' / f'{stem}.txt').write_text(
                     f'{cid} 0.5 0.5 0.2 0.2\n')
             manifest += f'{stem},{split}_scene,{split}\n'
     (tmp_path / 'split_manifest.csv').write_text(manifest)
     path = tmp_path / 'data.yaml'
     path.write_text(yaml.safe_dump(dict(path='.', train='train/images',
-        val='valid/images', test='test/images', nc=5, names=list(CLASS_NAMES))))
+        val='valid/images', test='test/images', nc=4, names=list(CLASS_NAMES))))
     config = load_config()
     config['dataset']['split_fingerprint'] = hashlib.md5(manifest.encode()).hexdigest()
     (tmp_path / 'config.json').write_text(json.dumps(config))
@@ -50,11 +52,31 @@ def test_training_descriptor_uses_absolute_validated_paths(prepared_dataset):
     assert descriptor['test'] == str(prepared_dataset.parent / 'test/images')
 
 
+@pytest.mark.skipif(os.name != 'nt', reason='Windows legacy path limit')
+def test_long_video_filename_is_validated(prepared_dataset):
+    root = prepared_dataset.parent
+    old_stem = 'train_2'
+    new_stem = 'video_' + 'x' * 220
+    def native(path):
+        return Path('\\\\?\\' + str(path.resolve()))
+    for folder, suffix in [('images', '.jpg'), ('labels', '.txt')]:
+        source = root / 'train' / folder / (old_stem + suffix)
+        destination = root / 'train' / folder / (new_stem + suffix)
+        assert len(str(destination)) >= 260
+        native(source).rename(native(destination))
+    manifest = root / 'split_manifest.csv'
+    manifest.write_text(manifest.read_text().replace(old_stem, new_stem))
+    report = validate_dataset(prepared_dataset, expected_fingerprint=hashlib.md5(
+        manifest.read_text().encode()).hexdigest())
+    assert report['boxes']['train'][2] == 1
+    assert report['images']['train'] == 5
+
+
 def test_prepared_split_preserves_classes_backgrounds_and_fingerprint(prepared_dataset):
     report = validate_dataset(prepared_dataset)
-    assert report['classes'] == ['Escalator', 'People', 'Pillar', 'Stair', 'Wet Floor Sign']
-    assert report['images'] == {'train': 6, 'val': 6, 'test': 6}
-    assert report['boxes']['train'] == [1, 1, 1, 1, 1]
+    assert report['classes'] == ['Escalator', 'People', 'Stair', 'Wet Floor Sign']
+    assert report['images'] == {'train': 5, 'val': 5, 'test': 5}
+    assert report['boxes']['train'] == [1, 1, 1, 1]
     assert report['backgrounds'] == {'train': 1, 'val': 1, 'test': 1}
     assert report['split_fingerprint'] == json.loads(
         (prepared_dataset.parent / 'config.json').read_text())['dataset']['split_fingerprint']
@@ -96,7 +118,7 @@ def test_manifest_scene_leakage_rejected(prepared_dataset):
 
 
 def test_manifest_must_cover_actual_images(prepared_dataset):
-    (prepared_dataset.parent / 'test/images/test_5.jpg').unlink()
+    (prepared_dataset.parent / 'test/images/test_4.jpg').unlink()
     with pytest.raises(ValueError, match='manifest'):
         validate_dataset(prepared_dataset)
 

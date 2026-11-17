@@ -33,7 +33,7 @@ class PipelineTests(unittest.TestCase):
             failed = False
             def predict(self, frame):
                 if self.failed: raise DetectorError('Cloud unavailable')
-                return DetectionBatch((Detection(3, 'Stair', .8, (40, 10, 60, 50)),), 10, 'yolov8n')
+                return DetectionBatch((Detection(2, 'Stair', .8, (40, 10, 60, 50)),), 10, 'yolov8n')
 
         detector = Predictor()
         with patch('webapp.create_detector', return_value=detector), patch('webapp.LatestFrameCapture', Capture):
@@ -45,7 +45,7 @@ class PipelineTests(unittest.TestCase):
                 status = client.get('/status').json
                 # Box height 40 of 60 px, centred: a near stair under the alert gate.
                 self.assertEqual(status['alert'], 'Warning, Stair ahead')
-                self.assertEqual(status['detections'][0]['class_id'], 3)
+                self.assertEqual(status['detections'][0]['class_id'], 2)
                 self.assertIsNotNone(state.get_jpeg())
                 self.assertEqual(client.get('/').status_code, 200)
                 detector.failed = True
@@ -119,7 +119,7 @@ class PipelineTests(unittest.TestCase):
                     def predict(self, frame):
                         detections = (Detection(-1, 'Object', .8, (40, 10, 60, 50)),)
                         if include_named:
-                            detections += (Detection(3, 'Stair', .8, (0, 10, 20, 50)),)
+                            detections += (Detection(2, 'Stair', .8, (0, 10, 20, 50)),)
                         return DetectionBatch(detections, 10, 'scene')
 
                 with patch('webapp.create_detector', return_value=Predictor()), \

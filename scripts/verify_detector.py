@@ -13,6 +13,7 @@ from config import add_detector_arguments, detector_settings, load_config, resol
 from detection import DetectionBatch
 from detectors import create_detector
 from golden import compare_outputs
+from path_utils import native_path, read_bgr
 
 
 def main():
@@ -50,10 +51,11 @@ def main():
         import cv2
         detector = create_detector(settings)
         def predict(path):
-            frame = cv2.imread(str(path))
+            frame = read_bgr(path)
             if frame is None:
                 raise ValueError(f'Could not decode {path}')
             return detector.predict(frame)
+    args.images = native_path(args.images)
     paths = sorted(p for p in args.images.iterdir() if p.suffix.lower() in ('.jpg', '.jpeg', '.png', '.bmp', '.webp'))
     if not paths:
         parser.error('No images found')

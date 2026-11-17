@@ -1,0 +1,106 @@
+{
+  "scope": "Visible bins, seating units and potted plants >=10% image height. Other obstacle categories unassessed; not arbitrary-object coverage.",
+  "review": "AI whole-image annotation; human/team review pending",
+  "images": [
+    {
+      "id": "F001",
+      "path": "data/mall_fresh_holdout/F001.jpg",
+      "objects": []
+    },
+    {
+      "id": "F002",
+      "path": "data/mall_fresh_holdout/F002.jpg",
+      "objects": [
+        {
+          "label": "planter",
+          "box_xyxy": [
+            302.08,
+            560.64,
+            453.12,
+            791.04
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F003",
+      "path": "data/mall_fresh_holdout/F003.jpg",
+      "objects": [
+        {
+          "label": "planter",
+          "box_xyxy": [
+            596.48,
+            388.92307692307696,
+            727.04,
+            612.8097165991903
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F004",
+      "path": "data/mall_fresh_holdout/F004.jpg",
+      "objects": []
+    },
+    {
+      "id": "F005",
+      "path": "data/mall_fresh_holdout/F005.jpg",
+      "objects": [
+        {
+          "label": "seating",
+          "box_xyxy": [
+            0.0,
+            418.88429752066116,
+            101.12,
+            527.7685950413223
+          ]
+        },
+        {
+          "label": "seating",
+          "box_xyxy": [
+            170.24,
+            390.702479338843,
+            345.6,
+            518.801652892562
+          ]
+        },
+        {
+          "label": "seating",
+          "box_xyxy": [
+            128.0,
+            508.55371900826447,
+            437.76,
+            775.0
+          ]
+        },
+        {
+          "label": "seating",
+          "box_xyxy": [
+            551.6800000000001,
+            521.3636363636364,
+            808.96,
+            753.2231404958677
+          ]
+        },
+        {
+          "label": "seating",
+          "box_xyxy": [
+            784.64,
+            457.31404958677683,
+            1082.88,
+            666.1157024793388
+          ]
+        },
+        {
+          "label": "seating",
+          "box_xyxy": [
+            1112.32,
+            652.0247933884298,
+            1280.0,
+            775.0
+          ]
+        }
+      ]
+    }
+  ]
+}
