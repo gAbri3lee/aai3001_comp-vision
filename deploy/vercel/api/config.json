@@ -1,0 +1,26 @@
+{
+  "classes": [
+    "Escalator",
+    "People",
+    "Pillar",
+    "Stair",
+    "Wet Floor Sign"
+  ],
+  "class_thresholds": {
+    "Escalator": 0.35,
+    "People": 0.35,
+    "Pillar": 0.35,
+    "Stair": 0.35,
+    "Wet Floor Sign": 0.35
+  },
+  "input_size": 640,
+  "nms_iou": 0.7,
+  "alert_priority": [
+    "Stair",
+    "Escalator",
+    "Wet Floor Sign",
+    "Pillar",
+    "People"
+  ],
+  "model_file": "yolov8n_v4.onnx"
+}

@@ -1,0 +1,6 @@
+﻿__pycache__
+*.pyc
+dev_server.py
+check_deployment.py
+prepare.py
+README.md

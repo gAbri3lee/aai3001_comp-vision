@@ -1,0 +1,4 @@
+# Vercel function only: no torch/ultralytics (the repo-root requirements.txt is for the local app).
+onnxruntime>=1.18
+numpy>=1.26
+Pillow>=10

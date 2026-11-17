@@ -6,6 +6,7 @@ venv/
 runs/
 data/
 *.log
+visionaid_pt/
 
 # Deployment weights, exports and verification artifacts
 *.pth
@@ -26,3 +27,6 @@ demo/videos/*
 *.MOV
 *.webm
 *.avi
+
+# Vercel photo-check function ships its ONNX model (12 MB); allow it past the *.onnx rule
+!deploy/vercel/api/model/*.onnx
