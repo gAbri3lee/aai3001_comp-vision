@@ -26,3 +26,7 @@ demo/videos/*
 *.MOV
 *.webm
 *.avi
+
+# Redistributable motion demos, credited in demo/README.md
+!demo/videos/VivoCity - escalator atrium.mp4
+!demo/videos/* - field sequence.mp4
