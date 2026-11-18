@@ -30,8 +30,11 @@ def get_session():
         import onnxruntime as ort
         options = ort.SessionOptions()
         options.log_severity_level = 3
-        _session = ort.InferenceSession(str(HERE / 'model' / load_config()['model_file']),
+        candidate = ort.InferenceSession(str(HERE / 'model' / load_config()['model_file']),
                                         sess_options=options, providers=['CPUExecutionProvider'])
+        if candidate.get_outputs()[0].shape[1] != 4 + len(load_config()["classes"]):
+            raise ValueError("ONNX output class count disagrees with deployment config")
+        _session = candidate
     return _session
 
 

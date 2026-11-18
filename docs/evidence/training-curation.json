@@ -1,0 +1,19 @@
+{
+  "version": "v4-train-curation-1",
+  "original_train": 8247,
+  "curated_train": 8224,
+  "quarantined_images": 23,
+  "quarantined_scenes": [
+    "IMG_8603_MOV",
+    "amel-1_mp4"
+  ],
+  "source_manifest_md5": "49601080aac1f838190341d331785578",
+  "curated_train_list_sha256": "27844aaf7ba85d7cd67b1cf8e2d26771693cc775055d10ca191ddd8aad953194",
+  "decisions_sha256": "dd3ffcc1bb6f616f05a09bfa31d510bd321a36b26d7b73b13080f50a3ff4090c",
+  "validation_changed": false,
+  "test_changed": false,
+  "original_labels_changed": false,
+  "model_trained": false,
+  "annotation_audit_complete": false,
+  "note": "A training candidate, not an improved model or a complete annotation repair."
+}

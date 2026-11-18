@@ -1,0 +1,537 @@
+{
+  "scope": "Selected primary visible targets in real Singapore mall interiors. Targets frozen before inference. Not exhaustive five-class ground truth; unmatched predictions are unassessed, not automatically false positives.",
+  "reviewer": "AI full-image visual review; team/human review pending",
+  "pillar_definition": "Visually clear structural building columns, including large cylindrical or clad mall columns. Excludes trees, signs, bins and decorative sculptures.",
+  "test_images_used_for_training": false,
+  "images": [
+    {
+      "id": "M001",
+      "venue": "Funan",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M001.jpg",
+      "sha256": "d8cff97522d73a75b64ff0048ef9026be65930ff6bd43b1a5ebedd4cd2505907",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Singapore_(SG),_Funan_Mall_--_2019_--_215918.jpg",
+      "targets": [
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            598.22,
+            0.0,
+            774.84,
+            463.33
+          ]
+        },
+        {
+          "label": "Escalator",
+          "box_xyxy": [
+            345.64,
+            360.79,
+            740.65,
+            579.16
+          ]
+        },
+        {
+          "label": "People",
+          "box_xyxy": [
+            62.67,
+            347.5,
+            121.54,
+            476.62
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M002",
+      "venue": "Funan",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M002.jpg",
+      "sha256": "a93b19616b755fa7d05373d4afed3662c967f462f68d16e1ef596c91b8fded2e",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_Funan_Mall,_Singapore,_16_November_2025.jpg",
+      "targets": [],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M003",
+      "venue": "Funan",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M003.jpg",
+      "sha256": "25b45c11f9e59b19dea1e658f4ea17d8e56d3dd81426b256e7bb0e7a2f2dc68c",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Funan_mall_interior,_2019-11-03.jpg",
+      "targets": [],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M004",
+      "venue": "Funan",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M004.jpg",
+      "sha256": "ecc9648186315fbcfbea6f1196696a52d1d745e5e3a11b881726177d2a04eb76",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Internal_Funan_Singapore,_31_July_2020.jpg",
+      "targets": [
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            576.47,
+            897.12,
+            730.07,
+            1314.39
+          ]
+        },
+        {
+          "label": "People",
+          "box_xyxy": [
+            658.01,
+            1359.91,
+            768.0,
+            1578.03
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M005",
+      "venue": "Suntec City",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M005.jpg",
+      "sha256": "be41d287c779664c5c20c35f2b35afe9412dc43d8603b0349021a2f4efd1d217",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_Suntec_City_Mall_(164353).jpg",
+      "targets": [],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M006",
+      "venue": "Suntec City",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M006.jpg",
+      "sha256": "95c1ef612fb9dfedc4a9ad6723168d2db772268895a7d866d3f57f5353124280",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_Suntec_City_Mall,_Singapore_-_20070108-02.jpg",
+      "targets": [
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            651.52,
+            1.28,
+            693.76,
+            390.13
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M007",
+      "venue": "Suntec City",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M007.jpg",
+      "sha256": "589ea2bafde248d334ee98c53fdc9ea184f3d89c909312a67beac9cf20812920",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Suntec_City_Mall_Interior_2014.JPG",
+      "targets": [
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            282.88,
+            485.12,
+            358.4,
+            680.96
+          ]
+        },
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            714.24,
+            496.64,
+            761.6,
+            657.92
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M008",
+      "venue": "Suntec City",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M008.jpg",
+      "sha256": "5da9eade1a34655f25bd510e0fce8bb6ef9eee43968e430f4d55d429db16996a",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Northern_round_atrium_at_Suntec_City_Mall,_Singapore.jpg",
+      "targets": [],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M009",
+      "venue": "VivoCity",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M009.jpg",
+      "sha256": "05cc76f9955d4b2247b254aadba207d5852d0dadbc34ac2acdf6f5bbbc25e72b",
+      "source_page": "https://commons.wikimedia.org/wiki/File:VivoCity_Interior_(June_2023).jpg",
+      "targets": [
+        {
+          "label": "People",
+          "box_xyxy": [
+            814.08,
+            414.97,
+            894.72,
+            669.85
+          ]
+        },
+        {
+          "label": "People",
+          "box_xyxy": [
+            984.32,
+            398.32,
+            1088.0,
+            666.01
+          ]
+        },
+        {
+          "label": "Object",
+          "box_xyxy": [
+            588.8,
+            438.03,
+            775.68,
+            623.74
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M010",
+      "venue": "VivoCity",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M010.jpg",
+      "sha256": "c429c19574282d0e550ca1d346f655ee7e1a7ca6ce0ed9d243f831636fec0fc6",
+      "source_page": "https://commons.wikimedia.org/wiki/File:VivoCity_Interior.JPG",
+      "targets": [
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            96.71,
+            235.19,
+            360.3,
+            1621.65
+          ]
+        },
+        {
+          "label": "People",
+          "box_xyxy": [
+            879.88,
+            1160.76,
+            976.59,
+            1386.46
+          ]
+        },
+        {
+          "label": "People",
+          "box_xyxy": [
+            980.39,
+            1170.24,
+            1054.34,
+            1390.26
+          ]
+        },
+        {
+          "label": "Object",
+          "box_xyxy": [
+            517.69,
+            1156.97,
+            593.54,
+            1354.22
+          ]
+        },
+        {
+          "label": "Object",
+          "box_xyxy": [
+            343.23,
+            1382.67,
+            383.05,
+            1521.13
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M011",
+      "venue": "VivoCity",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M011.jpg",
+      "sha256": "2b3ced9a28a0a610e13ea368d149c901e372d6657c274bea1537d451f1b2d286",
+      "source_page": "https://commons.wikimedia.org/wiki/File:VivoCity_Interior_2021.jpg",
+      "targets": [
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            576.0,
+            143.36,
+            688.64,
+            768.0
+          ]
+        },
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            0.0,
+            220.16,
+            120.32,
+            568.32
+          ]
+        },
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            910.08,
+            224.0,
+            1052.16,
+            613.12
+          ]
+        },
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            1171.2,
+            298.24,
+            1280.0,
+            497.92
+          ]
+        },
+        {
+          "label": "Object",
+          "box_xyxy": [
+            651.52,
+            706.56,
+            686.08,
+            787.2
+          ]
+        },
+        {
+          "label": "Object",
+          "box_xyxy": [
+            697.6,
+            554.24,
+            830.72,
+            647.68
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M012",
+      "venue": "VivoCity",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M012.jpg",
+      "sha256": "b060855f98f950309fc21a73267224825621c848c8ad78ce11e399d2d1059a0c",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Massage_Chairs_in_VivoCity.jpg",
+      "targets": [
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            12.8,
+            0.0,
+            172.8,
+            389.33
+          ]
+        },
+        {
+          "label": "Object",
+          "box_xyxy": [
+            910.08,
+            500.74,
+            1222.4,
+            779.93
+          ]
+        },
+        {
+          "label": "Object",
+          "box_xyxy": [
+            720.64,
+            295.84,
+            838.4,
+            490.5
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M013",
+      "venue": "VivoCity",
+      "role": "development_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M013.jpg",
+      "sha256": "0ad2bb8e41ed86183a2472c44e7af2faf615c6365c7abc161f98a9b9dbf27236",
+      "source_page": "https://commons.wikimedia.org/wiki/File:VivoCity_Main_Atrium.jpg",
+      "targets": [],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M014",
+      "venue": "City Square Mall",
+      "role": "heldout_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M014.jpg",
+      "sha256": "be69cc409ac658a7cbce3fe94b0f9ecd6d0fbe66b211bb2dd95b21fb3b3c22db",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_City_Square_Mall,_Singapore,_December_2025.jpg",
+      "targets": [
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            862.72,
+            0.0,
+            1103.36,
+            960.0
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M015",
+      "venue": "Thomson Plaza",
+      "role": "heldout_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M015.jpg",
+      "sha256": "db241ae493653b8a7fa60d133e65b909db8116cc7ac795e23bd185a56f35ae1c",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_Thomson_Plaza_shopping_mall_in_Singapore.jpg",
+      "targets": [
+        {
+          "label": "Pillar",
+          "box_xyxy": [
+            253.44,
+            359.68,
+            305.92,
+            746.24
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M017",
+      "venue": "Nex",
+      "role": "heldout_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M017.jpg",
+      "sha256": "9f5680a861d972f4707dde09b9de21e656aac025aa1cde2ede53f55715ea9e83",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Recycling_bins_at_nex,_Singapore.jpg",
+      "targets": [
+        {
+          "label": "Object",
+          "box_xyxy": [
+            99.84,
+            25.59,
+            513.28,
+            877.73
+          ]
+        },
+        {
+          "label": "Object",
+          "box_xyxy": [
+            441.6,
+            26.87,
+            825.6,
+            881.57
+          ]
+        },
+        {
+          "label": "Object",
+          "box_xyxy": [
+            800.0,
+            15.35,
+            1186.56,
+            879.01
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M018",
+      "venue": "Nex",
+      "role": "heldout_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M018.jpg",
+      "sha256": "386cc96db16c0c20a76e30c37fd9d37104cd5bef85dda41a3240c14751160fce",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Nex_5.jpg",
+      "targets": [],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M019",
+      "venue": "Nex",
+      "role": "heldout_candidate",
+      "path": "data\\sg_indoor_validation_20261117\\M019.jpg",
+      "sha256": "b7131c12daceff20ec6f7bd4582051a3c46a3b4e8ae340ac2203909c76604b88",
+      "source_page": "https://commons.wikimedia.org/wiki/File:FairPrice_Supermarket,_Nex,_Singapore_-_20140315.jpg",
+      "targets": [
+        {
+          "label": "People",
+          "box_xyxy": [
+            0.0,
+            230.6,
+            286.72,
+            536.8
+          ]
+        },
+        {
+          "label": "People",
+          "box_xyxy": [
+            453.12,
+            307.47,
+            654.08,
+            523.99
+          ]
+        },
+        {
+          "label": "People",
+          "box_xyxy": [
+            1184.0,
+            263.91,
+            1280.0,
+            471.46
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M020",
+      "venue": "Bugis Junction",
+      "role": "heldout_candidate",
+      "path": "data\\sg_indoor_extra_20261117\\M020.jpg",
+      "sha256": "a9542b9cc3a6dbc0125ce246974815fe4db2000b472bac79cc2488aa5af3e30d",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_Bugis_Junction_September_2015.jpg",
+      "targets": [
+        {
+          "label": "People",
+          "box_xyxy": [
+            418.56,
+            801.28,
+            473.6,
+            926.72
+          ]
+        }
+      ],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M021",
+      "venue": "Bugis Junction",
+      "role": "heldout_candidate",
+      "path": "data\\sg_indoor_extra_20261117\\M021.jpg",
+      "sha256": "a0bc793209de1d4cb936e1c657ce996307143a5270303afe607f9e20c9ed90bb",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Bugis_Junction,_2014.JPG",
+      "targets": [],
+      "exhaustively_annotated": false
+    },
+    {
+      "id": "M022",
+      "venue": "Bugis+ (Iluma)",
+      "role": "heldout_candidate",
+      "path": "data\\sg_indoor_extra_20261117\\M022.jpg",
+      "sha256": "0c856f2046d2a48c8a5f8cc7e9ef1c9df31309d48a8feb5c2f3ef9c2eda508ec",
+      "source_page": "https://commons.wikimedia.org/wiki/File:The_New_Iluma_Shopping_Centre_(3696995970).jpg",
+      "targets": [],
+      "exhaustively_annotated": false
+    }
+  ]
+}

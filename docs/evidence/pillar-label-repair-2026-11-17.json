@@ -1,0 +1,172 @@
+{
+  "study": "completed original/curated/curated-balanced",
+  "all_checkpoints": 30,
+  "accepted": 0,
+  "original_retained": true,
+  "download_sha256": "0873728919a69ae8715332192f73f41d7828897633b3ed45922203954ee89013",
+  "label_repair": {
+    "images": 22,
+    "added_boxes": 34,
+    "removed_boxes": 2,
+    "excluded_train_frames": 183,
+    "human_review_pending": true,
+    "audit_complete": false
+  },
+  "followup": {
+    "status": "complete; all 24 control/repaired checkpoints rejected",
+    "arms": [
+      "control",
+      "repaired"
+    ],
+    "epochs": 12,
+    "test_used": false,
+    "validation_changed": false,
+    "application_changed": false,
+    "preflight": {
+      "draws": 8247,
+      "pillar_draws": 1604,
+      "max_pillar_draws_per_scene": 32,
+      "max_pillar_image_repeats": 4
+    },
+    "control_result": {
+      "evaluated": 12,
+      "accepted": 0,
+      "selected_rejected": {
+        "checkpoint": "epoch4.pt",
+        "metrics": {
+          "images": 925,
+          "map50": 0.7181988879708495,
+          "map50_95": 0.4512372764735055,
+          "confidence": 0.35,
+          "per_class": {
+            "Escalator": {
+              "tp": 98,
+              "fp": 15,
+              "fn": 23,
+              "precision": 0.8672566371681416,
+              "recall": 0.8099173553719008
+            },
+            "People": {
+              "tp": 571,
+              "fp": 169,
+              "fn": 247,
+              "precision": 0.7716216216216216,
+              "recall": 0.6980440097799511
+            },
+            "Pillar": {
+              "tp": 53,
+              "fp": 43,
+              "fn": 108,
+              "precision": 0.5520833333333334,
+              "recall": 0.32919254658385094
+            },
+            "Stair": {
+              "tp": 216,
+              "fp": 60,
+              "fn": 105,
+              "precision": 0.782608695652174,
+              "recall": 0.6728971962616822
+            },
+            "Wet Floor Sign": {
+              "tp": 99,
+              "fp": 10,
+              "fn": 19,
+              "precision": 0.908256880733945,
+              "recall": 0.8389830508474576
+            }
+          }
+        },
+        "gate_passed": false,
+        "other_class_regressions": [
+          "Wet Floor Sign"
+        ]
+      },
+      "weights_sha256": "bb330d981cf570813008c0a04547801998ed325609caadc318b751924dc077c3",
+      "draw_names_sha256": "504b2187b2147cf7ed20533c40b3f716547d94627050851c9952f2d0b9117212"
+    },
+    "control": {
+      "status": "complete",
+      "accepted": 0,
+      "checkpoints": 12,
+      "result": "artifacts/kaggle-label-repair/control/extracted/result.json"
+    },
+    "repaired": {
+      "status": "complete",
+      "kernel": "evantyk/visionaid-pillar-labels-repaired-v4",
+      "evaluated": 12,
+      "accepted": 0,
+      "selected_rejected": {
+        "checkpoint": "epoch4.pt",
+        "metrics": {
+          "images": 925,
+          "map50": 0.7198553440800868,
+          "map50_95": 0.45099422233213865,
+          "confidence": 0.35,
+          "per_class": {
+            "Escalator": {
+              "tp": 98,
+              "fp": 17,
+              "fn": 23,
+              "precision": 0.8521739130434782,
+              "recall": 0.8099173553719008
+            },
+            "People": {
+              "tp": 572,
+              "fp": 164,
+              "fn": 246,
+              "precision": 0.7771739130434783,
+              "recall": 0.6992665036674817
+            },
+            "Pillar": {
+              "tp": 54,
+              "fp": 41,
+              "fn": 107,
+              "precision": 0.5684210526315789,
+              "recall": 0.33540372670807456
+            },
+            "Stair": {
+              "tp": 218,
+              "fp": 61,
+              "fn": 103,
+              "precision": 0.7813620071684588,
+              "recall": 0.6791277258566978
+            },
+            "Wet Floor Sign": {
+              "tp": 99,
+              "fp": 10,
+              "fn": 19,
+              "precision": 0.908256880733945,
+              "recall": 0.8389830508474576
+            }
+          }
+        },
+        "gate_passed": false,
+        "other_class_regressions": [
+          "Wet Floor Sign"
+        ]
+      },
+      "weights_sha256": "83df5de265c2610addab74f670853a471c33128910961b52c7ace44b9ee9b9c3",
+      "same_draws_as_control": true
+    }
+  },
+  "regression_tests": {
+    "passed": 191,
+    "subtests_passed": 12,
+    "log": "artifacts/kaggle-label-repair/pytest-final.log",
+    "localhost_networking_required": true
+  },
+  "local_variant": "data/v4_pillar_label_repair_2_final",
+  "windows_long_path_copy_bug_fixed": true,
+  "copy_verification": {
+    "images_checked": 9172,
+    "image_copies_byte_identical": true,
+    "image_copies_independent": true,
+    "changed_labels": 22,
+    "validation_labels_byte_identical": true,
+    "test_read": false,
+    "variant": "data\\v4_pillar_label_repair_2_final",
+    "missing_source_training_labels_interpreted_as_empty": true
+  },
+  "pillar_issue_resolved": false,
+  "active_weights_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe"
+}

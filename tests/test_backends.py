@@ -32,7 +32,7 @@ class BackendTests(unittest.TestCase):
         class Predictor:
             def predict(self, image):
                 self.image = image
-                return DetectionBatch((Detection(2, 'Pillar', .8, (1, 2, 20, 30)),), 10, 'rfdetr-nano')
+                return DetectionBatch((Detection(2, 'Stair', .8, (1, 2, 20, 30)),), 10, 'rfdetr-nano')
         predictor = Predictor()
         app = create_app(predictor, load_config())
         client = app.test_client()
@@ -55,7 +55,7 @@ class BackendTests(unittest.TestCase):
         class Predictor:
             def predict(self, image, confidence=None):
                 threshold = .4 if confidence is None else confidence
-                detections = (Detection(2, 'Pillar', .8, (0, 0, 20, 20)),
+                detections = (Detection(2, 'Stair', .8, (0, 0, 20, 20)),
                                        Detection(1, 'People', .3, (20, 0, 40, 20)))
                 return DetectionBatch(tuple(d for d in detections if d.confidence >= threshold), 2, 'rfdetr-nano')
         server = make_server('127.0.0.1', 0, create_app(Predictor(), load_config()))
@@ -65,12 +65,12 @@ class BackendTests(unittest.TestCase):
             spec = settings('--backend', 'cloud', '--endpoint', f'http://127.0.0.1:{server.server_port}')
             detector = CloudDetector(spec)
             result = detector.predict(np.zeros((40, 80, 3), dtype=np.uint8))
-            self.assertEqual([d.label for d in result.detections], ['Pillar'])
+            self.assertEqual([d.label for d in result.detections], ['Stair'])
             self.assertIsNotNone(result.round_trip_ms)
             self.assertEqual(result.latency_ms, 2)
             lower_spec = settings('--backend', 'cloud', '--endpoint', f'http://127.0.0.1:{server.server_port}', '--conf', '.2')
             result = CloudDetector(lower_spec).predict(np.zeros((40, 80, 3), dtype=np.uint8))
-            self.assertEqual([d.label for d in result.detections], ['Pillar', 'People'])
+            self.assertEqual([d.label for d in result.detections], ['Stair', 'People'])
         finally:
             server.shutdown()
             worker.join()
@@ -147,8 +147,8 @@ class BackendTests(unittest.TestCase):
         detector.config, detector.spec = config, config['cloud']
         class Predictor:
             def predict(self, *args, **kwargs):
-                return SimpleNamespace(class_id=np.array([2, 5]), confidence=np.array([.8, .002]),
+                return SimpleNamespace(class_id=np.array([3, 5]), confidence=np.array([.8, .002]),
                                        xyxy=np.array([[0, 0, 20, 20], [0, 0, 30, 30]]))
         detector.model = Predictor()
         result = detector.predict(Image.new('RGB', (40, 40)))
-        self.assertEqual([d.label for d in result.detections], ['Pillar'])
+        self.assertEqual([d.label for d in result.detections], ['Stair'])

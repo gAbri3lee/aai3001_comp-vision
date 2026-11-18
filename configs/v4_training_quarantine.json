@@ -1,0 +1,20 @@
+{
+  "version": "v4-train-curation-1",
+  "source_split_fingerprint": "49601080aac1f838190341d331785578",
+  "scope": "training only; no validation/test changes, no class redefinition",
+  "review_type": "AI visual triage; full-resolution confirmed examples; broader annotation audit remains open",
+  "scenes": [
+    {
+      "scene": "IMG_8603_MOV",
+      "evidence_image": "IMG_8603_MOV-0008_jpg.rf.d47e055fd6091b9c17d3d6b8e071a29a.jpg",
+      "evidence_label": "2 0.500000 0.714844 0.562500 0.570312",
+      "reason": "Pillar rectangle covers foreground floor rather than a pillar. Quarantine whole scene pending complete reannotation; do not convert to unlabeled background."
+    },
+    {
+      "scene": "amel-1_mp4",
+      "evidence_image": "amel-1_mp4-0017_jpg.rf.9bd397b36c4a223672a26ee7f118b541.jpg",
+      "evidence_label": "2 0.500000 0.750000 0.560938 0.500000",
+      "reason": "Pillar rectangle encloses stair/landing and rail region. Quarantine whole scene pending complete reannotation; preserve source labels."
+    }
+  ]
+}

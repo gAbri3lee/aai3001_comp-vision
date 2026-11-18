@@ -1,0 +1,814 @@
+{
+  "version": "v4-pillar-label-repair-2",
+  "split_manifest_md5": "49601080aac1f838190341d331785578",
+  "scope": "TRAIN only; original images, labels and validation/test unchanged",
+  "review_type": "AI full-image visual adjudication; human/team review pending",
+  "annotation_policy": "Add only visually clear building supports/columns or confirmed other trained targets. Do not treat model proposals as truth. Exclude floor reflections; preserve all other source labels. Ambiguous fixtures/tree/pole scope remains deferred.",
+  "audit_complete": false,
+  "records": [
+    {
+      "image": "StepUp-10-_png.rf.d48ecdc352ef45715b1dbffb47ccb243.jpg",
+      "scene": "StepUp",
+      "image_sha256": "b4036201d1a3a6f4e2bd4a58ee7022c30924d6179d19aa9f9d69ff61b2e83a8d",
+      "original_label_sha256": "4514429e23c3ab032d79ef1ef962562ee9446a0a446ecb7dbcd56d5c8db44019",
+      "canonical_label_sha256": "427eb0ac168f7da85adf07cdffdc8a3b492d6df499f865052db83e6fd1d71ba0",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            0,
+            0,
+            84,
+            408
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0000"
+    },
+    {
+      "image": "IMG_6875_MOV-0008_jpg.rf.ed54eba7bf74780f2bfc84bab46c1ecb.jpg",
+      "scene": "IMG_6875_MOV",
+      "image_sha256": "edfe8bdbda0be4f6c72764bd131c7216e9d76c2a152644c507744a403c6b5580",
+      "original_label_sha256": "85eb4dea207d899393395f50284ad50e38b43258c7ff7879b50b5dc397becc1f",
+      "canonical_label_sha256": "3db894817980daba431000c9a1be51e8f54315c1b46d3a913bc7af5406686598",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            309,
+            0,
+            342,
+            70
+          ]
+        },
+        {
+          "class_id": 2,
+          "xyxy": [
+            474,
+            0,
+            500,
+            73
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0001"
+    },
+    {
+      "image": "StairDown-107-_png.rf.471d9e21a0d0076b3b183dad27c8e0d5.jpg",
+      "scene": "StairDown",
+      "image_sha256": "6b4d4491eeef89675ed70e8a7a2587b999215306f57fabf033d6f472d0f90dca",
+      "original_label_sha256": "47d0a5e0f979c868aeddb40936cde62be1255ef8a177cf9a12fe9aae91593f01",
+      "canonical_label_sha256": "d49c18c91ff56ef7d0feaf522644500be8b65f59bd415df0855558fc2cbe8bf3",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            417,
+            15,
+            453,
+            104
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0003"
+    },
+    {
+      "image": "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0805_jpg.rf.34cced8bf344bc217d30564bc8483bfd.jpg",
+      "scene": "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels",
+      "image_sha256": "326bace78360c869be5fdde5f2834ea29bc106ac2f25610db5b24e65fbdad2d9",
+      "original_label_sha256": "609674324d150668051ac73da956a9ea4f2a1df2a77283a726e86c947da50457",
+      "canonical_label_sha256": "9e3c780c917dde6591347110e7eba3788543b23753737f999745ac801c2c86a4",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            175,
+            140,
+            272,
+            278
+          ]
+        },
+        {
+          "class_id": 2,
+          "xyxy": [
+            432,
+            140,
+            577,
+            405
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0004"
+    },
+    {
+      "image": "StepUp-227-_png.rf.f75c0c1dc6d808745f4439711edf502e.jpg",
+      "scene": "StepUp",
+      "image_sha256": "96eaa6bbabcb960eb4650b0750b754a78579205af9ae5eb1693258ca6c417418",
+      "original_label_sha256": "5c901ccbac8c5ee472202abc90eb7ba44f142c2d8e4693e009165472e1e27b92",
+      "canonical_label_sha256": "0d18ef8c568ca1339470624c8c469caf1ec1b65ad2fca4c92aaedc418ad6462f",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            300,
+            0,
+            363,
+            166
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0005"
+    },
+    {
+      "image": "V_20250224_112118_ES3_mp4-0025_jpg.rf.c8e7d4ac3f96ddb4b4e1b35a136a71d0.jpg",
+      "scene": "V_20250224_112118_ES3_mp4",
+      "image_sha256": "2051c6aa2a07dd6e20316395b822110302e113c582dcc29de3671ceacf8e8c98",
+      "original_label_sha256": "f6be8d58afabb92a9a0e1721e9b1a54872049b6cd5114bbee8ee9ae853abf098",
+      "canonical_label_sha256": "7fdfe66badb2ffb47da2336a810bb130a566860b9e69da85c489a7e591233774",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            224,
+            178,
+            259,
+            375
+          ]
+        },
+        {
+          "class_id": 2,
+          "xyxy": [
+            279,
+            191,
+            302,
+            326
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0008"
+    },
+    {
+      "image": "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4701_jpg.rf.d8f3236e926e338c66084e91f73603f8.jpg",
+      "scene": "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels",
+      "image_sha256": "43b5fb58def223010b577d67d855aa937dd56d587babdfc9b24b2addafdf3290",
+      "original_label_sha256": "ac315bc8186f145b2cf42f09a7442aaaf645ac30f3b81478d88621f1824721d6",
+      "canonical_label_sha256": "8593e81648f301ae3093e534ba85bab3955d720d96720110dfeb07de818e0b42",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            230,
+            140,
+            327,
+            242
+          ]
+        },
+        {
+          "class_id": 2,
+          "xyxy": [
+            487,
+            140,
+            613,
+            358
+          ]
+        },
+        {
+          "class_id": 1,
+          "xyxy": [
+            220,
+            155,
+            294,
+            303
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0009"
+    },
+    {
+      "image": "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0100_jpg.rf.54771c8b5f6603a47df81c99f617b533.jpg",
+      "scene": "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels",
+      "image_sha256": "7dd977466833e1bba10ca8f49cc4aaa2b074e334cd0c121364faaa8001a0f37a",
+      "original_label_sha256": "e97b8fa15ea6f3cd36ac7104ef26c1faf9b47b037d192db082e34e1446e056db",
+      "canonical_label_sha256": "0009e6af293becf677666cc50139ba6ce7d3a3f9d5a90c28e3c2b25719ca5cf7",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            0,
+            292,
+            49,
+            467
+          ]
+        },
+        {
+          "class_id": 2,
+          "xyxy": [
+            466,
+            140,
+            630,
+            484
+          ]
+        },
+        {
+          "class_id": 1,
+          "xyxy": [
+            180,
+            170,
+            235,
+            278
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0012"
+    },
+    {
+      "image": "V_20250224_112118_ES3_mp4-0040_jpg.rf.8b5613203d20e8eddd321d6f29d8e05e.jpg",
+      "scene": "V_20250224_112118_ES3_mp4",
+      "image_sha256": "4b92e8032b2f6b04b00f20909a62b25838d2bf24fb2e0d0a2a7a74b74fd60488",
+      "original_label_sha256": "8f4ae862cb44603aa11dbb87cd5b52e5f767a8054f4b25bf73572cf68b68d14a",
+      "canonical_label_sha256": "99e35d1548152e335ba3a81768c011670e63cc49b862a1c210929251056d8ebe",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            416,
+            0,
+            500,
+            345
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0015"
+    },
+    {
+      "image": "IMG_9543_MOV-0035_jpg.rf.03be884f745d50f085da0a5f89188bfe.jpg",
+      "scene": "IMG_9543_MOV",
+      "image_sha256": "6a026abc205626f35b507851ed03215583c8aeb3a6558feddb28d9a2330d329f",
+      "original_label_sha256": "227d29e8dfbed60babf284d70643d47bbe50ae62eb3ad18eeaff8a4dc2d79172",
+      "canonical_label_sha256": "335b35ef26facc876d80ac78b8455138b04dde4aa257510effb639a8fe0ddd25",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            419,
+            0,
+            500,
+            495
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0016"
+    },
+    {
+      "image": "V_20250221_165043_ES3_1_mp4-0093_jpg.rf.2ead992088ccdbfb77b1e3007f4c9eb3.jpg",
+      "scene": "V_20250221_165043_ES3_1_mp4",
+      "image_sha256": "3dbadf4c728b34eaba85a18c6931f08925ff09d40841c9761b235ab7151e6997",
+      "original_label_sha256": "adbbca4483bba28b026df08b7621a5bc390be1c143bf126ea7db0bfcbf6c3d74",
+      "canonical_label_sha256": "71003bca18230547feb162113f86b4d9b5cc7d60cfad968f2bd93e95ec49beaf",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            443,
+            35,
+            500,
+            326
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0023"
+    },
+    {
+      "image": "V_20250221_164454_ES3_1_mp4-0028_jpg.rf.a27706a1ffdb1e3cfa38a19f137df4ef.jpg",
+      "scene": "V_20250221_164454_ES3_1_mp4",
+      "image_sha256": "c1f1b15508e7058fc1edf1ac5c2255157466e7f6e8381773db639b65fbb55980",
+      "original_label_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonical_label_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            168,
+            251,
+            205,
+            327
+          ]
+        },
+        {
+          "class_id": 2,
+          "xyxy": [
+            214,
+            263,
+            242,
+            313
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0026"
+    },
+    {
+      "image": "1_mp4-0197_jpg.rf.630627edfa10001737c3367205c915b3.jpg",
+      "scene": "1_mp4",
+      "image_sha256": "b5e234299ca4111e63d656439bd128b845849b4353af90ca6d334af77782ffa8",
+      "original_label_sha256": "afa83fd89de20e0f515b48a24c43ed1f46f4bc23d2ff2cf22d6104a6122a9696",
+      "canonical_label_sha256": "efcee4586abdc7c6fa0ee93a86627ae8101bda1fdc21b89d6fe29fb8b70af8bf",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            332,
+            148,
+            390,
+            318
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0027"
+    },
+    {
+      "image": "761886258_388600_mp4-0001_jpg.rf.3c2cfbee3716d6bc8ed03d4b322261ff.jpg",
+      "scene": "761886258_388600_mp4",
+      "image_sha256": "4f08e670000cc64488a72fe91aedc9b3277a0b463b23f56266b657dcff4658d2",
+      "original_label_sha256": "85b71d84232043235db42e46200528834dff9d56d64095d452508cc2621493fb",
+      "canonical_label_sha256": "c1e02500ec3e70cd221e21365db5557c37d8699f979e806fa891129798a7602e",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            239,
+            51,
+            274,
+            195
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0033"
+    },
+    {
+      "image": "1_mp4-0331_jpg.rf.7e3648c069f9b63e68c151a42ad976c9.jpg",
+      "scene": "1_mp4",
+      "image_sha256": "086d374fc8acd5fd99320538875492d2ce5ca984d1c9b627f91d8d5abc9a9189",
+      "original_label_sha256": "d612b340846ab5f1b2d33c411b9ea43dd8112e05aeb3ae6cffce95339356ace0",
+      "canonical_label_sha256": "4997282740ece544c44ebaef5cd0dba39b8b05f2db3d3eb642449dd9c9882081",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            424,
+            94,
+            445,
+            186
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0034"
+    },
+    {
+      "image": "761886258_388600_mp4-0078_jpg.rf.e4a3fee7f8bb47e38d7a15bce4ba1d31.jpg",
+      "scene": "761886258_388600_mp4",
+      "image_sha256": "993116cf166001d00e09e0013a4ed11d311e5c497855bd7173d633bf9abeacbe",
+      "original_label_sha256": "14ffeaad907029a6681499cb7278dc105877487710a9e40e9a2ea956ab1baccb",
+      "canonical_label_sha256": "0f7bcbb899f07b8a199af4215ff8d00989a780e8c4cf721c418ff1cde119a71f",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            420,
+            94,
+            497,
+            296
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0035"
+    },
+    {
+      "image": "V_20250221_164454_ES3_1_mp4-0021_jpg.rf.20d2d3bc2dac2083fbf1f04b75c3fad1.jpg",
+      "scene": "V_20250221_164454_ES3_1_mp4",
+      "image_sha256": "003fe57b91c45791d75dfcd7c1a6e04bd971b3b475df9a4dc3d1aa4e7eaaa2a2",
+      "original_label_sha256": "05c10f41931a6323947bc124286b121b0e6b226e67931454ac6f01f7d9027e11",
+      "canonical_label_sha256": "06052ecbf2ba0123be759edd65fc2bebeff58634357f96b35653a39893fbf16b",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            317,
+            280,
+            342,
+            332
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0036"
+    },
+    {
+      "image": "IMG_4088_MOV-0028_jpg.rf.01f6e6b56e599a9b101317d32159a908.jpg",
+      "scene": "IMG_4088_MOV",
+      "image_sha256": "4edc62b01ac716b1c1ac2ffd1bf24fc3c23d47044525483057d81d782c49fc10",
+      "original_label_sha256": "75c893dd4d68e4d64262fba0ee99e8493f3693bc0efde73bffeab2f925860907",
+      "canonical_label_sha256": "f22a1547d9dcb56f05826939a949ce98f376bf96825ef6573cf16ef1dfc39a90",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            366,
+            157,
+            400,
+            264
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0039"
+    },
+    {
+      "image": "IMG_9938_MOV-0008_jpg.rf.e1ae02d5cfd1ea4f48ccace7e42470e6.jpg",
+      "scene": "IMG_9938_MOV",
+      "image_sha256": "766d659673bfd23034def13552ecf6306e2711810c67c3d48dad167766f39ccb",
+      "original_label_sha256": "acf7498362925f643e1ce582e3a9e3312df995ba8036a24d18375b07a6add936",
+      "canonical_label_sha256": "9d6a16445ab729e44eb6f05750b138c4770ba18b995a5cc1e7c241d7a9689518",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            293,
+            35,
+            343,
+            379
+          ]
+        },
+        {
+          "class_id": 2,
+          "xyxy": [
+            362,
+            177,
+            383,
+            305
+          ]
+        },
+        {
+          "class_id": 2,
+          "xyxy": [
+            394,
+            211,
+            410,
+            273
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0045"
+    },
+    {
+      "image": "IMG_6874_MOV-0023_jpg.rf.ef844bfffffa6a05c8105bdb13aeb4ec.jpg",
+      "scene": "IMG_6874_MOV",
+      "image_sha256": "3030fdbd8cc8e9a1cd90a88bc7779f8c645eab06a24596ecdc2b6f917ec264b3",
+      "original_label_sha256": "bcaa8f1f9a8ae412d48f88ce83aa8176d2016e9ec4a8f93c7e61a28190bd2d38",
+      "canonical_label_sha256": "49504ec2fe7853f4d2c9e4213e0197daf19a7fb2838b66032d05d274e4c43975",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            140,
+            0,
+            181,
+            177
+          ]
+        }
+      ],
+      "remove_lines": [],
+      "notes": "Confirmed missing visible building support/column. Pixel bounds visually adjudicated; reflections excluded. Other existing labels preserved; not an exhaustive certification of every class.",
+      "review_reference": "A0057"
+    },
+    {
+      "image": "IMG_8603_MOV-0008_jpg.rf.d47e055fd6091b9c17d3d6b8e071a29a.jpg",
+      "scene": "IMG_8603_MOV",
+      "image_sha256": "2230b9dd140e892b76940a0a1a60c1315fadf5734da2e5fca0c4d0f421be9bb3",
+      "original_label_sha256": "467797ebb7e74b3e46ecf6acec3ce5b7b1ccaf043a1fac42f8bdf324db32982d",
+      "canonical_label_sha256": "a20d3311ec690bc0361d880ef993a98e0d75944a2243ec7c62b967c09b1a4575",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 2,
+          "xyxy": [
+            165,
+            0,
+            195,
+            150
+          ]
+        },
+        {
+          "class_id": 2,
+          "xyxy": [
+            297,
+            0,
+            332,
+            173
+          ]
+        },
+        {
+          "class_id": 1,
+          "xyxy": [
+            327,
+            82,
+            374,
+            182
+          ]
+        }
+      ],
+      "remove_lines": [
+        "2 0.500000 0.714844 0.562500 0.570312"
+      ],
+      "notes": "Correct previously confirmed false Pillar box on floor/stair; annotate clearly visible true targets instead of quarantining the whole scene.",
+      "review_reference": "IMG_8603_MOV"
+    },
+    {
+      "image": "amel-1_mp4-0017_jpg.rf.9bd397b36c4a223672a26ee7f118b541.jpg",
+      "scene": "amel-1_mp4",
+      "image_sha256": "59173d967a5b37163ffd871663ce2f2dee13c74c7a5e06a7213f2db06119314f",
+      "original_label_sha256": "d135180c1998003121829085123103586fe61b27315036bcf2f6521fdfa6a98f",
+      "canonical_label_sha256": "177785c61b849c2e4be1c59c985e76889abddaa4fdebc857d92ed014feae0cd2",
+      "reviewed_full_image": true,
+      "reviewer": "AI full-image visual adjudication; human/team review pending",
+      "add_boxes": [
+        {
+          "class_id": 3,
+          "xyxy": [
+            141,
+            324,
+            500,
+            640
+          ]
+        }
+      ],
+      "remove_lines": [
+        "2 0.500000 0.750000 0.560938 0.500000"
+      ],
+      "notes": "Correct previously confirmed false Pillar box on floor/stair; annotate clearly visible true targets instead of quarantining the whole scene.",
+      "review_reference": "amel-1_mp4"
+    }
+  ],
+  "excluded_train_images": [
+    "vlc-record-2026-02-09-12h51m24s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h51m24s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0000_jpg.rf.d977880940e3ac30392ca0d322f2f539.jpg",
+    "vlc-record-2026-02-09-12h51m24s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h51m24s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0019_jpg.rf.a0f5ffec4fcfd37c8bc67dc3b01550f4.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0000_jpg.rf.65a8172a84f2fc784f66f001b3392138.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0009_jpg.rf.e47832f0f346ef8a213f99933610af5f.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0023_jpg.rf.3d984cf86e66e6437b3bb95ab9937e2a.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0024_jpg.rf.8b0d6452c7e4bf05370502f80560c51a.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0028_jpg.rf.06ee0f710fdef83ec240689720642b0e.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0038_jpg.rf.1c3f7aa033c2114309cc2a7330b36c20.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0042_jpg.rf.b71122680df725f9db9b792f33ff9636.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0044_jpg.rf.7970618379d7dc5dc419e69ea910ef9e.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0045_jpg.rf.44fa3a91587922d9ff3097942aa440bd.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0049_jpg.rf.11afd550ddfaa2bb843374aeeed65f9b.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0065_jpg.rf.311c0cbf84eef7dc4c6546cb588a2af8.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0066_jpg.rf.f7a810df56b636586bb3283da4ff2711.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0072_jpg.rf.b98a9361c80b35348a5fe32952f182f2.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0074_jpg.rf.3c2ba5dff99cc68321d538e67d10917c.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0077_jpg.rf.adc952e01f3b220fd551915325a8f760.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0080_jpg.rf.cd800a887058b024d666da147a2471f3.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0082_jpg.rf.34cd97d565b3cb3b29b21f536b3265ee.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0084_jpg.rf.bae5cb824d6aa0dde8272e10fc13a671.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0093_jpg.rf.34b29675f56fbe698fdca844326a26a4.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0097_jpg.rf.f1d6e82fe7a45c21e9f354fefcda3078.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0099_jpg.rf.e5541f4428326ca4135dd2a599fe76aa.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0108_jpg.rf.fb3f525b544d05086c6df570a250d969.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0111_jpg.rf.e3f5794b18992249c86483f6517aafc4.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0112_jpg.rf.5c5e19ea7175fd977f9650c595f593fc.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0113_jpg.rf.95ff0807564089e0c21bb94a671cc40e.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0115_jpg.rf.8c245f839149122537beb7bc21cd17b6.jpg",
+    "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0122_jpg.rf.2a52a27385e14a4021f7e24b3f5de265.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0020_jpg.rf.6ebd7afd94b5bbd7d425b7d66394cf66.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0080_jpg.rf.087141ccd3f656915b9ce4b8b89e3139.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0140_jpg.rf.91544af26f69c4f9a6ce7e04434008d1.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0200_jpg.rf.b83628655e3b9cd6293385af70b8c885.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0240_jpg.rf.1b26e24aab194361e79745dd7a31906d.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0381_jpg.rf.e012839ad46bd05e17cda1a036c21fbd.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0401_jpg.rf.ca8110bcedd5c8077cafffb74c96c8a8.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0521_jpg.rf.b4a6029490ae638fd6023e0a8774ec4d.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0581_jpg.rf.0cd4991f5c61fb1291abcd55f5bd44bc.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0641_jpg.rf.4464b8e39a653b5febb04c1583b3e7c5.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0782_jpg.rf.b0c161e650c1e9dcf4744ef7a6a85ec8.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0902_jpg.rf.4ff9595db704375386b7c97e6aa21de1.jpg",
+    "vlc-record-2026-04-06-14h26m39s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0962_jpg.rf.f6044015877baa393e3197d5a5a7d2a6.jpg",
+    "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0000_jpg.rf.22bd6ef9bf1b5b4c6ac09311fb158a3c.jpg",
+    "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0162_jpg.rf.3c4452cd77c1ebc3155d3150c6fdcb49.jpg",
+    "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0182_jpg.rf.dfb58fa9c659a9e0466865c8e20e4c1c.jpg",
+    "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0222_jpg.rf.9ba36c31f93e5666f9905a29a7a49b14.jpg",
+    "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0283_jpg.rf.085587dbd94e1bc74016823e500da7e8.jpg",
+    "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0425_jpg.rf.32f77f2b479fc0165bc71954eb57b08b.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0020_jpg.rf.c9d5a0f4df8b2eafe0359fcab3623704.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0180_jpg.rf.ee0b18a84ef1b338d7a9bec45765562e.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0220_jpg.rf.d10f5ba8225fcb2e2c9903a99e8ebdb1.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0240_jpg.rf.10ea6651c0f5b3a31b76def5d7718783.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0260_jpg.rf.ec972439e0a2fbb618ab728ff92814e3.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0300_jpg.rf.1e375b971327e48d64a4e159a58fea8c.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0320_jpg.rf.d3ca855740b78aec1c99651f517ede87.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0380_jpg.rf.5bb32a7d10f7cb7c13aab3297712d184.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0520_jpg.rf.764306064c2c51b082ea0efeb149b7fc.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0600_jpg.rf.be9bdc7b30be9bfeeb95acc608c9fc5b.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0620_jpg.rf.8a60103a2d45afb36290025bd430847e.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0760_jpg.rf.3e5ae87e137577f80c3c5f9026dae7ba.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0800_jpg.rf.1cb356ee48b9d780f702d0ec60234a89.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0960_jpg.rf.d5c65ea56329a63b23ed520a412c813d.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1040_jpg.rf.e7a75269dea051bcd6bd7f8ceff64ec7.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1140_jpg.rf.008d2542b6395da7565b6760a5687bd1.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1260_jpg.rf.0c8828c08bf0c7e3f22d3469cefffaa0.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1400_jpg.rf.e23f16d8738638d479c77ca567cffb38.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1420_jpg.rf.f19badf4fffa8dbc0a9278c7d5df7c88.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1480_jpg.rf.276c22c71b3c72df3df9aaa1a077d9cb.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1520_jpg.rf.3f0558567d87fabad14395f322125d13.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1560_jpg.rf.52dd28be50cd82a720a4fa4873e57850.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1580_jpg.rf.c90810911dde88fac30cf998eb62f222.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1640_jpg.rf.dd89d7d190e68ea2b85aa5b170cd0b1c.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1680_jpg.rf.9319bf851ee2a30ae3aa51812137be04.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1800_jpg.rf.da37e5bc2dec389942b61a0594f3120a.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1820_jpg.rf.6734263d809345ef283f899db0807c7e.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1860_jpg.rf.29478708e59f3925ea8ccaa0ff674637.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1880_jpg.rf.f9c088010a83ecd0e93bbd15bd836907.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1940_jpg.rf.c11c235fb22c73caf819f429552f23c7.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2000_jpg.rf.d43b792d8ffb59b88628b72883c9bad4.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2080_jpg.rf.58726be316d8f2935416b05c4d1bd985.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2100_jpg.rf.4383866754f05990a059b1d9a55e0a8a.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2160_jpg.rf.3f3de944c32b1e0de49ea466fbdf24d8.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2240_jpg.rf.a628eb2b60d5ecf0c96d4de8d8b972d7.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2280_jpg.rf.b3a32ec62635dd4bbbb25e31947b7695.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2360_jpg.rf.241453dbc3c299a99c50ace049350a6a.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2400_jpg.rf.83b441a4467224fca61ea34c5b74495a.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2480_jpg.rf.ca011fe2bd063dee58ba30e11de1c61e.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2520_jpg.rf.af6918429fcb6ca06b75d46331ec0701.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2640_jpg.rf.ea76498adf145470e78310fc99df84eb.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2680_jpg.rf.3f635e791c79bb816ecff24588f531e1.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2740_jpg.rf.fe60b9776360e12b5861d5296e503cb3.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2780_jpg.rf.b2b5ae06d3f74c461040bc09d0ef8af9.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2900_jpg.rf.ac90ab10be59004b6faff42a70be02da.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3000_jpg.rf.212f70aa9ec851418f2f47cc0ea8ffb4.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3040_jpg.rf.271e36aeafc41476c67703bbef4a4519.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3100_jpg.rf.f736ea2c11ba5ec938e836075e927dcf.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3140_jpg.rf.c549f98ff34ace75de4b2adc6f94baea.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3160_jpg.rf.7475292600dc363f03c3c4685a5044fc.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3180_jpg.rf.882b2b44b646ad986f59346805b9ec04.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3360_jpg.rf.05c831d0b82200b8083fdc4af92a5bd9.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3420_jpg.rf.f51ccf98b9821c832eb503d1f26a61b8.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3460_jpg.rf.eca0d19cb03072d1c58d47e95960f5c2.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3480_jpg.rf.5d2e845ff71c7c803e7545a64175790c.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3581_jpg.rf.3aeca8e367b1face51128119a9c1d1e4.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3661_jpg.rf.2b2d1ecef70463c4e598f53bcd478f5d.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3741_jpg.rf.1b6788c38481f18ca16aae3dd6bb051e.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3761_jpg.rf.a4d1de39bf2cad009a22858c796d0ad9.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3781_jpg.rf.7d089580ee31922aa5e712f6b382377e.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3841_jpg.rf.1dff03fbc1e41cb054ee35aed4b14962.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3861_jpg.rf.c78f3158ea9bdaaf24d7a647cbd98959.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3921_jpg.rf.e0cee1fc1bf609772d2256da79344df1.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3941_jpg.rf.f6c31b1f69679d4071a8e1dafc3ac510.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_3961_jpg.rf.541ab4108f1692cc3d045d717482520a.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4041_jpg.rf.779701d1a100d0587d6f54497b5a1861.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4221_jpg.rf.c14d51f034a47d101173b505e0888785.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4241_jpg.rf.c92bafe468a3c5bcbd45080b902d3fcd.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4281_jpg.rf.03f730382b2264bcd613b747a47e36a7.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4301_jpg.rf.59955addede0941487529f5486d57ff6.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4461_jpg.rf.bf078a89230c91584c8edf11353638c9.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4621_jpg.rf.c32db561543e22c4093d15b3d1f37c67.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4641_jpg.rf.58724e163e591cc1511c3ad461de40a4.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4681_jpg.rf.f0c18703c5510ab59a6b5f2e26c06a6c.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4801_jpg.rf.39797897e1ff41303ea186ee0cdd45d4.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4861_jpg.rf.0939394abc7b244a0c72be134c8d72a2.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4941_jpg.rf.98d95b0715d52833b96c67508d73393a.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5061_jpg.rf.c9230da8d0e8ca473583c1668c186a65.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5201_jpg.rf.5263e3c53343d8cbb3b81ef93c470df1.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5301_jpg.rf.68d8e2951cadae39f3e60d6f4d61159d.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5421_jpg.rf.713b165015b3f3a6055b75b3c32fab6b.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5681_jpg.rf.4da92a9e1fe8aa44f625baf22c5af267.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5701_jpg.rf.df92ec9e039aa8b059abe2ee751d6792.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5761_jpg.rf.7dbaf981ce17a80800989b1685eea9f5.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5821_jpg.rf.2d2945ee373be21ee1282ca3e366482f.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5901_jpg.rf.674efbe1e17b59d81721df1b9713f00c.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5921_jpg.rf.ed88e9de91f5e03c191b3eaa2694018b.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_5961_jpg.rf.3a3f4c2f56cab6dc46c8fb1314fc18d1.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6201_jpg.rf.0d007c976eaf97f68a18c12c79e485f3.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6261_jpg.rf.186e6bd1d9a92bb3749002c88681a051.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6321_jpg.rf.db2e658410a80c903c7dc6d4f2408e97.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6361_jpg.rf.3d5ce1cdb6f8b17ed0f0fd87ee64bf9b.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6421_jpg.rf.6b893f15be8aca4d7f40686bb8cd4c6f.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6461_jpg.rf.6fc36fd665aa871cb5e2ae519ddb16f0.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6621_jpg.rf.a4042b5bb0e9983b80be48f87eed634b.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6681_jpg.rf.7769791afb8ac052770ba6e6ac683b0d.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6701_jpg.rf.561b3cd01384dc6a38b69b3a31687ed4.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6781_jpg.rf.4bec799150b82933147a7bbb17cbba1c.jpg",
+    "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_6841_jpg.rf.0d67f5cbeb9b905cd00d9f4a383dac61.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0040_jpg.rf.06709cae2f317df8fa693b7659e226d5.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0221_jpg.rf.b3ff6256f39d839137bb055c37022e2b.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0241_jpg.rf.674aa536864c7d8d4ee567c0fea2f5ef.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0261_jpg.rf.3ee45ced42e06f50c4dc0ea650c3f667.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0322_jpg.rf.85475cbd9809f3d69a805deca9cdd5c8.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0442_jpg.rf.06b8ef5696972a989224b90d5f1248a6.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0523_jpg.rf.1f5ff4b82b6768327e2c4b8c7a5d9d43.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0583_jpg.rf.b972f1e7d01f5833722c947ce6e3a56a.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0845_jpg.rf.af6bfb83db04d81d34288f85131b89d9.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0885_jpg.rf.9f070645940f4fcb556efe205a0f4aa2.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0986_jpg.rf.cd30c29b543e7a831ae530e7da343ef9.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1026_jpg.rf.6a1c22f24a0113a3c8f6d1e019cb96b3.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1268_jpg.rf.12413182c59d2d621ae64d76b4d37d86.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1328_jpg.rf.d2eb421c3392c101bc52f47c67c24a26.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1348_jpg.rf.7ebf9097476dbf71102eec1b4009917f.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1368_jpg.rf.0a82cbd8f0aa754f848eba2ed4910cd5.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1409_jpg.rf.b419d9981ef31a81680754d0919fe4c6.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1429_jpg.rf.68f1504d31f65c9eb1e683f4121135ae.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1449_jpg.rf.bb717b3a9020f70e0081674b4284e2bf.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1469_jpg.rf.9c35130373fad88904f7bf1afe221b55.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1570_jpg.rf.244c50478eed75afbd3b61bb8903318c.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1650_jpg.rf.ed2655bd1cf8d6d89495b50f568fd37a.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1670_jpg.rf.4ec1db203c97bd197fb8e7a145230cf4.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1690_jpg.rf.fa28275a1ef60b271c9e700fe81f7869.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1791_jpg.rf.98db5263c30cb2fb881c453966fbfce3.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1851_jpg.rf.5429d5133c1ecba3948ec120202e3930.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_1871_jpg.rf.8588f9b027b04c36bf818780b00ac42a.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2012_jpg.rf.9b8666716af827ec64277d522dbb1004.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2053_jpg.rf.a5d98ecbb9e0149a343075a4ae040f39.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2113_jpg.rf.19b6d6ace629a6ffcba6da0909844856.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2133_jpg.rf.7f3640663ad266eed7e2a2b306fe1f8e.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2334_jpg.rf.ab05e367bc076e51e3c8ed1b3718f03f.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2355_jpg.rf.a71305fef1f167e1ac4b65af29518220.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2375_jpg.rf.a19c97a7becdd6a2e2066d21ecdd2bb5.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2395_jpg.rf.c859c25baa4ee59c7c9cac6d8bfff989.jpg",
+    "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_2495_jpg.rf.b1999cf7e0381b88ab0054ec59caf0c3.jpg"
+  ],
+  "exclusion_reason": "Unreviewed CCTV frames with confirmed missing column/person annotations. Excluded equally from both matched arms. Registration proposals are not adopted as ground truth."
+}

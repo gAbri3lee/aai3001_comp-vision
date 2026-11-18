@@ -19,7 +19,8 @@ sys.path.insert(0, str(ROOT / 'tests'))
 from helpers import make_args
 from capture import LatestFrameCapture
 from config import CLASS_NAMES
-from detectors import YoloDetector
+from detectors import create_detector as build_detector
+from scene_detector import SceneDetector
 from webapp import PipelineState, create_app
 
 
@@ -35,13 +36,16 @@ class IdleCamera:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--serve', action='store_true', help='Open the real upload UI on localhost:5055; camera/speech/cloud/general model disabled')
+    parser.add_argument('--serve', action='store_true', help='Open the real upload UI on localhost:5055; camera/speech/cloud disabled, general optional')
+    parser.add_argument('--model', type=Path, default=ROOT / 'models/local/yolov8n_v4_four_class.pt')
+    parser.add_argument('--general', action='store_true', help='Include the real COCO general detector')
+    parser.add_argument('--output', type=Path, default=ROOT / 'artifacts/four-class-real-uploads')
     options = parser.parse_args()
-    data = ROOT / 'artifacts/supplied_weights/test_set/test'
-    out = ROOT / 'artifacts/real-uploads'
+    data = ROOT / 'data/v4_four_class_clean/test'
+    out = options.output
     out.mkdir(parents=True, exist_ok=True)
     selected = []
-    for cid in range(5):
+    for cid in range(len(CLASS_NAMES)):
         candidates = []
         for label in sorted((data / 'labels').glob('*.txt')):
             boxes = [list(map(float, line.split())) for line in label.read_text().splitlines() if line.strip()]
@@ -50,14 +54,16 @@ def main():
             if matching and image.exists():
                 candidates.append((max(b[3]*b[4] for b in matching), image))
         selected.append(max(candidates, key=lambda item: item[0])[1])
-    args = make_args('--model', str(ROOT / 'artifacts/supplied_weights/local/yolov8n_v4.pt'))
+    args = make_args('--model', str(options.model.resolve()))
     real_capture = LatestFrameCapture
     def capture(source, **kwargs):
         return IdleCamera() if isinstance(source, int) else real_capture(source, **kwargs)
-    report = {'detector': 'actual supplied yolov8n_v4.pt', 'camera': 'disabled',
+    report = {'detector': options.model.name, 'general_detector': options.general, 'camera': 'disabled',
               'sample_selection': 'largest labelled box per expected class; selected demonstration, not an accuracy estimate'}
     def detector(settings, **kwargs):
-        model = YoloDetector(settings)
+        if options.general:
+            return SceneDetector(settings, **kwargs)
+        model = build_detector(settings)
         model.general = None  # truthful model label; no optional COCO inference in this verification
         return model
     with patch('webapp.create_detector', side_effect=detector), \
@@ -88,7 +94,7 @@ def main():
                                    content_type='multipart/form-data')
             report['distance_display_with_assumed_calibration'] = response.json.get('detections', [])
             state.calibration = None
-            video = out / 'five-class-slideshow.mp4'
+            video = out / 'four-class-slideshow.mp4'
             writer = cv2.VideoWriter(str(video), cv2.VideoWriter_fourcc(*'mp4v'), 10., (640, 640))
             assert writer.isOpened()
             for path in selected:
@@ -104,7 +110,7 @@ def main():
                 if status['source']['ended']: break
                 time.sleep(.1)
             assert status['source']['ended'], status
-            report['video'] = {'description': '10-second slideshow of actual labelled images; not field footage',
+            report['video'] = {'description': f'{len(selected)*2}-second slideshow of actual labelled images; not field footage',
                                'frames_processed': status['frames_processed'], 'summary': status['video_summary']}
             assert client.post('/source/control', json={'action': 'restart'}).status_code == 200
             report['replay_accepted'] = True

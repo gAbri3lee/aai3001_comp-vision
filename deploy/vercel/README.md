@@ -27,7 +27,7 @@ python deploy/vercel/check_deployment.py http://127.0.0.1:3000
 python deploy/vercel/check_deployment.py https://<your-app>.vercel.app   # golden parity + round-trip latency on the live site
 ```
 
-`check_deployment.py` sends the 20 golden images and compares to `golden/expected/local_yolov8n.json`
+`check_deployment.py` sends the 20 golden images and compares to `golden/expected/local_yolov8n_four_class.json`
 (PASS = same classes/boxes). It also prints first/median/p95 round-trip latency for the report;
 the first request includes the cold start.
 
@@ -43,6 +43,6 @@ the first request includes the cold start.
   ONNX file exactly, but can differ slightly from the `.pt` model on non-square photos, which the `.pt` pipeline pads to a
   minimum rectangle instead.
 - No alert gate: single photos have no distance/cooldown context. The message is simply the most urgent class
-  (Stair > Escalator > Wet Floor Sign > Pillar > People) and where its box sits (left / ahead / right).
+  (Stair > Escalator > Wet Floor Sign > People) and where its box sits (left / ahead / right).
 - Uploaded photos are processed in memory and not stored or logged (`log_message` is disabled).
 - The endpoint is public. Add Vercel Deployment Protection or an access check before sharing widely.

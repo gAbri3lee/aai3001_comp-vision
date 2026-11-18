@@ -1,0 +1,171 @@
+{
+  "date": "2026-11-17",
+  "scope": "Four remaining canonical classes; Pillar excluded only from this score. No runtime scope or weights change.",
+  "trained_photo_counts": {
+    "Escalator": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 5,
+      "precision": 1.0,
+      "recall": 0.16666666666666666,
+      "boxes": 6
+    },
+    "People": {
+      "tp": 14,
+      "fp": 1,
+      "fn": 17,
+      "precision": 0.9333333333333333,
+      "recall": 0.45161290322580644,
+      "boxes": 31
+    },
+    "Stair": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "boxes": 3
+    },
+    "Wet Floor Sign": {
+      "tp": 4,
+      "fp": 2,
+      "fn": 0,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "boxes": 4
+    }
+  },
+  "combined_photo_counts": {
+    "Escalator": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 5,
+      "precision": 1.0,
+      "recall": 0.16666666666666666,
+      "boxes": 6
+    },
+    "People": {
+      "tp": 22,
+      "fp": 3,
+      "fn": 9,
+      "precision": 0.88,
+      "recall": 0.7096774193548387,
+      "boxes": 31
+    },
+    "Stair": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "boxes": 3
+    },
+    "Wet Floor Sign": {
+      "tp": 4,
+      "fp": 2,
+      "fn": 0,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "boxes": 4
+    }
+  },
+  "video_people_counts": {
+    "tp": 18,
+    "fp": 0,
+    "fn": 4,
+    "precision": 1.0,
+    "recall": 0.8181818181818182,
+    "boxes": 22
+  },
+  "media": {
+    "photos": 11,
+    "labelled_photo_targets": 44,
+    "singapore_mall_photos": 3,
+    "singapore_airport_photos": 1,
+    "overseas_photos": 7,
+    "wet_floor_source_groups": 3,
+    "positive_stair_videos": 0,
+    "positive_wet_floor_videos": 0,
+    "new_video": "20 seconds outdoor pedestrian footage; 4 labelled related frames",
+    "reused_video": "9.47 seconds VivoCity escalator footage; 0 trained-class detections"
+  },
+  "checks": {
+    "real_HTTP_image_upload": true,
+    "corrupt_image_isolated": true,
+    "temporary_cleanup": true,
+    "original_weights_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe",
+    "runtime_application_changed": false
+  },
+  "review": "AI visual annotations, post-prediction QC with original annotations retained. Independent human review pending. All box/count scores provisional.",
+  "limits": [
+    "Purposive small sample; not representative population accuracy.",
+    "Photo source duplicates screened against all 10092 v4 images; no byte matches, one dHash collision visually rejected. Cropped/pretraining overlap not ruled out.",
+    "People video frames share people and scene; do not pool with photos as independent cases.",
+    "No camera calibration, metres, audible speech, cloud or representative-user testing.",
+    "Actual HTTP app endpoints tested; manual browser button-click verification not performed in this pass."
+  ],
+  "source_pages": [
+    {
+      "id": "R001",
+      "venue": "SM City Iloilo, Philippines",
+      "source": "https://commons.wikimedia.org/wiki/File:Wet_floor_sign_at_SM_City_Iloilo.jpg"
+    },
+    {
+      "id": "R002",
+      "venue": "Broen mall, Denmark",
+      "source": "https://commons.wikimedia.org/wiki/File:Wet_floor_sign,_Broen,_Esbjerg,_1.jpg"
+    },
+    {
+      "id": "R003",
+      "venue": "Broen mall, Denmark",
+      "source": "https://commons.wikimedia.org/wiki/File:Wet_floor_sign,_Broen,_Esbjerg,_2.jpg"
+    },
+    {
+      "id": "R004",
+      "venue": "Hong Kong mall",
+      "source": "https://commons.wikimedia.org/wiki/File:HK_Sheung_Wan_mall_interior_Wet_Floor_sign_n_mirror_Oct_2017_IX1.jpg"
+    },
+    {
+      "id": "R005",
+      "venue": "HarbourFront Centre, Singapore",
+      "source": "https://commons.wikimedia.org/wiki/File:HarbourFront_Centre.JPG"
+    },
+    {
+      "id": "R006",
+      "venue": "Changi Airport, Singapore (non-mall)",
+      "source": "https://commons.wikimedia.org/wiki/File:Singapore_Changi_Airport_Terminal_4_13-11-2023(108).jpg"
+    },
+    {
+      "id": "R007",
+      "venue": "Parklane, Singapore",
+      "source": "https://commons.wikimedia.org/wiki/File:Parklane_McDonald%27s_01-12-2024(1).jpg"
+    },
+    {
+      "id": "R008",
+      "venue": "South City Mall, New Zealand",
+      "source": "https://commons.wikimedia.org/wiki/File:South_City_Mall_Dunedin_double_staircase,_24_Jun_2026.jpg"
+    },
+    {
+      "id": "R009",
+      "venue": "Schiedam Passage, Netherlands",
+      "source": "https://commons.wikimedia.org/wiki/File:Interior_of_the_Schiedam_Passage_mall.jpg"
+    },
+    {
+      "id": "R010",
+      "venue": "Sarasota Mall, USA",
+      "source": "https://commons.wikimedia.org/wiki/File:Sarasota_Mall_at_UTC_corridor_6.jpg"
+    },
+    {
+      "id": "R012",
+      "venue": "VivoCity, Singapore",
+      "source": "https://commons.wikimedia.org/wiki/File:VivoCity,_Singapore_%F0%9F%87%B8%F0%9F%87%AC_-_54245801424.jpg"
+    }
+  ],
+  "reproduction": [
+    "scripts/fetch_online_sources.py --candidates configs/four_class_validation_candidates.json --output data/four_class_external",
+    "scripts/audit_external_overlap.py --sources data/four_class_external --output artifacts/four-class-validation/overlap-screen.json",
+    "scripts/validate_remaining_classes.py"
+  ],
+  "raw_report": "artifacts/four-class-validation/report.json",
+  "gallery": "artifacts/four-class-validation/index.html"
+}

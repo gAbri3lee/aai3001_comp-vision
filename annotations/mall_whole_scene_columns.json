@@ -1,0 +1,352 @@
+{
+  "version": 1,
+  "task": "Large structural column auxiliary detector; original five-class taxonomy unchanged",
+  "policy": "Annotate clear freestanding structural column sections on a visible storey, including truncation/occlusion. Exclude wall piers, sculptures, tree trunks, railings and display/sign poles. Minimum supported height 15% and width 2% of image; smaller/ambiguous supports outside this scoped benchmark. Full images retained. AI first-pass labels need team review.",
+  "predeclared": {
+    "arms": [
+      "standard",
+      "degradation_augmented"
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "epochs": 30,
+    "batch": 4,
+    "imgsz": 416,
+    "freeze": 10,
+    "threshold": 0.5,
+    "checkpoint": "last; no test-based checkpoint or threshold selection",
+    "deployment": "No automatic promotion; original 925-image validation plus whole-app timing and false warnings required"
+  },
+  "images": [
+    {
+      "id": "M001",
+      "path": "data/sg_indoor_validation_20261117/M001.jpg",
+      "venue": "Funan",
+      "split": "train",
+      "sha256": "d8cff97522d73a75b64ff0048ef9026be65930ff6bd43b1a5ebedd4cd2505907",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Singapore_(SG),_Funan_Mall_--_2019_--_215918.jpg",
+      "boxes": [
+        [
+          598.22,
+          0.0,
+          774.84,
+          463.33
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M002",
+      "path": "data/sg_indoor_validation_20261117/M002.jpg",
+      "venue": "Funan",
+      "split": "train",
+      "sha256": "a93b19616b755fa7d05373d4afed3662c967f462f68d16e1ef596c91b8fded2e",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_Funan_Mall,_Singapore,_16_November_2025.jpg",
+      "boxes": [
+        [
+          590.08,
+          590.27,
+          659.2,
+          863.0
+        ],
+        [
+          1002.24,
+          417.42,
+          1054.72,
+          663.26
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M007",
+      "path": "data/sg_indoor_validation_20261117/M007.jpg",
+      "venue": "Suntec City",
+      "split": "train",
+      "sha256": "589ea2bafde248d334ee98c53fdc9ea184f3d89c909312a67beac9cf20812920",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Suntec_City_Mall_Interior_2014.JPG",
+      "boxes": [
+        [
+          282.88,
+          485.12,
+          358.4,
+          680.96
+        ],
+        [
+          714.24,
+          496.64,
+          761.6,
+          657.92
+        ],
+        [
+          1008.64,
+          445.44,
+          1075.2,
+          663.04
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M009",
+      "path": "data/sg_indoor_validation_20261117/M009.jpg",
+      "venue": "VivoCity",
+      "split": "train",
+      "sha256": "05cc76f9955d4b2247b254aadba207d5852d0dadbc34ac2acdf6f5bbbc25e72b",
+      "source_page": "https://commons.wikimedia.org/wiki/File:VivoCity_Interior_(June_2023).jpg",
+      "boxes": [],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M010",
+      "path": "data/sg_indoor_validation_20261117/M010.jpg",
+      "venue": "VivoCity",
+      "split": "train",
+      "sha256": "c429c19574282d0e550ca1d346f655ee7e1a7ca6ce0ed9d243f831636fec0fc6",
+      "source_page": "https://commons.wikimedia.org/wiki/File:VivoCity_Interior.JPG",
+      "boxes": [
+        [
+          96.71,
+          235.19,
+          360.3,
+          1621.65
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M011",
+      "path": "data/sg_indoor_validation_20261117/M011.jpg",
+      "venue": "VivoCity",
+      "split": "train",
+      "sha256": "2b3ced9a28a0a610e13ea368d149c901e372d6657c274bea1537d451f1b2d286",
+      "source_page": "https://commons.wikimedia.org/wiki/File:VivoCity_Interior_2021.jpg",
+      "boxes": [
+        [
+          576.0,
+          143.36,
+          688.64,
+          768.0
+        ],
+        [
+          0.0,
+          220.16,
+          120.32,
+          568.32
+        ],
+        [
+          910.08,
+          224.0,
+          1052.16,
+          613.12
+        ],
+        [
+          1171.2,
+          298.24,
+          1280.0,
+          497.92
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M012",
+      "path": "data/sg_indoor_validation_20261117/M012.jpg",
+      "venue": "VivoCity",
+      "split": "train",
+      "sha256": "b060855f98f950309fc21a73267224825621c848c8ad78ce11e399d2d1059a0c",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Massage_Chairs_in_VivoCity.jpg",
+      "boxes": [
+        [
+          12.8,
+          0.0,
+          172.8,
+          389.33
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M013",
+      "path": "data/sg_indoor_validation_20261117/M013.jpg",
+      "venue": "VivoCity",
+      "split": "train",
+      "sha256": "0ad2bb8e41ed86183a2472c44e7af2faf615c6365c7abc161f98a9b9dbf27236",
+      "source_page": "https://commons.wikimedia.org/wiki/File:VivoCity_Main_Atrium.jpg",
+      "boxes": [
+        [
+          257.28,
+          383.47,
+          326.4,
+          585.43
+        ],
+        [
+          494.08,
+          361.74,
+          552.96,
+          575.2
+        ],
+        [
+          692.48,
+          325.95,
+          755.2,
+          547.08
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M017",
+      "path": "data/sg_indoor_validation_20261117/M017.jpg",
+      "venue": "Nex",
+      "split": "train",
+      "sha256": "9f5680a861d972f4707dde09b9de21e656aac025aa1cde2ede53f55715ea9e83",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Recycling_bins_at_nex,_Singapore.jpg",
+      "boxes": [],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M022",
+      "path": "data/sg_indoor_extra_20261117/M022.jpg",
+      "venue": "Bugis+ (Iluma)",
+      "split": "train",
+      "sha256": "0c856f2046d2a48c8a5f8cc7e9ef1c9df31309d48a8feb5c2f3ef9c2eda508ec",
+      "source_page": "https://commons.wikimedia.org/wiki/File:The_New_Iluma_Shopping_Centre_(3696995970).jpg",
+      "boxes": [],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M014",
+      "path": "data/sg_indoor_validation_20261117/M014.jpg",
+      "venue": "City Square Mall",
+      "split": "val",
+      "sha256": "be69cc409ac658a7cbce3fe94b0f9ecd6d0fbe66b211bb2dd95b21fb3b3c22db",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_City_Square_Mall,_Singapore,_December_2025.jpg",
+      "boxes": [
+        [
+          862.72,
+          0.0,
+          1103.36,
+          960.0
+        ],
+        [
+          209.92,
+          183.04,
+          303.36,
+          670.72
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "M015",
+      "path": "data/sg_indoor_validation_20261117/M015.jpg",
+      "venue": "Thomson Plaza",
+      "split": "val",
+      "sha256": "db241ae493653b8a7fa60d133e65b909db8116cc7ac795e23bd185a56f35ae1c",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_of_Thomson_Plaza_shopping_mall_in_Singapore.jpg",
+      "boxes": [
+        [
+          253.44,
+          532.48,
+          305.92,
+          746.24
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "F001",
+      "path": "data/mall_fresh_holdout/F001.jpg",
+      "venue": "ION Orchard",
+      "split": "test",
+      "sha256": "13422ce3243c24b58e70f6f729b20f4cdafce6a66cdc06ddf8394e7c147d9a8d",
+      "source_page": "https://commons.wikimedia.org/wiki/File:ION_Orchard_L4_2014.jpg",
+      "boxes": [
+        [
+          785.92,
+          369.92,
+          865.28,
+          556.8
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "F002",
+      "path": "data/mall_fresh_holdout/F002.jpg",
+      "venue": "ION Orchard",
+      "split": "test",
+      "sha256": "4fb05747d80fcbde8a0471c86a161c8ca715d16eea95bb31e2a2cb026e9a918d",
+      "source_page": "https://commons.wikimedia.org/wiki/File:ION_Orchard_L3_2010.jpg",
+      "boxes": [
+        [
+          0.0,
+          204.8,
+          122.88,
+          545.28
+        ],
+        [
+          331.52,
+          313.6,
+          442.88,
+          524.8
+        ],
+        [
+          450.56,
+          345.6,
+          542.72,
+          496.64
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "F003",
+      "path": "data/mall_fresh_holdout/F003.jpg",
+      "venue": "ION Orchard",
+      "split": "test",
+      "sha256": "b31603c363c14417f0b298a30b4e77971b58d059983a765556b651e8f851b670",
+      "source_page": "https://commons.wikimedia.org/wiki/File:ION_Orchard_B3_2010.jpg",
+      "boxes": [
+        [
+          678.4,
+          332.63,
+          769.28,
+          607.69
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "F004",
+      "path": "data/mall_fresh_holdout/F004.jpg",
+      "venue": "ION Orchard",
+      "split": "test",
+      "sha256": "b0de5ad8b877a4d0292c72ea7cdf49d28e0ad9a058ebe9873eb64a093eb9b23f",
+      "source_page": "https://commons.wikimedia.org/wiki/File:ION_Orchard_B2_Jewellery_Street_2010.jpg",
+      "boxes": [
+        [
+          354.56,
+          304.45,
+          403.2,
+          547.5
+        ]
+      ],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    },
+    {
+      "id": "F005",
+      "path": "data/mall_fresh_holdout/F005.jpg",
+      "venue": "313@Somerset",
+      "split": "test",
+      "sha256": "6e1c2e6f3f1b193fa2b1cd1167dc3bdc80732342548f56ca6fc9126a09a53455",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Interior_concept_at_313@Somerset.jpg",
+      "boxes": [],
+      "review": "AI whole-scene visual annotation; independent human review pending"
+    }
+  ]
+}

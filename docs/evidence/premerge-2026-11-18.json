@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-18",
+  "source_branch": "improve/pillar",
+  "reviewed_main": "033aa630b8a76ac3c2f0b0d3353160d02e75e032",
+  "reviewed_cloud": "9a4c74a64ec0ad07a709c427675cce0a4900470d",
+  "main_merge_conflicts": [],
+  "combined_cloud_merge_conflicts": [],
+  "local_tests": {
+    "passed": 212,
+    "subtests_passed": 12,
+    "log": "artifacts/premerge-2026-11-18/pytest-final-verified.log"
+  },
+  "combined_checkout_tests": {
+    "passed": 212,
+    "subtests_passed": 12,
+    "skipped": 2,
+    "skipped_reason": "Optional historical research datasets absent from clean clone",
+    "cloud_actual_onnx_tests_also_run_separately": 2
+  },
+  "golden": {
+    "passed": true,
+    "matched": 20,
+    "total": 20,
+    "extra": 0,
+    "missing_images": [],
+    "unexpected_images": [],
+    "largest_confidence_difference": 4.6992683410684855e-05
+  },
+  "actual_http_runtime": {
+    "photo_inputs": 11,
+    "videos": 2,
+    "all_videos_completed": true,
+    "cleanup_passed": true,
+    "camera": false,
+    "speech": false,
+    "hosted_cloud": false
+  },
+  "model_handoff_matches_active_config_and_weights": true,
+  "credential_marker_scan_findings": [],
+  "full_security_audit": false,
+  "compile_passed": true,
+  "diff_check_passed": true,
+  "test_fix": "Wait for video-source detections in one snapshot; avoid camera/video transition race in assertion",
+  "cloud_integration_gap": "New Vercel photo service uses legacy five-class yolov8n-onnx; desktop cloud contract expects rfdetr-nano. Hosted service and class-scope alignment require separate teammate validation.",
+  "source_branch_committed_by_agent": false,
+  "pushed_by_agent": false,
+  "real_main_merged_by_agent": false
+}
