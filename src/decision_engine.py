@@ -11,6 +11,7 @@ import time
 from dataclasses import dataclass
 
 from config import load_config
+from golden import iou
 
 # Application heuristics; these are not learned model scores.
 _CONFIG = load_config()
@@ -207,6 +208,38 @@ class FrameAlerts:
     speak: str | None        # Phrase to send to the speaker this frame, if any
 
 
+@dataclass
+class PersonEncounter:
+    box: tuple
+    seen: float
+    announced_size: float | None = None
+    outside_path: bool = False
+
+
+def match_people(tracks, hazards, now):
+    """Associate each visible person once, including people outside the alert gate."""
+    tracks[:] = [track for track in tracks if now - track.seen <= 1.5]
+    people = [h for h in hazards if h.label == 'People']
+    matches = {}
+    used = set()
+    candidates = sorted(((iou(track.box, h.xyxy), i, j)
+                         for i, track in enumerate(tracks) for j, h in enumerate(people)), reverse=True)
+    for overlap, i, j in candidates:
+        if overlap < .12:
+            break
+        if i in used or j in matches:
+            continue
+        matches[j] = tracks[i]
+        used.add(i)
+    for j, h in enumerate(people):
+        if j not in matches:
+            matches[j] = PersonEncounter(h.xyxy, now)
+            tracks.append(matches[j])
+        track = matches[j]
+        track.box, track.seen = h.xyxy, now
+    return {id(h): matches[j] for j, h in enumerate(people)}
+
+
 class AlertPolicy:
     """One alert decision per frame (decision D6), shared by the web app and replay.
 
@@ -221,12 +254,14 @@ class AlertPolicy:
         self.severity = SEVERITY if severity is None else severity
         self.clock = clock
         self.cooldown = AlertCooldown.from_gate(self.gate, clock)
+        self.people = []
         self._selected = None
 
     def reset(self):
         """Forget every cooldown and the marked hazard, so the next gated hazard is
         spoken. Used when the detector changes (decision U3); the rules are unchanged."""
         self.cooldown = AlertCooldown.from_gate(self.gate, self.clock)
+        self.people = []
         self._selected = None
 
     def process(self, detections, frame_size, depth_map=None, now=None) -> FrameAlerts:
@@ -234,8 +269,28 @@ class AlertPolicy:
         hazards = assess(detections, frame_size, self.gate, self.severity, depth_map)
         announceable = [hazard for hazard in hazards if hazard.gated]
         alerts = list(dict.fromkeys(phrase_for(hazard) for hazard in announceable))
-        selected = next((hazard for hazard in announceable
-                         if self.cooldown.should_announce(hazard, now)), None)
+        tracks = match_people(self.people, hazards, now)
+        left, right = self.gate["centre_third"]
+        for hazard in hazards:
+            if hazard.label == "People":
+                midpoint = (hazard.xyxy[0] + hazard.xyxy[2]) / (2 * frame_size[0])
+                if midpoint < left - .04 or midpoint > right + .04:
+                    tracks[id(hazard)].outside_path = True
+        selected = None
+        for hazard in announceable:
+            if hazard.label == 'People':
+                track = tracks[id(hazard)]
+                size = (hazard.xyxy[3] - hazard.xyxy[1]) / frame_size[1]
+                closer = track.announced_size is not None and size >= track.announced_size + max(.08, .25 * track.announced_size)
+                entered = hazard.position == 'center' and track.outside_path
+                if track.announced_size is not None and not (closer or entered):
+                    continue
+                track.announced_size = size
+                track.outside_path = hazard.position != "center"
+            elif not self.cooldown.should_announce(hazard, now):
+                continue
+            selected = hazard
+            break
         speak = phrase_for(selected) if selected is not None else None
         if selected is None and self._selected is not None:
             selected = next((hazard for hazard in announceable

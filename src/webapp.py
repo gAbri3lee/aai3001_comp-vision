@@ -119,7 +119,10 @@ def find_samples():
         if path.is_dir():
             images = sorted(p for p in path.iterdir() if p.suffix.lower() in SAMPLE_SUFFIXES)
             if images:
-                return {f"sample-{i}": image for i, image in enumerate(images, 1)}
+                samples = {f"sample-{i}": image for i, image in enumerate(images, 1)}
+                for obstacle in sorted(resolve_path("demo/obstacles").glob("*.jpg")):
+                    samples["object-" + obstacle.stem] = obstacle
+                return samples
     return {}
 
 
@@ -1051,7 +1054,7 @@ def create_app(state: PipelineState) -> Flask:
 
     @app.get("/samples")
     def samples():
-        return jsonify([{"id": key, "name": f"Sample {i}"}
+        return jsonify([{"id": key, "name": ("Object demo " + key.removeprefix("object-") if key.startswith("object-") else f"Sample {i}")}
                         for i, key in enumerate(state.samples, 1)])
 
     def read_image(file):
@@ -1110,7 +1113,7 @@ def create_app(state: PipelineState) -> Flask:
         sample_keys = list(state.samples)
         for sample_id in sample_ids:
             path = state.samples.get(sample_id)
-            name = f"Sample {sample_keys.index(sample_id) + 1}" if path is not None else "Unknown sample"
+            name = ("Object demo " + sample_id.removeprefix("object-") if sample_id.startswith("object-") else f"Sample {sample_keys.index(sample_id) + 1}") if path is not None else "Unknown sample"
             try:
                 if path is None:
                     raise UploadError("Unknown sample.", 404)

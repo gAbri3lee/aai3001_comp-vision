@@ -358,7 +358,7 @@
         <label for="sample">Sample</label>
         <select id="sample"><option value="">No samples</option></select>
         <button type="button" id="analyze-sample">Analyse sample</button>
-        <button type="button" id="analyze-all-samples">All samples</button>
+        <button type="button" id="analyze-all-samples">First 20 samples</button>
       </div>
     </div>
     <div class="upload-panel" id="panel-video" hidden>
@@ -494,7 +494,11 @@
   // so switching view never sends the images again.
   function note(severity, message) { actionMessage = {severity, message}; if (latest) renderMessages(latest); }
 
+  let analyzingImage = false;
+  let resumeCamera = false;
   async function analyze(form, {library = false} = {}) {
+    if (analyzingImage) return;
+    analyzingImage = true;
     form.append("view", imageView.value);
     // Library images use their folder as the expected class (set by the server).
     if (expectedSelect.value && !library) form.append("expected", expectedSelect.value);
@@ -503,14 +507,20 @@
     if (debug) form.append("debug", "1");
     note("info", "Analysing...");
     try {
+      const state = await fetch("/status").then(r => r.json());
+      if (!state.paused) {
+        if (!await control({paused: true})) throw new Error("Could not pause live alerts");
+        resumeCamera = true;
+      }
       const res = await fetch("/analyze", {method: "POST", body: form});
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Analysis failed");
       actionMessage = data.cloud_used ? {severity: "info", message: "Cloud used: these images were sent to the server."} : null;
       showAnalysis(data);
     } catch (e) {
+      if (!analysis && resumeCamera) { await control({paused: false}); resumeCamera = false; }
       note("error", e.message);
-    }
+    } finally { analyzingImage = false; }
     pollStatus();
   }
 
@@ -590,6 +600,7 @@
   }
   imageView.addEventListener("change", () => { if (analysis) { setShownView(imageView.value); pollStatus(); } });
   function backToLive() {
+    if (resumeCamera) { resumeCamera = false; control({paused: false}); }
     analysis = null;
     videoWrap.classList.remove("gallery-open");
     video.hidden = false;

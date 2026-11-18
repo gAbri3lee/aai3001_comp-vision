@@ -1,23 +1,19 @@
 # VisionAid Video demo guide on GUI (Local and Cloud)
 
 The local GUI processes videos through the same detection and alert rules it
-uses for the webcam. Use the six-second samples to check playback, or record a
+uses for the webcam. Use the bundled clips to check playback, or record a
 walking clip to show how alerts change as objects move into view.
 
 ## Play a sample video clip from the Demo library
 
 1. Open **Upload → Demo library** in the local GUI and click **Reload**.
-2. Under **Videos**, click **Play** on an Escalator, People, Stair, or Wet Floor
-   Sign clip. Each class has a six-second still-frame sample in MP4, MOV, and WebM.
+2. Under **Videos**, choose a field sequence or the VivoCity atrium clip and click **Play**.
 3. In **Alert** view, check the banner and listen to the alert
    with speech enabled and the GUI unmuted. Switch to **Recognition** to inspect the model's detections.
 4. When **Video finished** appears, review the hazard type. Click **Replay**
    to run the clip again or **Back to camera** to return to the live view.
 
-If the video list is empty, copy the clips from the demo laptop into
-`demo/videos/` and click **Reload**. The videos are Git-ignored. You can also
-generate the escalator sample from a bundled photo using the steps in the
-[README](../README.md#make-a-short-video-from-a-bundled-photo).
+See the [demo library](../demo/README.md) for the clip sources and playback timing.
 
 ## Camera settings
 
