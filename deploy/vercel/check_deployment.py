@@ -20,7 +20,7 @@ from golden import compare_outputs  # noqa: E402
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('base_url')
-    parser.add_argument('--reference', type=Path, default=root / 'golden/expected/local_yolov8n.json')
+    parser.add_argument('--reference', type=Path, default=root / 'golden/expected/local_yolov8n_four_class.json')
     parser.add_argument('--images', type=Path, default=root / 'golden/images')
     args = parser.parse_args()
     base = args.base_url.rstrip('/')

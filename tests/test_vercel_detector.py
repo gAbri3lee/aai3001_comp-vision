@@ -29,7 +29,7 @@ class VercelDetectorTests(unittest.TestCase):
     def test_matches_golden_outputs(self):
         from PIL import Image
         from golden import compare_outputs
-        reference = json.loads((ROOT / 'golden/expected/local_yolov8n.json').read_text())
+        reference = json.loads((ROOT / 'golden/expected/local_yolov8n_four_class.json').read_text())
         outputs = {}
         for name in reference:
             with Image.open(ROOT / 'golden/images' / name) as image:
