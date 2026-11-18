@@ -1,17 +1,31 @@
-# Filming the demo video
+# VisionAid Video demo guide on GUI (Local and Cloud)
 
-This is for whoever films the walking video that VisionAid plays during the demo.
-The app plays the video as if it were the camera, so the audience sees and hears
-what a user would. A good recording takes about 15 minutes.
+The local GUI processes videos through the same detection and alert rules it
+uses for the webcam. Use the six-second samples to check playback, or record a
+walking clip to show how alerts change as objects move into view.
+
+## Play a sample video clip from the Demo library
+
+1. Open **Upload → Demo library** in the local GUI and click **Reload**.
+2. Under **Videos**, click **Play** on an Escalator, People, Stair, or Wet Floor
+   Sign clip. Each class has a six-second still-frame sample in MP4, MOV, and WebM.
+3. In **Alert** view, check the banner and listen to the alert
+   with speech enabled and the GUI unmuted. Switch to **Recognition** to inspect the model's detections.
+4. When **Video finished** appears, review the hazard type. Click **Replay**
+   to run the clip again or **Back to camera** to return to the live view.
+
+If the video list is empty, copy the clips from the demo laptop into
+`demo/videos/` and click **Reload**. The videos are Git-ignored. You can also
+generate the escalator sample from a bundled photo using the steps in the
+[README](../README.md#make-a-short-video-from-a-bundled-photo).
 
 ## Camera settings
 
-- Hold the phone in **landscape** (sideways). The alert rules were set for a
+- Hold the phone in **landscape** view (sideways). The alert rules were set for a
   landscape webcam. In a portrait video things look taller, so the alerts behave
   differently.
-- Record in 1080p or 720p, as MP4 (H.264). This is the normal setting on most
-  phones. On an iPhone, set Settings > Camera > Formats to "Most Compatible" so
-  the file is H.264, not HEVC.
+- Record in 1080p or 720p. Use H.264 MP4 if available for playback on the demo
+  laptop. The GUI accepts MP4, MOV, and WebM.
 - Keep it **30 to 60 seconds** long. The app accepts at most 120 seconds and
   150 MB.
 - Hold the phone steady at chest height, pointing straight ahead, as a body
@@ -20,33 +34,28 @@ what a user would. A good recording takes about 15 minutes.
 
 ## What to film
 
-The model recognises 4 classes: Escalator, People, Stairs and Wet Floor Sign.
+The four trained classes in the live GUI are **Escalator, People, Stair, and Wet Floor Sign**.
 
-1. Film them one at a time. Start about 4 to 5 metres away, walk towards it, and
-   keep it in view for 3 to 4 seconds before moving on to the next one.
+1. Film one class at a time. Start a few metres back, move closer, and keep
+   the subject in view for a few seconds before moving on.
 2. Include at least one pass with a person standing in the background or at the
-   side. The audience should see that far and side hazards stay quiet, and that
-   the same person is announced when close and ahead.
-3. **Pillar:** film a clear, full-height pillar from 3 to 5 metres. Pillar is the
-   model's weakest class (it finds about 17 percent of pillars locally and 29
-   percent with the cloud model), so expect some misses. A missed pillar is a known
-   limitation, not a fault in the demo.
-4. **Wet Floor Sign:** a sign is a warning sign. The app does not detect a wet
-   floor.
+   side, then have the person fill more of the frame near the centre. Compare
+   the detections shown in **Recognition** with the announcements in **Alert**.
+3. Film an actual **Wet Floor Sign**. The detection refers to the sign itself.
 
 ## Keep it honest
 
 - Film new places. Do not reuse places or footage from the training set, or the
   model will look better than it really is.
 - If you use photos instead, take new ones or use images from the test split.
-- The summary at the end of the video is a check on that video only. The tested
-  accuracy is mAP50 0.658 (local) and 0.739 (cloud) on 920 test images.
+- The end summary shows what the model recognised in that clip. For model
+  accuracy on the labelled test splits, use the [README benchmarks](../README.md#detection-benchmarks-by-model-and-class).
 
-## Getting it onto the demo laptop
+## Upload your own Video to the GUI
 
-- Copy the file into `demo/videos/` on the demo laptop. It then appears under
-  Upload, Demo library, with a Play button. You can also drag it onto the Video
-  drop zone.
-- Do not commit the video to git. Video files are ignored on purpose.
-- Play it once before the demo, with speech on, to check the sound and the
-  summary at the end.
+- Use **Upload → Video → Choose video** or drag the file into the video drop
+  zone. To keep it in the library, copy it to `demo/videos/` and click **Reload**
+  under **Demo library**.
+- Play the entire clip before the demo with speech enabled. Check the timing of
+  the announcements and the end summary. If RF-DETR is connected, switch between
+  **Local** and **Cloud** and replay the same clip for each detector.

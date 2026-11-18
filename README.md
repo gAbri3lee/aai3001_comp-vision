@@ -3,13 +3,13 @@
 AAI3001 hazard-detection prototype. The live GUI reports **Escalator, People,
 Stairs and Wet Floor Sign** using local YOLOv8n or a separate RF-DETR Nano
 service. The hosted Vercel photo demo runs the original five-class YOLOv8n
-ONNX model, which includes **Pillar**.
+ONNX model.
 
 | What to try | Where to run it | Input |
 | --- | --- | --- |
 | **Local YOLOv8n** | Start the browser GUI on your Mac or Windows PC | Webcam, images or video |
 | **RF-DETR Nano** | Connect the same GUI to an RF-DETR service and click **Cloud** | Webcam, images or video |
-| **Vercel Upload Image** | Open the hosted link in your browser | One photo at a time |
+| **Vercel Upload Image** | Open the Vercel link below in your browser | One photo at a time |
 
 ## Local setup and launch
 
@@ -28,7 +28,7 @@ python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
-If you use `uv` to manage Python on macOS, run
+If `uv` is used to manage Python on macOS, run
 `uv venv --python 3.12 .venv` and
 `uv pip install --python .venv/bin/python -r requirements.txt` instead. Use the
 `uv pip` command for an existing `.venv` that reports `No module named pip`.
@@ -79,7 +79,7 @@ hazard detector can still run.
 **macOS**
 
 ```bash
-.venv/bin/python src/webapp.py --port 5001 
+.venv/bin/python src/webapp.py --port 5001
 ```
 
 **Windows**
@@ -165,7 +165,7 @@ still images only. To check a frame from a video on Vercel, save a screenshot
 from the clip as a photo. Use the live GUI for video playback and timed alerts.
 [Cloud branch deployment guide](https://github.com/gAbri3lee/aai3001_comp-vision/blob/cloud-deployment/deploy/vercel/README.md)
 
-## Test images and videos in the live GUI
+## Test sample images and videos in the live GUI
 
 - **Images.** Under **Upload → Images**, click **Choose images** or select a
   bundled photo from the sample menu and click **Analyse sample**. Try the
@@ -190,6 +190,20 @@ Arrange it under `data/v4_four_class_clean/` so the photos are in
 folder. Use the same photos when comparing results. A few selected uploads
 are demonstration checks. Use the labelled split for a model evaluation.
 
+### Play sample videos from the Demo library
+
+1. In the local GUI, open **Upload → Demo library** and click **Reload**.
+2. Under **Videos**, click **Play** next to any MP4, MOV, or WebM sample.
+   Escalator, People, Stair, and Wet Floor Sign each have a six-second
+   still-frame clip.
+3. Use **Alert** to check the banner and spoken alert, or **Recognition** to
+   check detection boxes and final classification of the hazard type.
+   When the clip ends, use **Replay** or **Back to camera** for live view.
+
+The library reads videos from `demo/videos/`. These files are Git-ignored, so
+if **Videos** is empty, copy the sample clips into that folder or make one
+using the steps below. [Demo library guide](demo/README.md)
+
 ### Make a short video from a bundled photo
 
 If you have no clip handy, start the project Python interpreter from the repo
@@ -213,9 +227,7 @@ writer.release()
 exit()
 ```
 
-Choose `demo/videos/golden-escalator.mp4` under **Upload → Video**, or refresh
-**Upload → Demo library** and play it there. Demo entries and folder conventions
-are described in the [demo library guide](demo/README.md).
+Click **Reload** in the Demo library, then **Play golden-escalator.mp4**.
 
 ## Verification and Model Testing Results
 
@@ -266,5 +278,3 @@ for browser and runtime evidence, and the [external validation report](docs/FOUR
 for known detection misses. The supplementary COCO model covers some common
 objects. Alert bands use uncalibrated proximity cues, and a clear result can
 still miss a hazard.
-
-
