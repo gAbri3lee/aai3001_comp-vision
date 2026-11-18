@@ -85,6 +85,7 @@
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem 0.8rem;
     display: flex; flex-direction: column; gap: 0.45rem; min-height: 0; overflow-y: auto;
   }
+  .side > .switch { flex-shrink: 0; }
   .video-wrap {
     position: relative; flex: 1 1 auto; min-height: 12rem; border-radius: 10px; overflow: hidden;
     background: var(--video-bg); display: flex; align-items: center; justify-content: center;
@@ -1058,7 +1059,7 @@
       if (analysis) {
         const tag = run && run.expected ? (run.expected.recognised ? `, recognised as ${run.expected.class}`
                                                                    : `, not recognised as ${run.expected.class}`) : "";
-        viewText.textContent = run ? `Showing: ${run.name}${tag}${run.spoken ? " (spoken)" : ""}`
+        viewText.textContent = run ? `Showing: ${run.name}${tag}${run.spoken ? " (sent to speaker)" : ""}`
                                    : `Showing: ${analysis.results.length} analysed images`;
       }
       fpsBadge.textContent = analysis ? (run ? "Image" : "Images") : `${data.fps.toFixed(1)} FPS`;
@@ -1071,7 +1072,8 @@
       // A camera or video problem replaces the live banner: "No hazards" would be misleading.
       const blocking = analysis ? null : (data.health || []).find(h => h.severity === "error");
       const problem = blocking ? blocking.message : view.error;
-      alertText.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") || view.alert || "No hazards";
+      alertText.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") ||
+        view.alert || (run ? "No hazards present" : "No hazards");
       // Recognition results and batch summaries are information, not alerts.
       const informational = recognising || (analysis && !run) || (!analysis && source.ended);
       alertBanner.className = "alert-banner " + (problem ? "level-warning" : informational ? "level-clear"

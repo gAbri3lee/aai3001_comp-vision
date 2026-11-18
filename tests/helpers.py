@@ -53,8 +53,9 @@ class FakeDetector:
 class FakeSpeaker:
     def __init__(self):
         self.said, self.stopped, self.rate, self.error = [], 0, 180, None
-    def say(self, text):
+    def say(self, text, *, requested=False):
         self.said.append(text)
+        return True
     def stop(self):
         self.stopped += 1
 

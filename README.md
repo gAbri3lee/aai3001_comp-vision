@@ -1,66 +1,270 @@
 # VisionAid
 
-AAI3001 hazard-awareness prototype. The active local deployment has **four classes**:
+AAI3001 hazard-detection prototype. The live GUI reports **Escalator, People,
+Stairs and Wet Floor Sign** using local YOLOv8n or a separate RF-DETR Nano
+service. The hosted Vercel photo demo runs the original five-class YOLOv8n
+ONNX model, which includes **Pillar**.
 
-| ID | Class |
-| ---: | --- |
-| 0 | Escalator |
-| 1 | People |
-| 2 | Stair |
-| 3 | Wet Floor Sign |
+| What to try | Where to run it | Input |
+| --- | --- | --- |
+| **Local YOLOv8n** | Start the browser GUI on your Mac or Windows PC | Webcam, images or video |
+| **RF-DETR Nano** | Connect the same GUI to an RF-DETR service and click **Cloud** | Webcam, images or video |
+| **Vercel Upload Image** | Open the hosted link in your browser | One photo at a time |
 
-Pillar was removed from the active dataset taxonomy, local classifier head, UI, demo library and alert configuration on 17 November 2026. Originals and historical results are preserved. Removing a class does not improve the remaining classes.
+## Local setup and launch
 
-## Run on Windows
+Run the terminal commands from the repository root, the folder containing this
+README and `src/`. Use **Terminal** on macOS and **PowerShell** on Windows.
 
-Close an older running instance, double-click `run_demo.bat`, keep its window open, and open **http://127.0.0.1:5001**. This uses the existing environment with optional depth disabled. Speech remains available. Restarting ensures the new config and weights load.
+### 1. Prepare the Python environment
 
-For silent testing, run `run_demo.bat --no-tts` from a terminal in this folder.
+Install **Python 3.12**. Reuse an existing `.venv` if its dependencies are already
+installed.
 
-Fresh checkout with Python 3.12:
+**macOS**
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+If you use `uv` to manage Python on macOS, run
+`uv venv --python 3.12 .venv` and
+`uv pip install --python .venv/bin/python -r requirements.txt` instead. Use the
+`uv pip` command for an existing `.venv` that reports `No module named pip`.
+
+**Windows**
 
 ```powershell
 py -3.12 -m venv .venv
-.venv/Scripts/python.exe -m pip install -r requirements.txt
-.venv/Scripts/python.exe src/webapp.py --no-depth --port 5001
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-The active checkpoint is `models/local/yolov8n_v4_four_class.pt`. Models/data are git-ignored and need a separate matching handover. An old five-class checkpoint or ONNX export must not simply be renamed: startup rejects class-order mismatch.
+### 2. Set Model Weights
 
-Use JPEG/PNG image batches, MP4/MOV/WebM videos, or `demo/<class>/` examples. Upload filenames are display labels, never trusted paths. Local mode does not send frames to cloud.
+Copy the weights from the project handoff to the paths below. Git ignores these
+files.
 
-## Dataset and model provenance
+| File | Used by |
+| --- | --- |
+| `models/local/yolov8n_v4_four_class.pt` | Local YOLOv8n and the GUI's fallback from Cloud |
+| `models/cloud/rfdetr-nano_v4.pth` | RF-DETR Docker service, needed when you run the service yourself |
 
-Cleaned dataset: `data/v4_four_class_clean/data.yaml`, **7749 train / 859 validation / 769 test**, fingerprint `d4242de8c1d3776941c614a99dc432a6`. Pillar annotations are removed; useful images and background negatives remain. Pillars may still appear in background scenery.
+If you only have the original `yolov8n_v4.pt`, place it in `models/local/` and
+create the four-class checkpoint once. The script projects the existing model
+to four classes for inference and keeps the original weights file. Run it only
+if the four-class checkpoint is missing. The `artifacts` folder is for the
+conversion report.
 
-All 10092 original prepared v4 images decoded and labels passed structural checks. No exact byte/pixel duplicates or recorded scene overlap across splits were found. The all-class perceptual screen flagged similar frames; 715 were conservatively quarantined by excluding them from the derivative. Original images/exclusion reasons remain available. A fresh scan of all 9377 copied images found zero remaining candidate pairs under that screen. This is not exhaustive human reannotation or proof against all crops/venue overlap.
+**macOS**
 
-The native four-output local model is an **inference-only projection** of the supplied YOLOv8n checkpoint. Retained class/backbone/regression weights are preserved. **It has not been retrained on the cleaned dataset.** All four classes have identical TP/FP/FN at confidence 0.35 across all 925 original validation and 920 test images. Maximum low-threshold AP50 drop is 0.022 percentage points; exact AP identity is not claimed.
+```bash
+mkdir -p artifacts
+.venv/bin/python scripts/remove_pillar_head.py
+```
 
-The smaller cleaned test set is a different benchmark. A four-class mean AP cannot be presented as improvement over the old five-class mean. External media still shows weak escalator generalisation and limitations with crowds/stair views. Distance calibration and audible timing remain unverified.
-
-See [migration/audit report](docs/FOUR_CLASS_MIGRATION_2026-11-17.md), [external validation](docs/FOUR_CLASS_VALIDATION_2026-11-17.md) and [rubric evidence](docs/RUBRIC_EVIDENCE.md). Older five-class notebooks and reports retain their original results as historical evidence.
-
-The [18 November development checks](docs/FOUR_CLASS_DEVELOPMENT_2026-11-18.md) record 14 omitted training boxes repaired across seven frames, 212 passing tests plus 12 subtests, actual browser uploads/replay, and the calibration/file-lock fixes. The small three-seed CPU study failed its accuracy gate; the active weights remain unchanged. Physical distance accuracy and representative-user testing remain outstanding.
-
-## Cloud teammate compatibility
-
-The existing RF-DETR checkpoint/service may still have five native outputs. `cloud.source_classes` records that original order. Adapters validate ID/name consistency, discard pillar, and map old Stair 3 to new 2 and old Wet Floor Sign 4 to new 3. The existing HTTP schema is preserved. No hosted cloud deployment was changed.
-
-For a newly trained native four-class RF-DETR model, update `cloud.source_classes` to its four names and run hosted integration tests. Do not just change label strings.
-
-## Verification
+**Windows**
 
 ```powershell
+New-Item -ItemType Directory -Force artifacts | Out-Null
+.\.venv\Scripts\python.exe scripts/remove_pillar_head.py
+```
+
+The GUI may download a supplementary COCO YOLOv8n checkpoint to
+`models/general/yolov8n.pt` on first use. If that download fails, the trained
+hazard detector can still run.
+
+### 3. Start the browser GUI
+
+**macOS**
+
+```bash
+.venv/bin/python src/webapp.py --port 5001 
+```
+
+**Windows**
+
+```powershell
+.\.venv\Scripts\python.exe src/webapp.py --port 5001 --no-depth
+```
+
+Open [the local GUI](http://127.0.0.1:5001). Look for **LOCAL, YOLOv8n** and
+the live feed. If the camera is unavailable, check camera permissions for
+Terminal or Python and try **Upload** while you troubleshoot. Use **Test voice**
+to check speech. Add `--no-tts` for a silent run. These commands skip the
+experimental MiDaS depth stage to keep the demo responsive. Press **Ctrl+C** to
+stop the GUI before starting it again on the same port.
+
+## Cloud detector with RF-DETR
+
+RF-DETR is a separate service. Start Docker Desktop on your device
+and run the commands below from the repo root. The build command is the same
+on Mac and Windows.
+
+```sh
+docker build -f cloud/Dockerfile -t visionaid-rfdetr .
+```
+
+**macOS**
+
+```bash
+docker run --rm -p 127.0.0.1:9100:9000 --mount "type=bind,source=$PWD/models/cloud,target=/app/models/cloud,readonly" visionaid-rfdetr
+```
+
+**Windows**
+
+```powershell
+$cloudModels = Join-Path $PWD.Path 'models\cloud'
+docker run --rm -p 127.0.0.1:9100:9000 --mount "type=bind,source=$cloudModels,target=/app/models/cloud,readonly" visionaid-rfdetr
+```
+
+Leave the service running. In a second terminal, wait for `/health` to return
+`"status": "ready"` and `"model": "rfdetr-nano"`, then launch the GUI with its
+endpoint. Stop any earlier GUI instance on port 5001 first.
+
+**macOS**
+
+```bash
+curl http://127.0.0.1:9100/health
+.venv/bin/python src/webapp.py --port 5001 --no-depth --endpoint http://127.0.0.1:9100
+```
+
+**Windows**
+
+```powershell
+curl.exe http://127.0.0.1:9100/health
+.\.venv\Scripts\python.exe src/webapp.py --port 5001 --no-depth --endpoint http://127.0.0.1:9100
+```
+
+Open [the local GUI](http://127.0.0.1:5001), click **Cloud**, and check for
+**CLOUD, RF-DETR Nano**. Click **Local** to return to YOLO. Without
+`--endpoint`, **Cloud** is disabled. If the service drops out, the GUI falls
+back to YOLO. Use **Retry cloud** once the service is ready again.
+
+If a teammate already hosts RF-DETR, use their service's base URL for
+`--endpoint` and skip Docker. The GUI sends JPEG images or video frames to
+that service only in Cloud mode or when you ask it to compare both models.
+The RF-DETR adapter maps the supplied checkpoint's five classes to the active
+four. The GUI connects to the service's `/health` and `/detect` routes.
+
+## Vercel Upload Image
+
+1. Open [VisionAid Photo Check on Vercel](https://aai3001-gwup54owc-computer-vision2.vercel.app/).
+   If prompted, sign in to Vercel with an account that has access to the deployment.
+2. Click **Choose a photo** and select a JPEG from [the bundled golden images](golden/images)
+   or from the test folder.
+3. Look for the annotated photo, class labels and confidence, the highest-priority
+   alert or **No hazards detected**, and the model and request timings. **Read the
+   result aloud** uses your browser's audio feature.
+
+The browser resizes each photo and sends it as a JPEG to `/api/detect`. A Python
+function runs the original five-class YOLOv8n ONNX model. For a readiness check,
+open [the Vercel health endpoint](https://aai3001-gwup54owc-computer-vision2.vercel.app/api/health)
+while signed in and look for `ready` and `yolov8n-onnx`. This demo accepts
+still images only. To check a frame from a video on Vercel, save a screenshot
+from the clip as a photo. Use the live GUI for video playback and timed alerts.
+[Cloud branch deployment guide](https://github.com/gAbri3lee/aai3001_comp-vision/blob/cloud-deployment/deploy/vercel/README.md)
+
+## Test images and videos in the live GUI
+
+- **Images.** Under **Upload → Images**, click **Choose images** or select a
+  bundled photo from the sample menu and click **Analyse sample**. Try the
+  escalator image above in **Recognition** view and check its label and box. The file
+  picker accepts up to 20 JPEG or PNG files, each up to 10 MB. Use **Alert** view
+  to check which detections would trigger a live alert. A small or off-centre
+  detection can appear in Recognition and be filtered in Alert.
+- **Compare detectors.** With RF-DETR connected, tick **Compare local and cloud
+  side by side** before uploading the same image batch. Check each model's
+  detections and results. Use **Back to live** after the image check.
+- **Video.** Under **Upload → Video**, click **Choose video** and pick a short
+  landscape MP4, MOV or WebM (up to 150 MB and 120 seconds). The clip plays
+  through the selected detector. Check **Pause**, **Recognition** and **Alert**
+  views, the end summary, **Replay** and **Back to camera**. Repeat with the
+  other detector to compare. See the [video demo guide](docs/DEMO_VIDEO_GUIDE.md)
+  for recording a clip.
+
+The [20 golden JPEGs](golden/images) ship with Git. The cleaned held-out split
+is available from the separate `visionaid-four-class-dataset.zip` handoff.
+Arrange it under `data/v4_four_class_clean/` so the photos are in
+`data/v4_four_class_clean/test/images/` and labels are in the sibling `labels/`
+folder. Use the same photos when comparing results. A few selected uploads
+are demonstration checks. Use the labelled split for a model evaluation.
+
+### Make a short video from a bundled photo
+
+If you have no clip handy, start the project Python interpreter from the repo
+root (`.venv/bin/python` on Mac or `.\.venv\Scripts\python.exe` in PowerShell)
+and paste the following lines. This makes a six-second still-frame MP4 for checking
+playback and controls.
+
+```python
+from pathlib import Path
+import cv2
+source = next(Path("golden/images").glob("761978429*"))
+frame = cv2.imread(str(source))
+height, width = frame.shape[:2]
+codec = cv2.VideoWriter_fourcc(*"mp4v")
+writer = cv2.VideoWriter("demo/videos/golden-escalator.mp4", codec, 10, (width, height))
+assert writer.isOpened(), "OpenCV could not create the MP4"
+for _ in range(60):
+    writer.write(frame)
+
+writer.release()
+exit()
+```
+
+Choose `demo/videos/golden-escalator.mp4` under **Upload → Video**, or refresh
+**Upload → Demo library** and play it there. Demo entries and folder conventions
+are described in the [demo library guide](demo/README.md).
+
+## Verification and Model Testing Results
+
+### Detection benchmarks (by Model and Class)
+
+| Model | Test split | mAP50 | mAP50–95 |
+| --- | --- | ---: | ---: |
+| Local YOLOv8n | Cleaned four-class split, 769 images | 77.4% | 50.9% |
+| Original YOLOv8n ONNX | Original five-class split, 920 images | 65.8% | 41.9% |
+| Original RF-DETR Nano | Original five-class split, 920 images | 73.9% | 44.7% |
+
+The ONNX and RF-DETR rows are archived CPU benchmarks. The local YOLOv8n
+row uses a different split and class set. [Four-class results](docs/evidence/four-class-migration-2026-11-17.json),
+[five-class results](docs/verification_results.json)
+
+| Class AP50 | Local YOLOv8n | Original YOLOv8n ONNX | Original RF-DETR Nano |
+| --- | ---: | ---: | ---: |
+| Escalator | 94.4% | 96.3% | 93.1% |
+| People | 69.4% | 69.3% | 80.7% |
+| Stairs | 76.3% | 77.5% | 79.7% |
+| Wet Floor Sign | 69.6% | 62.4% | 81.1% |
+
+AP50 measures average precision for one class at 0.50 intersection over union
+(IoU). mAP50 averages that score across classes. mAP50–95 averages across classes
+and IoU thresholds from 0.50 to 0.95. The saved per-class breakdown reports mAP50.
+
+### Run the checks
+
+Run these from the repo root with the project environment. Replace `python`
+with the project interpreter path shown above if your environment is inactive.
+
+```sh
 python -m pip install -r requirements-test.txt
 python -m pytest -q --basetemp artifacts/pytest-current
 python scripts/verify_detector.py --images golden/images --reference golden/expected/local_yolov8n_four_class.json --frames 0 --output artifacts/golden-four.json
 python scripts/verify_detector.py --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-test.json
-python scripts/verify_four_class_runtime.py
 ```
 
-The real upload check uses actual local/general weights, 11 photos and two videos. It verifies IDs, corrupt-file isolation, replay/return-to-camera and cleanup, with camera acquisition replaced by an idle source. It does not verify human audibility, measured distance or hosted cloud.
+For a Mac environment managed by `uv` without pip, run
+`uv pip install --python .venv/bin/python -r requirements-test.txt` for the
+first step. The final command requires the labelled dataset handoff.
 
-Cleanup tools: `scripts/audit_four_class_dataset.py`, `scripts/build_four_class_dataset.py`, `scripts/remove_pillar_head.py`, `scripts/compare_four_class_head.py`. Builders refuse to overwrite outputs. Preserve originals when reproducing. Full conversion/audit evidence is under `artifacts/four-class-cleanup/`.
+The four-class YOLO checkpoint is an inference-only projection of the original
+trained model. The cleaned dataset has 7,749 training, 859 validation and
+769 test images. See the [migration report](docs/FOUR_CLASS_MIGRATION_2026-11-17.md)
+for model provenance, the [development checks](docs/FOUR_CLASS_DEVELOPMENT_2026-11-18.md)
+for browser and runtime evidence, and the [external validation report](docs/FOUR_CLASS_VALIDATION_2026-11-17.md)
+for known detection misses. The supplementary COCO model covers some common
+objects. Alert bands use uncalibrated proximity cues, and a clear result can
+still miss a hazard.
 
-The supplementary COCO model recognises some common obstacles and extra people; it cannot detect every unknown obstacle. Size-based alert bands are not measured metres. Known-height distance estimates apply only to People/sign after actual camera calibration. Use held-out media honestly, label selected demonstrations, retain failures, and do not call online imagery team-recorded footage.
+

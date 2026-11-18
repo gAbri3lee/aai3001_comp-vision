@@ -3,10 +3,11 @@
 macOS uses its native speech command, avoiding the pyttsx3/PyObjC event loop
 inside a worker thread. Other platforms retain pyttsx3 playback.
 
-At most one phrase waits while another plays. A newer phrase replaces the
-waiting one, a phrase that is playing is never interrupted by a newer alert, and
-a waiting phrase that has become too old by the time its turn comes is dropped,
-because the hazard it describes may no longer be in view.
+At most one phrase waits while another plays. A newer live alert replaces a
+waiting live alert, and a stale live alert is dropped because the hazard may
+already be out of view. Explicit speech requests take the waiting slot and
+keep it until another request replaces them or playback starts. A phrase that
+is playing finishes before the next one starts.
 
 `stop()` is the one exception: it ends the phrase that is playing and clears the
 waiting one (used by mute and pause). `rate` (words per minute) applies to the
@@ -36,7 +37,7 @@ class Speaker:
         self.max_pending_age = max_pending_age
         self._clock = clock
         self._cond = threading.Condition()
-        self._pending: tuple[str, float] | None = None
+        self._pending: tuple[str, float | None] | None = None  # text and expiration; requests do not expire
         self._process = None
         self._stopped = False
         self._closed = False
@@ -52,13 +53,16 @@ class Speaker:
         if start:
             self._thread.start()
 
-    def say(self, text: str):
-        """Queue a phrase, replacing any phrase that is still waiting."""
+    def say(self, text: str, *, requested: bool = False) -> bool:
+        """Queue a phrase if the waiting slot is available to it."""
         with self._cond:
-            if self._closed:
-                return
-            self._pending = (text, self._clock())
+            waiting_request = self._pending is not None and self._pending[1] is None
+            if self._closed or (waiting_request and not requested):
+                return False
+            expires_at = None if requested else self._clock() + self.max_pending_age
+            self._pending = (text, expires_at)
             self._cond.notify()
+            return True
 
     def stop(self):
         """End the phrase that is playing now and forget the waiting one."""
@@ -90,10 +94,10 @@ class Speaker:
                 if self._closed or not block:
                     return None
                 self._cond.wait()
-            text, queued_at = self._pending
+            text, expires_at = self._pending
             self._pending = None
             self._dequeued_epoch = self._epoch
-        if self._clock() - queued_at > self.max_pending_age:
+        if expires_at is not None and self._clock() > expires_at:
             self.dropped += 1
             logger.debug('Dropped stale speech: %s', text)
             return None

@@ -20,7 +20,7 @@ what a user would. A good recording takes about 15 minutes.
 
 ## What to film
 
-The model knows five things: Escalator, People, Pillar, Stair and Wet Floor Sign.
+The model recognises 4 classes: Escalator, People, Stairs and Wet Floor Sign.
 
 1. Film them one at a time. Start about 4 to 5 metres away, walk towards it, and
    keep it in view for 3 to 4 seconds before moving on to the next one.

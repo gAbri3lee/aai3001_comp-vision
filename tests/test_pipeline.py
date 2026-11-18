@@ -6,6 +6,7 @@ import numpy as np
 from config import add_detector_arguments
 from detection import Detection, DetectionBatch
 from detectors import DetectorError
+from helpers import FakeSpeaker
 from webapp import PipelineState, create_app
 
 
@@ -58,15 +59,13 @@ class PipelineTests(unittest.TestCase):
                 self.assertIsNone(status['latency_ms'])
                 detector.failed = False
                 # Local inference must not speak a frame the UI has already expired.
-                from types import SimpleNamespace
                 state.capture.age = 10.
                 deadline = time.monotonic() + 1
                 while 'stale' not in state.get_status()['error'] and time.monotonic() < deadline:
                     time.sleep(.01)
-                spoken = []
-                state.speaker = SimpleNamespace(say=spoken.append)
+                state.speaker = FakeSpeaker()
                 time.sleep(.05)
-                self.assertEqual(spoken, [])
+                self.assertEqual(state.speaker.said, [])
             finally:
                 state.stop()
 
@@ -114,7 +113,8 @@ class PipelineTests(unittest.TestCase):
 
         for include_named in (False, True):
             with self.subTest(include_named=include_named):
-                spoken = []
+                speaker = FakeSpeaker()
+                spoken = speaker.said
                 class Predictor:
                     def predict(self, frame):
                         detections = (Detection(-1, 'Object', .8, (40, 10, 60, 50)),)
@@ -124,7 +124,7 @@ class PipelineTests(unittest.TestCase):
 
                 with patch('webapp.create_detector', return_value=Predictor()), \
                      patch('webapp.LatestFrameCapture', Capture), \
-                     patch.dict('sys.modules', {'tts': SimpleNamespace(Speaker=lambda: SimpleNamespace(say=spoken.append))}):
+                     patch.dict('sys.modules', {'tts': SimpleNamespace(Speaker=lambda: speaker)}):
                     state = PipelineState(args)
                     try:
                         deadline = time.monotonic() + 2

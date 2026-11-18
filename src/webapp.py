@@ -495,12 +495,12 @@ class PipelineState:
                     or (kind == "alert" and self.paused)
                     or (generation is not None and generation != self._generation)):
                 return False
-            if kind == "alert":
+            # Queueing is nonblocking; keep it ordered with mute/pause changes.
+            if not self.speaker.say(text, requested=kind != "alert"):
+                return False
+            if kind in ("alert", "upload"):
                 self.last_spoken = text
             self.spoken_log.appendleft({"time": time.time(), "phrase": text, "backend": self.mode, "kind": kind})
-            speaker = self.speaker
-            # Queueing is nonblocking; keep it ordered with mute/pause changes.
-            speaker.say(text)
         return True
 
     def _show_paused(self, frame):
@@ -530,7 +530,7 @@ class PipelineState:
 
         Both views come from the same detections. Recognition view lists every
         trained detection (no gate) and never speaks. In Alert view the result is
-        spoken only when asked for and not muted."""
+        read aloud when asked for and not muted, even if no hazard passed the gate."""
         with self._lock:
             mode = mode or self.mode
             model = self._model_label(mode)
@@ -543,7 +543,8 @@ class PipelineState:
         recognition = media.recognition_dicts(result.hazards)
         images = {"alert": jpeg_data_url(debug_image if debug else normal),
                   "recognition": jpeg_data_url(annotate_recognition(frame, result.hazards))}
-        spoken = bool(view == "alert" and speak and result.speak and self._speak(result.speak, kind="upload"))
+        spoken = bool(view == "alert" and speak and
+                      self._speak(result.speak or "No hazards present", kind="upload"))
         output = {"source": source, "mode": mode, "model": model, "view": view,
                   "width": int(frame.shape[1]), "height": int(frame.shape[0]),
                   "alert": result.banner, "alerts": result.alerts,
