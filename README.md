@@ -193,12 +193,12 @@ are demonstration checks. Use the labelled split for a model evaluation.
 ### Play sample videos from the Demo library
 
 1. In the local GUI, open **Upload → Demo library** and click **Reload**.
-2. Under **Videos**, click **Play** next to any MP4, MOV, or WebM sample.
-   Escalator, People, Stair, and Wet Floor Sign each have a six-second
-   still-frame clip.
+2. Under **Videos**, click **Play** beside the clip you want to test. Each class
+   (Escalator, People, Stair, and Wet Floor Sign) has a six-second still-frame
+   clip in MP4, MOV, and WebM format.
 3. Use **Alert** to check the banner and spoken alert, or **Recognition** to
    check detection boxes and final classification of the hazard type.
-   When the clip ends, use **Replay** or **Back to camera** for live view.
+   When the clip ends, click on **Replay** or **Back to camera** for live view.
 
 The library reads videos from `demo/videos/`. These files are Git-ignored, so
 if **Videos** is empty, copy the sample clips into that folder or make one
