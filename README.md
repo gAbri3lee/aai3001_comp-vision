@@ -200,31 +200,6 @@ are demonstration checks. Use the labelled split for a model evaluation.
 
 The library reads videos from `demo/videos/`. Bundled clips are included in Git. [Demo library guide](demo/README.md)
 
-### Make a short video from a bundled photo
-
-If you have no clip handy, start the project Python interpreter from the repo
-root (`.venv/bin/python` on Mac or `.\.venv\Scripts\python.exe` in PowerShell)
-and paste the following lines. This makes a six-second still-frame MP4 for checking
-playback and controls.
-
-```python
-from pathlib import Path
-import cv2
-source = next(Path("golden/images").glob("761978429*"))
-frame = cv2.imread(str(source))
-height, width = frame.shape[:2]
-codec = cv2.VideoWriter_fourcc(*"mp4v")
-writer = cv2.VideoWriter("demo/videos/golden-escalator.mp4", codec, 10, (width, height))
-assert writer.isOpened(), "OpenCV could not create the MP4"
-for _ in range(60):
-    writer.write(frame)
-
-writer.release()
-exit()
-```
-
-Click **Reload** in the Demo library, then **Play golden-escalator.mp4**.
-
 ## Verification and Model Testing Results
 
 ### Detection benchmarks (by Model and Class)
