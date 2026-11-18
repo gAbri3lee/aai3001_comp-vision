@@ -8,6 +8,7 @@ from PIL import Image
 
 from detection import Detection, DetectionBatch
 from helpers import Capture, FakeDetector, FakeSpeaker, H, W, running, wait_for
+from tts import Speaker
 
 
 def scene():
@@ -82,6 +83,40 @@ def test_jpeg_and_png_work_and_analysis_has_its_own_cooldown():
         client.post('/control', json={'muted': True})
         result = upload(client, encoded(scene(), 'jpg'), speak='1').json
         assert result['spoken'] is False and len(speaker.said) == said + 1  # respects mute
+
+
+def test_requested_photo_alert_survives_a_busy_live_speech_queue():
+    now = 0.0
+    speaker = Speaker(clock=lambda: now, start=False)
+    detector = BrightBoxDetector('yolov8n')
+    with running({'local': detector}, speaker=speaker) as (state, client):
+        assert state._speak('Note, People ahead')
+        assert speaker._next(block=False) == 'Note, People ahead'  # playback has started
+
+        result = upload(client, encoded(scene(), 'jpg'), view='alert', speak='1').json
+        assert result['spoken']
+        now += speaker.max_pending_age + 0.5
+        assert not state._speak('Caution, People ahead')
+        assert speaker._next(block=False) == 'Warning, Stair ahead'
+        assert state.control_state()['last_spoken'] == 'Warning, Stair ahead'
+
+        assert state._speak('Caution, People ahead')
+        assert speaker._next(block=False) == 'Caution, People ahead'
+
+
+def test_speak_result_reports_when_a_photo_has_no_alert():
+    speaker = FakeSpeaker()
+    detector = BrightBoxDetector('yolov8n')
+    with running({'local': detector}, speaker=speaker) as (state, client):
+        photo = encoded(np.zeros((H, W, 3), dtype=np.uint8), 'jpg')
+        result = upload(client, photo, view='alert', speak='1').json
+        assert result['alert'] == '' and result['spoken'] is True
+        assert speaker.said == ['No hazards present']
+
+        client.post('/control', json={'muted': True})
+        result = upload(client, photo, view='alert', speak='1').json
+        assert result['spoken'] is False
+        assert len(speaker.said) == 1
 
 
 def test_wrong_type_oversized_and_corrupt_files_are_rejected_cleanly():
