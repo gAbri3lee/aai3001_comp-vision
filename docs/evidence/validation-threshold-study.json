@@ -1,0 +1,103 @@
+{
+  "split": "validation",
+  "images": 925,
+  "scenes": 69,
+  "matching_iou": 0.5,
+  "model_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe",
+  "predictions_sha256": "14c488aee9ada7e53e853a83e00d0dfc0080539c66cb85a88dcdf2f832ef70bc",
+  "split_manifest_md5": "49601080aac1f838190341d331785578",
+  "test_used": false,
+  "application_changed": false,
+  "classes": {
+    "Escalator": {
+      "baseline": {
+        "threshold": 0.35,
+        "tp": 95,
+        "fp": 12,
+        "fn": 26,
+        "precision": 0.8878504672897196,
+        "recall": 0.7851239669421488,
+        "f2": 0.8037225042301185
+      },
+      "candidate": null,
+      "recall_scene_bootstrap_95_interval": [
+        0.6774193548387096,
+        0.8431482294410302
+      ],
+      "interval_note": "Resamples recorded scene groups, not frames; depends on scene grouping and label completeness.",
+      "decision": "No threshold meets precision floor and five-percentage-point recall gain. Keep baseline."
+    },
+    "People": {
+      "baseline": {
+        "threshold": 0.35,
+        "tp": 579,
+        "fp": 166,
+        "fn": 239,
+        "precision": 0.7771812080536913,
+        "recall": 0.7078239608801956,
+        "f2": 0.7206870799103808
+      },
+      "candidate": null,
+      "recall_scene_bootstrap_95_interval": [
+        0.5826000873709981,
+        0.8446402095899181
+      ],
+      "interval_note": "Resamples recorded scene groups, not frames; depends on scene grouping and label completeness.",
+      "decision": "No threshold meets precision floor and five-percentage-point recall gain. Keep baseline."
+    },
+    "Pillar": {
+      "baseline": {
+        "threshold": 0.35,
+        "tp": 47,
+        "fp": 13,
+        "fn": 114,
+        "precision": 0.7833333333333333,
+        "recall": 0.2919254658385093,
+        "f2": 0.3338068181818182
+      },
+      "candidate": null,
+      "recall_scene_bootstrap_95_interval": [
+        0.14953193405160367,
+        0.627950043066322
+      ],
+      "interval_note": "Resamples recorded scene groups, not frames; depends on scene grouping and label completeness.",
+      "decision": "No threshold meets precision floor and five-percentage-point recall gain. Keep baseline."
+    },
+    "Stair": {
+      "baseline": {
+        "threshold": 0.35,
+        "tp": 219,
+        "fp": 66,
+        "fn": 102,
+        "precision": 0.7684210526315789,
+        "recall": 0.6822429906542056,
+        "f2": 0.6978967495219887
+      },
+      "candidate": null,
+      "recall_scene_bootstrap_95_interval": [
+        0.4837564420690972,
+        0.8279015165936924
+      ],
+      "interval_note": "Resamples recorded scene groups, not frames; depends on scene grouping and label completeness.",
+      "decision": "No threshold meets precision floor and five-percentage-point recall gain. Keep baseline."
+    },
+    "Wet Floor Sign": {
+      "baseline": {
+        "threshold": 0.35,
+        "tp": 103,
+        "fp": 10,
+        "fn": 15,
+        "precision": 0.911504424778761,
+        "recall": 0.8728813559322034,
+        "f2": 0.8803418803418802
+      },
+      "candidate": null,
+      "recall_scene_bootstrap_95_interval": [
+        0.75,
+        0.95
+      ],
+      "interval_note": "Resamples recorded scene groups, not frames; depends on scene grouping and label completeness.",
+      "decision": "No threshold meets precision floor and five-percentage-point recall gain. Keep baseline."
+    }
+  }
+}

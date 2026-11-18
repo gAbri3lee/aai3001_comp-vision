@@ -6,10 +6,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from golden import iou
+from path_utils import native_path
 
 
 def load_ground_truth(split_directory, names):
-    root = Path(split_directory)
+    root = native_path(split_directory)
     paths = sorted(p for p in (root / 'images').iterdir() if p.suffix.lower() in ('.jpg', '.jpeg', '.png', '.bmp', '.webp'))
     if not paths:
         raise ValueError('No test images found')
@@ -85,6 +86,7 @@ def score_detections(gt, paths, outputs, names, threshold, safety_classes):
     for i, name in enumerate(names):
         ap = evaluator.eval['precision'][0, :, i, 0, -1]
         per_class[name] = dict(ap50=float(ap[ap > -1].mean()) if (ap > -1).any() else None,
+                               tp=tp[i], fp=fp[i], fn=fn[i],
                                precision=tp[i] / max(tp[i] + fp[i], 1),
                                recall=tp[i] / (tp[i] + fn[i]) if tp[i] + fn[i] else None,
                                boxes=tp[i] + fn[i])

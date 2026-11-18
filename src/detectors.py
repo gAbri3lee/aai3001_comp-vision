@@ -15,7 +15,7 @@ class YoloDetector:
     def __init__(self, settings):
         self.settings = settings
         if not settings['weights'].is_file():
-            raise FileNotFoundError(f"Missing detector weights: {settings['weights']}. Copy the supplied local/yolov8n_v4.pt into models/local/.")
+            raise FileNotFoundError(f"Missing detector weights: {settings['weights']}. Restore the checkpoint matching this config's class order in models/local/.")
         from ultralytics import YOLO
         self.model = YOLO(str(settings['weights']), task='detect')
         validate_names(self.model.names, settings['classes'])
@@ -64,7 +64,10 @@ class CloudDetector:
             raise DetectorError(f'Cloud health check failed: {exc}') from exc
         if info.get('status') != 'ready' or info.get('model') != 'rfdetr-nano':
             raise DetectorError('Cloud service is not ready or serves an unexpected model')
-        if info.get('classes') != list(self.settings['classes']):
+        allowed = [list(self.settings['classes'])]
+        if self.settings.get('source_classes') is not None:
+            allowed.append(list(self.settings['source_classes']))
+        if info.get('classes') not in allowed:
             raise DetectorError('Cloud service class order does not match the canonical IDs')
         return info
 
@@ -106,7 +109,20 @@ class CloudDetector:
             if elapsed > self.settings['max_frame_age']:
                 raise DetectorError('Cloud response is stale; detections discarded')
             height, width = frame_bgr.shape[:2]
-            result = DetectionBatch.from_dict(response.json(), self.settings['classes'], (width, height))
+            payload = response.json()
+            names = self.settings['classes']
+            try:
+                result = DetectionBatch.from_dict(payload, names, (width, height))
+            except ValueError:
+                # Explicit compatibility with the teammate's original five-class
+                # service. Validate its full ID/name contract before projecting;
+                # never infer class semantics from bare numeric IDs.
+                source = self.settings.get('source_classes')
+                if source is None or list(source) == list(names):
+                    raise
+                legacy = DetectionBatch.from_dict(payload, source, (width, height))
+                result = replace(legacy, detections=tuple(
+                    replace(d, class_id=names.index(d.label)) for d in legacy.detections if d.label in names))
             if result.model != 'rfdetr-nano':
                 raise ValueError('Cloud returned an unexpected model')
             detections = tuple(d for d in result.detections if d.confidence >= self.settings['class_thresholds'][d.label])
@@ -116,4 +132,7 @@ class CloudDetector:
 
 
 def create_detector(settings):
+    if settings['backend'] == 'local' and settings['weights'].suffix.lower() == '.onnx':
+        from onnx_detector import OnnxDetector
+        return OnnxDetector(settings)
     return YoloDetector(settings) if settings['backend'] == 'local' else CloudDetector(settings)

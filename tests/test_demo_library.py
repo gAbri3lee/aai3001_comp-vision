@@ -35,7 +35,7 @@ def test_an_empty_or_missing_library_explains_how_to_fill_it(tmp_path):
         state.demo_root = tmp_path / 'demo'
         listing = client.get('/demo').json
         assert listing['empty'] and 'demo/videos/' in listing['help'] and listing['videos'] == []
-        assert [c['class'] for c in listing['classes']] == ['Escalator', 'People', 'Pillar', 'Stair', 'Wet Floor Sign']
+        assert [c['class'] for c in listing['classes']] == ['Escalator', 'People', 'Stair', 'Wet Floor Sign']
 
 
 def test_the_listing_has_names_and_ids_only(tmp_path):
@@ -89,7 +89,7 @@ def test_thumbnails_are_small_jpegs(tmp_path):
     root = library(tmp_path)
     with running({'local': FakeDetector('yolov8n')}) as (state, client):
         state.demo_root = root
-        item = client.get('/demo').json['classes'][3]['images'][0]
+        item = next(c for c in client.get('/demo').json['classes'] if c['class']=='Stair')['images'][0]
         response = client.get(f"/demo/thumb/{item['id']}")
         assert response.status_code == 200 and response.mimetype == 'image/jpeg'
         image = cv2.imdecode(np.frombuffer(response.data, np.uint8), cv2.IMREAD_COLOR)
@@ -116,9 +116,9 @@ def test_a_library_video_plays_and_is_never_deleted(tmp_path):
 def test_the_real_demo_folder_is_set_up_for_the_presenter():
     from config import PROJECT_ROOT
     root = PROJECT_ROOT / 'demo'
-    for name in ('Escalator', 'People', 'Pillar', 'Stair', 'Wet Floor Sign', 'videos'):
+    for name in ('Escalator', 'People', 'Stair', 'Wet Floor Sign', 'videos'):
         assert (root / name).is_dir()
     readme = (root / 'README.md').read_text()
-    assert 'test split' in readme and 'Pillar' in readme and '.gitignore' in readme
+    assert 'test split' in readme and 'four' in readme and '.gitignore' in readme
     ignore = (PROJECT_ROOT / '.gitignore').read_text()
     assert 'demo/videos/*' in ignore and '*.mp4' in ignore

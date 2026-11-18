@@ -35,7 +35,7 @@ class Hazard:
     xyxy: tuple
     size: float | None = None        # Box height divided by frame height
     band: str | None = None          # far / mid / mid-close / near; None when the gate is disabled
-    source: str = "trained"          # "trained" (five-class model) or "general" (COCO model)
+    source: str = "trained"          # "trained" (active trained model) or "general" (COCO model)
     confidence: float | None = None
     class_id: int | None = None
     gated: bool = True               # True: passed the alert gate and may be announced

@@ -64,6 +64,8 @@ def _three_places(value):
 
 def accuracy_note(config, subject='these images'):
     """The caption shown next to every score, from the recorded test results."""
+    if config.get('benchmark_note'):
+        return f"This is a check on {subject} only. {config['benchmark_note']}"
     test_images = config['dataset']['split_images']['test']
     return (f"This is a check on {subject} only. Tested accuracy on {test_images} test images: "
             f"local mAP50 {_three_places(config['local']['expected']['test_map50'])}, "
@@ -260,7 +262,7 @@ class ClassSummary:
             entry["max_confidence"] = max(entry["max_confidence"], best)
 
     def to_list(self):
-        """All five classes, so a class that never appeared shows as not seen."""
+        """All active classes, including those never seen."""
         rows = []
         for label in CLASS_NAMES:
             entry = self.classes.get(label)

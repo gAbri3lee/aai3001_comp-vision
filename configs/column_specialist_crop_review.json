@@ -1,0 +1,1556 @@
+{
+  "scope": "Binary structural-column crop research only; not the original five-class dataset",
+  "source_split": "v4 train only",
+  "split_manifest_md5": "49601080aac1f838190341d331785578",
+  "review": "AI visually reviewed crops and hard-negative examples; human/team review pending",
+  "frozen_validation_source_groups": [
+    "761886258_388600_mp4",
+    "IMG_5021_MOV",
+    "IMG_5026_MOV",
+    "V_20250221_165043_ES3_1_mp4",
+    "V_20250224_112118_ES3_mp4"
+  ],
+  "rows": [
+    {
+      "id": "P00",
+      "image": "StepUp-10-_png.rf.d48ecdc352ef45715b1dbffb47ccb243.jpg",
+      "scene": "StepUp",
+      "box": [
+        0,
+        0,
+        84,
+        408
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        0,
+        0,
+        95,
+        429
+      ],
+      "size": [
+        95,
+        429
+      ],
+      "label_box": [
+        0,
+        0,
+        84,
+        408
+      ],
+      "original_sha256": "b4036201d1a3a6f4e2bd4a58ee7022c30924d6179d19aa9f9d69ff61b2e83a8d",
+      "phase": "initial"
+    },
+    {
+      "id": "P01",
+      "image": "IMG_6875_MOV-0008_jpg.rf.ed54eba7bf74780f2bfc84bab46c1ecb.jpg",
+      "scene": "IMG_6875_MOV",
+      "box": [
+        309,
+        0,
+        342,
+        70
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        305,
+        0,
+        346,
+        74
+      ],
+      "size": [
+        41,
+        74
+      ],
+      "label_box": [
+        4,
+        0,
+        37,
+        70
+      ],
+      "original_sha256": "edfe8bdbda0be4f6c72764bd131c7216e9d76c2a152644c507744a403c6b5580",
+      "phase": "initial"
+    },
+    {
+      "id": "P02",
+      "image": "IMG_6875_MOV-0008_jpg.rf.ed54eba7bf74780f2bfc84bab46c1ecb.jpg",
+      "scene": "IMG_6875_MOV",
+      "box": [
+        474,
+        0,
+        500,
+        73
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        470,
+        0,
+        504,
+        77
+      ],
+      "size": [
+        34,
+        77
+      ],
+      "label_box": [
+        4,
+        0,
+        30,
+        73
+      ],
+      "original_sha256": "edfe8bdbda0be4f6c72764bd131c7216e9d76c2a152644c507744a403c6b5580",
+      "phase": "initial"
+    },
+    {
+      "id": "P03",
+      "image": "StairDown-107-_png.rf.471d9e21a0d0076b3b183dad27c8e0d5.jpg",
+      "scene": "StairDown",
+      "box": [
+        417,
+        15,
+        453,
+        104
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        412,
+        10,
+        458,
+        109
+      ],
+      "size": [
+        46,
+        99
+      ],
+      "label_box": [
+        5,
+        5,
+        41,
+        94
+      ],
+      "original_sha256": "6b4d4491eeef89675ed70e8a7a2587b999215306f57fabf033d6f472d0f90dca",
+      "phase": "initial"
+    },
+    {
+      "id": "P04",
+      "image": "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0805_jpg.rf.34cced8bf344bc217d30564bc8483bfd.jpg",
+      "scene": "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels",
+      "box": [
+        175,
+        140,
+        272,
+        278
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        163,
+        133,
+        284,
+        285
+      ],
+      "size": [
+        121,
+        152
+      ],
+      "label_box": [
+        12,
+        7,
+        109,
+        145
+      ],
+      "original_sha256": "326bace78360c869be5fdde5f2834ea29bc106ac2f25610db5b24e65fbdad2d9",
+      "phase": "initial"
+    },
+    {
+      "id": "P05",
+      "image": "vlc-record-2026-04-06-14h40m26s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0805_jpg.rf.34cced8bf344bc217d30564bc8483bfd.jpg",
+      "scene": "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels",
+      "box": [
+        432,
+        140,
+        577,
+        405
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        414,
+        126,
+        595,
+        419
+      ],
+      "size": [
+        181,
+        293
+      ],
+      "label_box": [
+        18,
+        14,
+        163,
+        279
+      ],
+      "original_sha256": "326bace78360c869be5fdde5f2834ea29bc106ac2f25610db5b24e65fbdad2d9",
+      "phase": "initial"
+    },
+    {
+      "id": "P06",
+      "image": "StepUp-227-_png.rf.f75c0c1dc6d808745f4439711edf502e.jpg",
+      "scene": "StepUp",
+      "box": [
+        300,
+        0,
+        363,
+        166
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        292,
+        0,
+        371,
+        175
+      ],
+      "size": [
+        79,
+        175
+      ],
+      "label_box": [
+        8,
+        0,
+        71,
+        166
+      ],
+      "original_sha256": "96eaa6bbabcb960eb4650b0750b754a78579205af9ae5eb1693258ca6c417418",
+      "phase": "initial"
+    },
+    {
+      "id": "P07",
+      "image": "V_20250224_112118_ES3_mp4-0025_jpg.rf.c8e7d4ac3f96ddb4b4e1b35a136a71d0.jpg",
+      "scene": "V_20250224_112118_ES3_mp4",
+      "box": [
+        224,
+        178,
+        259,
+        375
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        219,
+        168,
+        264,
+        385
+      ],
+      "size": [
+        45,
+        217
+      ],
+      "label_box": [
+        5,
+        10,
+        40,
+        207
+      ],
+      "original_sha256": "2051c6aa2a07dd6e20316395b822110302e113c582dcc29de3671ceacf8e8c98",
+      "phase": "initial"
+    },
+    {
+      "id": "P08",
+      "image": "V_20250224_112118_ES3_mp4-0025_jpg.rf.c8e7d4ac3f96ddb4b4e1b35a136a71d0.jpg",
+      "scene": "V_20250224_112118_ES3_mp4",
+      "box": [
+        279,
+        191,
+        302,
+        326
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        276,
+        184,
+        305,
+        333
+      ],
+      "size": [
+        29,
+        149
+      ],
+      "label_box": [
+        3,
+        7,
+        26,
+        142
+      ],
+      "original_sha256": "2051c6aa2a07dd6e20316395b822110302e113c582dcc29de3671ceacf8e8c98",
+      "phase": "initial"
+    },
+    {
+      "id": "P09",
+      "image": "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4701_jpg.rf.d8f3236e926e338c66084e91f73603f8.jpg",
+      "scene": "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels",
+      "box": [
+        230,
+        140,
+        327,
+        242
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        218,
+        134,
+        339,
+        248
+      ],
+      "size": [
+        121,
+        114
+      ],
+      "label_box": [
+        12,
+        6,
+        109,
+        108
+      ],
+      "original_sha256": "43b5fb58def223010b577d67d855aa937dd56d587babdfc9b24b2addafdf3290",
+      "phase": "initial"
+    },
+    {
+      "id": "P10",
+      "image": "vlc-record-2026-04-06-14h30m33s-rtsp___192-168-137-100_554_Streaming_Channels_101-_4701_jpg.rf.d8f3236e926e338c66084e91f73603f8.jpg",
+      "scene": "vlc-record-2026-04-06-14h30m02s-rtsp___192-168-137-100_554_Streaming_Channels",
+      "box": [
+        487,
+        140,
+        613,
+        358
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        471,
+        129,
+        629,
+        369
+      ],
+      "size": [
+        158,
+        240
+      ],
+      "label_box": [
+        16,
+        11,
+        142,
+        229
+      ],
+      "original_sha256": "43b5fb58def223010b577d67d855aa937dd56d587babdfc9b24b2addafdf3290",
+      "phase": "initial"
+    },
+    {
+      "id": "P11",
+      "image": "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0100_jpg.rf.54771c8b5f6603a47df81c99f617b533.jpg",
+      "scene": "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels",
+      "box": [
+        0,
+        292,
+        49,
+        467
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        0,
+        283,
+        55,
+        476
+      ],
+      "size": [
+        55,
+        193
+      ],
+      "label_box": [
+        0,
+        9,
+        49,
+        184
+      ],
+      "original_sha256": "7dd977466833e1bba10ca8f49cc4aaa2b074e334cd0c121364faaa8001a0f37a",
+      "phase": "initial"
+    },
+    {
+      "id": "P12",
+      "image": "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-_0100_jpg.rf.54771c8b5f6603a47df81c99f617b533.jpg",
+      "scene": "vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels_101-__vlc-record-2026-02-09-12h52m31s-rtsp___192-168-137-100_554_Streaming_Channels",
+      "box": [
+        466,
+        140,
+        630,
+        484
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        446,
+        122,
+        640,
+        502
+      ],
+      "size": [
+        194,
+        380
+      ],
+      "label_box": [
+        20,
+        18,
+        184,
+        362
+      ],
+      "original_sha256": "7dd977466833e1bba10ca8f49cc4aaa2b074e334cd0c121364faaa8001a0f37a",
+      "phase": "initial"
+    },
+    {
+      "id": "P13",
+      "image": "V_20250224_112118_ES3_mp4-0040_jpg.rf.8b5613203d20e8eddd321d6f29d8e05e.jpg",
+      "scene": "V_20250224_112118_ES3_mp4",
+      "box": [
+        416,
+        0,
+        500,
+        345
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        405,
+        0,
+        511,
+        363
+      ],
+      "size": [
+        106,
+        363
+      ],
+      "label_box": [
+        11,
+        0,
+        95,
+        345
+      ],
+      "original_sha256": "4b92e8032b2f6b04b00f20909a62b25838d2bf24fb2e0d0a2a7a74b74fd60488",
+      "phase": "initial"
+    },
+    {
+      "id": "P14",
+      "image": "IMG_9543_MOV-0035_jpg.rf.03be884f745d50f085da0a5f89188bfe.jpg",
+      "scene": "IMG_9543_MOV",
+      "box": [
+        419,
+        0,
+        500,
+        495
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        409,
+        0,
+        510,
+        520
+      ],
+      "size": [
+        101,
+        520
+      ],
+      "label_box": [
+        10,
+        0,
+        91,
+        495
+      ],
+      "original_sha256": "6a026abc205626f35b507851ed03215583c8aeb3a6558feddb28d9a2330d329f",
+      "phase": "initial"
+    },
+    {
+      "id": "P15",
+      "image": "V_20250221_165043_ES3_1_mp4-0093_jpg.rf.2ead992088ccdbfb77b1e3007f4c9eb3.jpg",
+      "scene": "V_20250221_165043_ES3_1_mp4",
+      "box": [
+        443,
+        35,
+        500,
+        326
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        436,
+        20,
+        507,
+        341
+      ],
+      "size": [
+        71,
+        321
+      ],
+      "label_box": [
+        7,
+        15,
+        64,
+        306
+      ],
+      "original_sha256": "3dbadf4c728b34eaba85a18c6931f08925ff09d40841c9761b235ab7151e6997",
+      "phase": "initial"
+    },
+    {
+      "id": "P16",
+      "image": "V_20250221_164454_ES3_1_mp4-0028_jpg.rf.a27706a1ffdb1e3cfa38a19f137df4ef.jpg",
+      "scene": "V_20250221_164454_ES3_1_mp4",
+      "box": [
+        168,
+        251,
+        205,
+        327
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        163,
+        247,
+        210,
+        331
+      ],
+      "size": [
+        47,
+        84
+      ],
+      "label_box": [
+        5,
+        4,
+        42,
+        80
+      ],
+      "original_sha256": "c1f1b15508e7058fc1edf1ac5c2255157466e7f6e8381773db639b65fbb55980",
+      "phase": "initial"
+    },
+    {
+      "id": "P17",
+      "image": "V_20250221_164454_ES3_1_mp4-0028_jpg.rf.a27706a1ffdb1e3cfa38a19f137df4ef.jpg",
+      "scene": "V_20250221_164454_ES3_1_mp4",
+      "box": [
+        214,
+        263,
+        242,
+        313
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        210,
+        260,
+        246,
+        316
+      ],
+      "size": [
+        36,
+        56
+      ],
+      "label_box": [
+        4,
+        3,
+        32,
+        53
+      ],
+      "original_sha256": "c1f1b15508e7058fc1edf1ac5c2255157466e7f6e8381773db639b65fbb55980",
+      "phase": "initial"
+    },
+    {
+      "id": "P18",
+      "image": "1_mp4-0197_jpg.rf.630627edfa10001737c3367205c915b3.jpg",
+      "scene": "1_mp4",
+      "box": [
+        332,
+        148,
+        390,
+        318
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        325,
+        139,
+        397,
+        327
+      ],
+      "size": [
+        72,
+        188
+      ],
+      "label_box": [
+        7,
+        9,
+        65,
+        179
+      ],
+      "original_sha256": "b5e234299ca4111e63d656439bd128b845849b4353af90ca6d334af77782ffa8",
+      "phase": "initial"
+    },
+    {
+      "id": "P19",
+      "image": "761886258_388600_mp4-0001_jpg.rf.3c2cfbee3716d6bc8ed03d4b322261ff.jpg",
+      "scene": "761886258_388600_mp4",
+      "box": [
+        239,
+        51,
+        274,
+        195
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        234,
+        43,
+        279,
+        203
+      ],
+      "size": [
+        45,
+        160
+      ],
+      "label_box": [
+        5,
+        8,
+        40,
+        152
+      ],
+      "original_sha256": "4f08e670000cc64488a72fe91aedc9b3277a0b463b23f56266b657dcff4658d2",
+      "phase": "initial"
+    },
+    {
+      "id": "P20",
+      "image": "1_mp4-0331_jpg.rf.7e3648c069f9b63e68c151a42ad976c9.jpg",
+      "scene": "1_mp4",
+      "box": [
+        424,
+        94,
+        445,
+        186
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        421,
+        89,
+        448,
+        191
+      ],
+      "size": [
+        27,
+        102
+      ],
+      "label_box": [
+        3,
+        5,
+        24,
+        97
+      ],
+      "original_sha256": "086d374fc8acd5fd99320538875492d2ce5ca984d1c9b627f91d8d5abc9a9189",
+      "phase": "initial"
+    },
+    {
+      "id": "P21",
+      "image": "761886258_388600_mp4-0078_jpg.rf.e4a3fee7f8bb47e38d7a15bce4ba1d31.jpg",
+      "scene": "761886258_388600_mp4",
+      "box": [
+        420,
+        94,
+        497,
+        296
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        410,
+        83,
+        507,
+        307
+      ],
+      "size": [
+        97,
+        224
+      ],
+      "label_box": [
+        10,
+        11,
+        87,
+        213
+      ],
+      "original_sha256": "993116cf166001d00e09e0013a4ed11d311e5c497855bd7173d633bf9abeacbe",
+      "phase": "initial"
+    },
+    {
+      "id": "P22",
+      "image": "V_20250221_164454_ES3_1_mp4-0021_jpg.rf.20d2d3bc2dac2083fbf1f04b75c3fad1.jpg",
+      "scene": "V_20250221_164454_ES3_1_mp4",
+      "box": [
+        317,
+        280,
+        342,
+        332
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        314,
+        277,
+        346,
+        335
+      ],
+      "size": [
+        32,
+        58
+      ],
+      "label_box": [
+        3,
+        3,
+        28,
+        55
+      ],
+      "original_sha256": "003fe57b91c45791d75dfcd7c1a6e04bd971b3b475df9a4dc3d1aa4e7eaaa2a2",
+      "phase": "initial"
+    },
+    {
+      "id": "P23",
+      "image": "IMG_4088_MOV-0028_jpg.rf.01f6e6b56e599a9b101317d32159a908.jpg",
+      "scene": "IMG_4088_MOV",
+      "box": [
+        366,
+        157,
+        400,
+        264
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        361,
+        151,
+        405,
+        270
+      ],
+      "size": [
+        44,
+        119
+      ],
+      "label_box": [
+        5,
+        6,
+        39,
+        113
+      ],
+      "original_sha256": "4edc62b01ac716b1c1ac2ffd1bf24fc3c23d47044525483057d81d782c49fc10",
+      "phase": "initial"
+    },
+    {
+      "id": "P24",
+      "image": "IMG_9938_MOV-0008_jpg.rf.e1ae02d5cfd1ea4f48ccace7e42470e6.jpg",
+      "scene": "IMG_9938_MOV",
+      "box": [
+        293,
+        35,
+        343,
+        379
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        287,
+        17,
+        350,
+        397
+      ],
+      "size": [
+        63,
+        380
+      ],
+      "label_box": [
+        6,
+        18,
+        56,
+        362
+      ],
+      "original_sha256": "766d659673bfd23034def13552ecf6306e2711810c67c3d48dad167766f39ccb",
+      "phase": "initial"
+    },
+    {
+      "id": "P25",
+      "image": "IMG_9938_MOV-0008_jpg.rf.e1ae02d5cfd1ea4f48ccace7e42470e6.jpg",
+      "scene": "IMG_9938_MOV",
+      "box": [
+        362,
+        177,
+        383,
+        305
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        359,
+        170,
+        386,
+        312
+      ],
+      "size": [
+        27,
+        142
+      ],
+      "label_box": [
+        3,
+        7,
+        24,
+        135
+      ],
+      "original_sha256": "766d659673bfd23034def13552ecf6306e2711810c67c3d48dad167766f39ccb",
+      "phase": "initial"
+    },
+    {
+      "id": "P26",
+      "image": "IMG_9938_MOV-0008_jpg.rf.e1ae02d5cfd1ea4f48ccace7e42470e6.jpg",
+      "scene": "IMG_9938_MOV",
+      "box": [
+        394,
+        211,
+        410,
+        273
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        392,
+        207,
+        412,
+        277
+      ],
+      "size": [
+        20,
+        70
+      ],
+      "label_box": [
+        2,
+        4,
+        18,
+        66
+      ],
+      "original_sha256": "766d659673bfd23034def13552ecf6306e2711810c67c3d48dad167766f39ccb",
+      "phase": "initial"
+    },
+    {
+      "id": "P27",
+      "image": "IMG_6874_MOV-0023_jpg.rf.ef844bfffffa6a05c8105bdb13aeb4ec.jpg",
+      "scene": "IMG_6874_MOV",
+      "box": [
+        140,
+        0,
+        181,
+        177
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        135,
+        0,
+        186,
+        186
+      ],
+      "size": [
+        51,
+        186
+      ],
+      "label_box": [
+        5,
+        0,
+        46,
+        177
+      ],
+      "original_sha256": "3030fdbd8cc8e9a1cd90a88bc7779f8c645eab06a24596ecdc2b6f917ec264b3",
+      "phase": "initial"
+    },
+    {
+      "id": "P28",
+      "image": "IMG_8603_MOV-0008_jpg.rf.d47e055fd6091b9c17d3d6b8e071a29a.jpg",
+      "scene": "IMG_8603_MOV",
+      "box": [
+        165,
+        0,
+        195,
+        150
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        161,
+        0,
+        199,
+        158
+      ],
+      "size": [
+        38,
+        158
+      ],
+      "label_box": [
+        4,
+        0,
+        34,
+        150
+      ],
+      "original_sha256": "2230b9dd140e892b76940a0a1a60c1315fadf5734da2e5fca0c4d0f421be9bb3",
+      "phase": "initial"
+    },
+    {
+      "id": "P29",
+      "image": "IMG_8603_MOV-0008_jpg.rf.d47e055fd6091b9c17d3d6b8e071a29a.jpg",
+      "scene": "IMG_8603_MOV",
+      "box": [
+        297,
+        0,
+        332,
+        173
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        292,
+        0,
+        337,
+        182
+      ],
+      "size": [
+        45,
+        182
+      ],
+      "label_box": [
+        5,
+        0,
+        40,
+        173
+      ],
+      "original_sha256": "2230b9dd140e892b76940a0a1a60c1315fadf5734da2e5fca0c4d0f421be9bb3",
+      "phase": "initial"
+    },
+    {
+      "id": "N0017",
+      "image": "IMG_5026_MOV-0009_jpg.rf.f50d302e31f86d7f4716b376f6bbc631.jpg",
+      "scene": "IMG_5026_MOV",
+      "box": [
+        172.20225524902344,
+        0.0712890625,
+        499.4163818359375,
+        582.184326171875
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        132,
+        0,
+        539,
+        612
+      ],
+      "size": [
+        407,
+        612
+      ],
+      "label_box": [
+        40.20225524902344,
+        0.0712890625,
+        367.4163818359375,
+        582.184326171875
+      ],
+      "original_sha256": "656add3a86c00d11227ef7410b1aaa9597680a4f501ebe5cffc815afb9327d5c",
+      "phase": "initial"
+    },
+    {
+      "id": "N0018",
+      "image": "wet-floor-sign_119_jpeg.rf.d6526ac6f0c1ee1178d014cabdc02fca.jpg",
+      "scene": "67dd5f5c472d8_WhatsApp-Image-2025-03-20-at-6_05_23-PM",
+      "box": [
+        251.42625427246094,
+        96.54791259765625,
+        377.8931884765625,
+        607.43310546875
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        236,
+        71,
+        394,
+        633
+      ],
+      "size": [
+        158,
+        562
+      ],
+      "label_box": [
+        15.426254272460938,
+        25.54791259765625,
+        141.8931884765625,
+        536.43310546875
+      ],
+      "original_sha256": "8f3089ca1e7bbafa78d89cd4440831350c020f4b0e2375e2989a2cfa9778236d",
+      "phase": "initial"
+    },
+    {
+      "id": "N0019",
+      "image": "IMG_5021_MOV-0019_jpg.rf.e8a50dd4e91edf7c949004eb066bfa99.jpg",
+      "scene": "IMG_5021_MOV",
+      "box": [
+        159.1064453125,
+        0.0,
+        426.9261474609375,
+        480.865478515625
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        126,
+        0,
+        460,
+        505
+      ],
+      "size": [
+        334,
+        505
+      ],
+      "label_box": [
+        33.1064453125,
+        0.0,
+        300.9261474609375,
+        480.865478515625
+      ],
+      "original_sha256": "bd3e2f763a4b331e3134963c8a2edf32b7b4163d529ea7754898ea6934fd920f",
+      "phase": "initial"
+    },
+    {
+      "id": "N0020",
+      "image": "IMG_9997_MOV-0020_jpg.rf.2449df0e3cec1215557d4128804dd6b7.jpg",
+      "scene": "IMG_9997_MOV",
+      "box": [
+        311.6544189453125,
+        0.0,
+        500.132568359375,
+        578.8512573242188
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        289,
+        0,
+        523,
+        608
+      ],
+      "size": [
+        234,
+        608
+      ],
+      "label_box": [
+        22.6544189453125,
+        0.0,
+        211.132568359375,
+        578.8512573242188
+      ],
+      "original_sha256": "169f3041b368b196b493535ae85e182b184cfbbb1a441b0f073f97ed4edeb104",
+      "phase": "initial"
+    },
+    {
+      "id": "N0031",
+      "image": "IMG_3503_MOV-0056_jpg.rf.f00d63a9fb42df8acaa340387e7de397.jpg",
+      "scene": "IMG_3503_MOV",
+      "box": [
+        257.84417724609375,
+        0.0,
+        359.95184326171875,
+        194.8582763671875
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        245,
+        0,
+        373,
+        205
+      ],
+      "size": [
+        128,
+        205
+      ],
+      "label_box": [
+        12.84417724609375,
+        0.0,
+        114.95184326171875,
+        194.8582763671875
+      ],
+      "original_sha256": "3c5ae0b431c9a94b28c43f004b48d9f2bed5ee643469bb6bfeda97d5d67cc8a2",
+      "phase": "initial"
+    },
+    {
+      "id": "N0037",
+      "image": "IMG_3486_MOV-0028_jpg.rf.88d56d80c1ca9c5ca34fc08297d0fe52.jpg",
+      "scene": "IMG_3486_MOV",
+      "box": [
+        247.7760772705078,
+        0.027374267578125,
+        412.62310791015625,
+        135.08139038085938
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        227,
+        0,
+        433,
+        142
+      ],
+      "size": [
+        206,
+        142
+      ],
+      "label_box": [
+        20.776077270507812,
+        0.027374267578125,
+        185.62310791015625,
+        135.08139038085938
+      ],
+      "original_sha256": "7c1191457a4efbe27441d43d4731529892ead7121bebaa61565d8dbe6caabb8f",
+      "phase": "initial"
+    },
+    {
+      "id": "N0042",
+      "image": "IMG_4089_vertical_mp4-0023_jpg.rf.0204037c518c6d3979295177693a9e11.jpg",
+      "scene": "IMG_4089_vertical_mp4",
+      "box": [
+        167.8035888671875,
+        319.5228271484375,
+        219.3162841796875,
+        486.526123046875
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        161,
+        311,
+        226,
+        495
+      ],
+      "size": [
+        65,
+        184
+      ],
+      "label_box": [
+        6.8035888671875,
+        8.5228271484375,
+        58.3162841796875,
+        175.526123046875
+      ],
+      "original_sha256": "c5f245154e586d5332cd8e7c8acc0d8f02d06211a1d4a1de1f0a77fc20421e8f",
+      "phase": "initial"
+    },
+    {
+      "id": "N0046",
+      "image": "IMG_4127_MOV-0044_jpg.rf.e89ec898c252670d7b0e8e2f240fe752.jpg",
+      "scene": "IMG_4127_MOV",
+      "box": [
+        435.91986083984375,
+        0.0,
+        500.07598876953125,
+        276.72625732421875
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        428,
+        0,
+        508,
+        291
+      ],
+      "size": [
+        80,
+        291
+      ],
+      "label_box": [
+        7.91986083984375,
+        0.0,
+        72.07598876953125,
+        276.72625732421875
+      ],
+      "original_sha256": "43aff0d8ce946a4b98775de4e43b10c305969d53793cd575878a826f662571fe",
+      "phase": "initial"
+    },
+    {
+      "id": "N0059",
+      "image": "IMG_9613_MOV-0213_jpg.rf.a77147864d48a299e3d7fa9141d6fad2.jpg",
+      "scene": "IMG_9613_MOV",
+      "box": [
+        424.98907470703125,
+        0.0,
+        499.45086669921875,
+        210.13011169433594
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        416,
+        0,
+        509,
+        221
+      ],
+      "size": [
+        93,
+        221
+      ],
+      "label_box": [
+        8.98907470703125,
+        0.0,
+        83.45086669921875,
+        210.13011169433594
+      ],
+      "original_sha256": "a446824afa2fd8b775c3666e73f706fb2c7da693f600f66138b9c5cea051b9c0",
+      "phase": "initial"
+    },
+    {
+      "id": "N0063",
+      "image": "IMG_9513_MOV-0006_jpg.rf.b342de072dbcebfaad43819fa587bfbd.jpg",
+      "scene": "IMG_9513_MOV",
+      "box": [
+        339.65814208984375,
+        303.75311279296875,
+        468.2281494140625,
+        615.7619018554688
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        324,
+        288,
+        484,
+        632
+      ],
+      "size": [
+        160,
+        344
+      ],
+      "label_box": [
+        15.65814208984375,
+        15.75311279296875,
+        144.2281494140625,
+        327.76190185546875
+      ],
+      "original_sha256": "cf1260b2bd75b23a982435f2db39edc8f3f6017f4f9249cb65ea0620ce7c0323",
+      "phase": "initial"
+    },
+    {
+      "id": "H00",
+      "image": "IMG_6706_MOV-0007_jpg.rf.f48a7c752a4311f5aee03d8f79aa20da.jpg",
+      "scene": "IMG_6706_MOV",
+      "source_group": "IMG_6706_MOV",
+      "box": [
+        172.42601013183594,
+        0.0,
+        476.5756530761719,
+        640.0
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        172,
+        0,
+        477,
+        640
+      ],
+      "size": [
+        305,
+        640
+      ],
+      "label_box": [
+        0.4260101318359375,
+        0.0,
+        304.5756530761719,
+        640.0
+      ],
+      "original_sha256": "40b07940e46609746a18512cd7a1f49d71a0ecfa9741e2f8f09f95599a863259",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H01",
+      "image": "IMG_9943_MOV-0001_jpg.rf.f5884f89b5884a7b308dd3587d7e8538.jpg",
+      "scene": "IMG_9943_MOV",
+      "source_group": "IMG_9943_MOV",
+      "box": [
+        159.42369079589844,
+        414.3810729980469,
+        475.6009216308594,
+        640.0
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        159,
+        414,
+        476,
+        640
+      ],
+      "size": [
+        317,
+        226
+      ],
+      "label_box": [
+        0.4236907958984375,
+        0.381072998046875,
+        316.6009216308594,
+        226.0
+      ],
+      "original_sha256": "eb24e6f18d877d78f560139179df8208f38d1f4f1a0984c3995d97da6188b155",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H02",
+      "image": "IMG_6401_vertical_mp4-0008_jpg.rf.38a5c14a1a35ab5aa2d953e738eab937.jpg",
+      "scene": "IMG_6401_vertical_mp4",
+      "source_group": "IMG_6401_vertical_mp4",
+      "box": [
+        170.68435668945312,
+        0.0,
+        479.41009521484375,
+        640.0
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        170,
+        0,
+        480,
+        640
+      ],
+      "size": [
+        310,
+        640
+      ],
+      "label_box": [
+        0.684356689453125,
+        0.0,
+        309.41009521484375,
+        640.0
+      ],
+      "original_sha256": "dde4172ec576a5857ff23164cdf10c03756711dd510e0198d21473927d42834e",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H03",
+      "image": "IMG_6875_MOV-0010_jpg.rf.457424ea61b648ea53896a266a7bd844.jpg",
+      "scene": "IMG_6875_MOV",
+      "source_group": "mall_steps_recordings_group",
+      "box": [
+        159.42251586914062,
+        344.04034423828125,
+        479.60369873046875,
+        640.0
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        159,
+        344,
+        480,
+        640
+      ],
+      "size": [
+        321,
+        296
+      ],
+      "label_box": [
+        0.422515869140625,
+        0.04034423828125,
+        320.60369873046875,
+        296.0
+      ],
+      "original_sha256": "a135e1efc46dd3eeebf650242aa7703eb7e22e4a3f4bef5b5fc70f33be140afb",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H04",
+      "image": "IMG_9582_MOV-0024_jpg.rf.19bd564eb95277bed22c31e79da26655.jpg",
+      "scene": "IMG_9582_MOV",
+      "source_group": "IMG_9582_MOV",
+      "box": [
+        163.8544158935547,
+        116.04779052734375,
+        483.92193603515625,
+        522.0186767578125
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        163,
+        116,
+        484,
+        523
+      ],
+      "size": [
+        321,
+        407
+      ],
+      "label_box": [
+        0.8544158935546875,
+        0.04779052734375,
+        320.92193603515625,
+        406.0186767578125
+      ],
+      "original_sha256": "eb9c9e66d469428bbfdcd787102c97c0438d1584c85d1fb09f40191e70e71202",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H05",
+      "image": "IMG_9859_MOV-0001_jpg.rf.c6dae0e31a9e7e2f0773361d25f03ee7.jpg",
+      "scene": "IMG_9859_MOV",
+      "source_group": "IMG_9859_MOV",
+      "box": [
+        161.0552520751953,
+        363.9815673828125,
+        468.8872375488281,
+        637.3820190429688
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        161,
+        363,
+        469,
+        638
+      ],
+      "size": [
+        308,
+        275
+      ],
+      "label_box": [
+        0.0552520751953125,
+        0.9815673828125,
+        307.8872375488281,
+        274.38201904296875
+      ],
+      "original_sha256": "45fc0afe97155f23e51930b3871cdc3e1f9f4213d1316232b673a19e726fe867",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H06",
+      "image": "IMG_0640_MOV-0034_jpg.rf.a9e39388696938319a3b3fbeeea01e72.jpg",
+      "scene": "IMG_0640_MOV",
+      "source_group": "IMG_0640_MOV",
+      "box": [
+        167.50338745117188,
+        0.0,
+        462.7535400390625,
+        640.0
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        167,
+        0,
+        463,
+        640
+      ],
+      "size": [
+        296,
+        640
+      ],
+      "label_box": [
+        0.503387451171875,
+        0.0,
+        295.7535400390625,
+        640.0
+      ],
+      "original_sha256": "f6d6ff68420ec5679d56411a8559b642fac1cc37e3d62b8670d01f0af0dcf844",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H07",
+      "image": "IMG_9693_MOV-0005_jpg.rf.6ca849984ae0440afac4ef4d066f7a8a.jpg",
+      "scene": "IMG_9693_MOV",
+      "source_group": "IMG_9693_MOV",
+      "box": [
+        168.8144989013672,
+        0.0,
+        481.18475341796875,
+        640.0
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        168,
+        0,
+        482,
+        640
+      ],
+      "size": [
+        314,
+        640
+      ],
+      "label_box": [
+        0.8144989013671875,
+        0.0,
+        313.18475341796875,
+        640.0
+      ],
+      "original_sha256": "986a2899ee88240192b35eaecba449fd160247a07087ba7854521c27c7aacdc2",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H10",
+      "image": "IMG_9935_MOV-0003_jpg.rf.82aeb72f39e7024dbea274fc52860ee4.jpg",
+      "scene": "IMG_9935_MOV",
+      "source_group": "IMG_9935_MOV",
+      "box": [
+        304,
+        0,
+        384,
+        376
+      ],
+      "positive": true,
+      "crop_xyxy": [
+        304,
+        0,
+        385,
+        377
+      ],
+      "size": [
+        81,
+        377
+      ],
+      "label_box": [
+        0,
+        0,
+        80,
+        376
+      ],
+      "original_sha256": "04ac30d214f10609efb4f249fca1ef33a6a6d94709a6be8b3cfa7047587a00a5",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H11",
+      "image": "IMG_5849_MOV-0000_jpg.rf.8a2af0aa9d3d67efdc8ee5607d2c98c5.jpg",
+      "scene": "IMG_5849_MOV",
+      "source_group": "IMG_5849_MOV",
+      "box": [
+        159.93006896972656,
+        406.4992370605469,
+        479.85943603515625,
+        640.0
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        159,
+        406,
+        480,
+        640
+      ],
+      "size": [
+        321,
+        234
+      ],
+      "label_box": [
+        0.9300689697265625,
+        0.499237060546875,
+        320.85943603515625,
+        234.0
+      ],
+      "original_sha256": "716c5c0bb6ae9f5f1f77912f2bb4ca96fda1657876c8b97befda5e50838caf16",
+      "phase": "hard_negative_round"
+    },
+    {
+      "id": "H12",
+      "image": "IMG_6726_MOV-0002_jpg.rf.b140933c1a0ad2c63b1850ec7fc692e3.jpg",
+      "scene": "IMG_6726_MOV",
+      "source_group": "IMG_6726_MOV",
+      "box": [
+        171.34498596191406,
+        0.0,
+        476.25347900390625,
+        617.0556030273438
+      ],
+      "positive": false,
+      "crop_xyxy": [
+        171,
+        0,
+        477,
+        618
+      ],
+      "size": [
+        306,
+        618
+      ],
+      "label_box": [
+        0.3449859619140625,
+        0.0,
+        305.25347900390625,
+        617.0556030273438
+      ],
+      "original_sha256": "6f421a49496a3c03b1e36456b2ee7d1ed9d7241b323c316f7ccc4932a9ea2190",
+      "phase": "hard_negative_round"
+    }
+  ]
+}

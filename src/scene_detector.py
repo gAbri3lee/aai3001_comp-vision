@@ -1,4 +1,4 @@
-"""Supplement the five-class detector with generic, locally detected objects.
+"""Supplement the four-class detector with generic, locally detected objects.
 
 The additional COCO model locates common objects; it is not an open-world
 detector. Its labels never become trained hazard class IDs or cloud payload IDs.
@@ -30,7 +30,10 @@ def load_general_model():
     weights = resolve_path('models/general/yolov8n.pt')
     weights.parent.mkdir(parents=True, exist_ok=True)
     # Ultralytics downloads the pretrained weights on first use.
-    return YOLO(str(weights), task='detect')
+    model = YOLO(str(weights), task='detect')
+    if len(model.names) != 80 or model.names[0] != 'person' or model.names[56] != 'chair':
+        raise ValueError('General detector requires the standard 80-class COCO checkpoint')
+    return model
 
 
 class SceneDetector:
@@ -64,13 +67,22 @@ class SceneDetector:
             result = self.general.predict(frame_bgr, imgsz=640, conf=.35, iou=.7,
                                           max_det=100, rect=False, device=self.device,
                                           verbose=False)[0]
+            objects = self._objects(result, frame_bgr.shape, batch.detections)
         except Exception as exc:
             # Trained detections still count; only the extra objects are missing.
             logger.error('General model prediction failed: %s', exc)
             self.general_error = f'General model failed: {exc}'
-            return batch
+            return replace(batch, latency_ms=batch.latency_ms + 1000 * (time.perf_counter() - start))
         self.general_error = None
-        height, width = frame_bgr.shape[:2]
+        detections = tuple(sorted(batch.detections + tuple(objects),
+                                  key=lambda detection: detection.confidence, reverse=True))
+        return replace(batch, detections=detections,
+                       latency_ms=batch.latency_ms + 1000 * (time.perf_counter() - start),
+                       model=batch.model + ' + general-yolov8n')
+
+    @staticmethod
+    def _objects(result, shape, trained):
+        height, width = shape[:2]
         objects = []
         for row in result.boxes.data.cpu().numpy():
             x1, y1, x2, y2, confidence, coco_id = row[:6]
@@ -79,11 +91,7 @@ class SceneDetector:
             label = 'People' if int(coco_id) == COCO_PERSON else 'Object'
             detection = make_detection(0, confidence, (x1, y1, x2, y2), [label], width, height)
             if detection is None or any(iou(detection.box_xyxy, named.box_xyxy) >= .5
-                                        for named in batch.detections):
+                                        for named in trained):
                 continue
             objects.append(replace(detection, class_id=-1))
-        detections = tuple(sorted(batch.detections + tuple(objects),
-                                  key=lambda detection: detection.confidence, reverse=True))
-        return replace(batch, detections=detections,
-                       latency_ms=batch.latency_ms + 1000 * (time.perf_counter() - start),
-                       model=batch.model + ' + general-yolov8n')
+        return objects

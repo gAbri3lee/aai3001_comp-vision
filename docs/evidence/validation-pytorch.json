@@ -1,0 +1,51 @@
+{
+  "runtime": "yolo",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "device": "cpu",
+  "images": 925,
+  "input_size": 640,
+  "alert_threshold": 0.35,
+  "metrics": {
+    "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+    "images": 925,
+    "alert_threshold": 0.35,
+    "map50": 0.7091212080909991,
+    "map50_95": 0.44349160431310086,
+    "precision": 0.7961832061068702,
+    "recall": 0.6777128005198181,
+    "f1": 0.7321867321867321,
+    "safety_recall": 0.7800827711761859,
+    "per_class": {
+      "Escalator": {
+        "ap50": 0.8244534463483024,
+        "precision": 0.8878504672897196,
+        "recall": 0.7851239669421488,
+        "boxes": 121
+      },
+      "People": {
+        "ap50": 0.7491156001169057,
+        "precision": 0.7771812080536913,
+        "recall": 0.7078239608801956,
+        "boxes": 818
+      },
+      "Pillar": {
+        "ap50": 0.3439150428605269,
+        "precision": 0.7833333333333333,
+        "recall": 0.2919254658385093,
+        "boxes": 161
+      },
+      "Stair": {
+        "ap50": 0.7426728644474714,
+        "precision": 0.7684210526315789,
+        "recall": 0.6822429906542056,
+        "boxes": 321
+      },
+      "Wet Floor Sign": {
+        "ap50": 0.8854490866817893,
+        "precision": 0.911504424778761,
+        "recall": 0.8728813559322034,
+        "boxes": 118
+      }
+    }
+  }
+}

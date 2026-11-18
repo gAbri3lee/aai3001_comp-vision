@@ -85,6 +85,7 @@
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem 0.8rem;
     display: flex; flex-direction: column; gap: 0.45rem; min-height: 0; overflow-y: auto;
   }
+  .side > .switch { flex-shrink: 0; }
   .video-wrap {
     position: relative; flex: 1 1 auto; min-height: 12rem; border-radius: 10px; overflow: hidden;
     background: var(--video-bg); display: flex; align-items: center; justify-content: center;
@@ -385,7 +386,7 @@
   Supplementary hazard awareness only: detection can miss hazards and "No hazards" does not mean the scene is safe.
   Distance is an estimate from box size, not measured metres.
   <details><summary>All limitations</summary>
-  Trained on five Roboflow v4 classes: Escalator, People, Pillar, Stair and Wet Floor Sign. Pillar is the weakest class and is often missed. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Depth, when enabled, is relative, not metres. Far detections, side objects and low-confidence general detections are shown as ignored and are not spoken. Other common objects are labelled Object by a general detector; objects outside its coverage can still be missed. Cloud mode uploads camera frames.
+  Active detection classes: {{ classes | join(', ') }}. The local model was derived from the original Roboflow v4 checkpoint; class removal did not retrain it. Stair direction is unknown; a Wet Floor Sign detection does not measure floor wetness. Depth, when enabled, is relative, not metres. Far detections, side objects and low-confidence general detections are shown as ignored and are not spoken. Other common objects are labelled Object by a general detector; objects outside its coverage can still be missed. Cloud mode uploads camera frames.
   </details>
 </footer>
 </div>
@@ -789,7 +790,7 @@
       return tr;
     });
     table.replaceChildren(head, ...rows);
-    $("summary-note").textContent = data.accuracy_note + " Pillar is the weakest class and is often missed.";
+    $("summary-note").textContent = data.accuracy_note;
     $("summary-replay").disabled = !src.replay_available;
     $("summary-replay").textContent = src.replay_available ? "Replay" : "Replay (upload it again)";
   }
@@ -1019,9 +1020,14 @@
     return li;
   }
 
+  let statusRequestInFlight = false;
   async function pollStatus() {
+    // Interval ticks and control responses share one poll. Delayed replies
+    // cannot overwrite a newer reply or build up requests during recovery.
+    if (statusRequestInFlight) return;
+    statusRequestInFlight = true;
     try {
-      const res = await fetch("/status");
+      const res = await fetch("/status", {signal: AbortSignal.timeout(5000)});
       if (!res.ok) throw new Error("Status unavailable");
       const data = await res.json();
       latest = data;
@@ -1053,7 +1059,7 @@
       if (analysis) {
         const tag = run && run.expected ? (run.expected.recognised ? `, recognised as ${run.expected.class}`
                                                                    : `, not recognised as ${run.expected.class}`) : "";
-        viewText.textContent = run ? `Showing: ${run.name}${tag}${run.spoken ? " (spoken)" : ""}`
+        viewText.textContent = run ? `Showing: ${run.name}${tag}${run.spoken ? " (sent to speaker)" : ""}`
                                    : `Showing: ${analysis.results.length} analysed images`;
       }
       fpsBadge.textContent = analysis ? (run ? "Image" : "Images") : `${data.fps.toFixed(1)} FPS`;
@@ -1066,7 +1072,8 @@
       // A camera or video problem replaces the live banner: "No hazards" would be misleading.
       const blocking = analysis ? null : (data.health || []).find(h => h.severity === "error");
       const problem = blocking ? blocking.message : view.error;
-      alertText.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") || view.alert || "No hazards";
+      alertText.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") ||
+        view.alert || (run ? "No hazards present" : "No hazards");
       // Recognition results and batch summaries are information, not alerts.
       const informational = recognising || (analysis && !run) || (!analysis && source.ended);
       alertBanner.className = "alert-banner " + (problem ? "level-warning" : informational ? "level-clear"
@@ -1084,6 +1091,9 @@
       const timing = view.round_trip_ms ?? view.latency_ms;
       modelStatus.textContent = `${view.backend}: ${view.model}` + (timing == null ? "" :
         ` · ${timing.toFixed(1)} ms${view.round_trip_ms == null ? " inference" : " round trip"}`);
+      if (!analysis && data.pipeline_latency_ms != null) {
+        modelStatus.textContent += ` · ${data.pipeline_latency_ms.toFixed(0)} ms capture-to-preview`;
+      }
       const gate = data.gate_enabled === false ? "alert gate off" :
                    "alert gate on" + (data.gate_calibrated ? "" : " (uncalibrated sizes)");
       pipelineStatus.textContent = [gate, data.depth_enabled ? "depth on" : "depth off",
@@ -1117,6 +1127,8 @@
       pipelineStatus.textContent = "";
       objectAlerts.textContent = "Service unavailable";
       ignoredList.replaceChildren();
+    } finally {
+      statusRequestInFlight = false;
     }
   }
 

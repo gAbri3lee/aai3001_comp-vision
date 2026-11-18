@@ -1,0 +1,101 @@
+{
+  "candidate_passes_pilot_gate": false,
+  "other_class_regressions": [],
+  "before": {
+    "images": 925,
+    "map50": 0.7217462556621514,
+    "map50_95": 0.4548063071047876,
+    "confidence": 0.35,
+    "per_class": {
+      "Escalator": {
+        "tp": 95,
+        "fp": 12,
+        "fn": 26,
+        "precision": 0.8878504672897196,
+        "recall": 0.7851239669421488
+      },
+      "People": {
+        "tp": 579,
+        "fp": 166,
+        "fn": 239,
+        "precision": 0.7771812080536913,
+        "recall": 0.7078239608801956
+      },
+      "Pillar": {
+        "tp": 47,
+        "fp": 13,
+        "fn": 114,
+        "precision": 0.7833333333333333,
+        "recall": 0.2919254658385093
+      },
+      "Stair": {
+        "tp": 219,
+        "fp": 66,
+        "fn": 102,
+        "precision": 0.7684210526315789,
+        "recall": 0.6822429906542056
+      },
+      "Wet Floor Sign": {
+        "tp": 103,
+        "fp": 10,
+        "fn": 15,
+        "precision": 0.911504424778761,
+        "recall": 0.8728813559322034
+      }
+    }
+  },
+  "after": {
+    "images": 925,
+    "map50": 0.7151513749343607,
+    "map50_95": 0.4461983136536234,
+    "confidence": 0.35,
+    "per_class": {
+      "Escalator": {
+        "tp": 98,
+        "fp": 13,
+        "fn": 23,
+        "precision": 0.8828828828828829,
+        "recall": 0.8099173553719008
+      },
+      "People": {
+        "tp": 579,
+        "fp": 156,
+        "fn": 239,
+        "precision": 0.7877551020408163,
+        "recall": 0.7078239608801956
+      },
+      "Pillar": {
+        "tp": 52,
+        "fp": 42,
+        "fn": 109,
+        "precision": 0.5531914893617021,
+        "recall": 0.32298136645962733
+      },
+      "Stair": {
+        "tp": 214,
+        "fp": 69,
+        "fn": 107,
+        "precision": 0.7561837455830389,
+        "recall": 0.6666666666666666
+      },
+      "Wet Floor Sign": {
+        "tp": 102,
+        "fp": 8,
+        "fn": 16,
+        "precision": 0.9272727272727272,
+        "recall": 0.864406779661017
+      }
+    }
+  },
+  "application_changed": false,
+  "epoch_seconds": [
+    329.61965968699997,
+    71.06196301299997,
+    70.74747979000017,
+    70.08053573699999,
+    70.20526279900014,
+    70.70432936399993
+  ],
+  "next_step": "Review validation examples and run matched control/new field test; never auto-replace deployed weights.",
+  "provenance": "User-pasted Kaggle execution output; checkpoint files not independently downloaded or verified."
+}

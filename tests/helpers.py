@@ -13,7 +13,7 @@ from detectors import DetectorError
 
 W, H = 1280, 720
 # Centred, 0.6 of the frame height: a near stair under the alert gate.
-NEAR_STAIR = Detection(3, 'Stair', .8, (600, 288, 700, 720))
+NEAR_STAIR = Detection(2, 'Stair', .8, (600, 288, 700, 720))
 ENDPOINT = 'http://127.0.0.1:9100'
 
 
@@ -53,8 +53,9 @@ class FakeDetector:
 class FakeSpeaker:
     def __init__(self):
         self.said, self.stopped, self.rate, self.error = [], 0, 180, None
-    def say(self, text):
+    def say(self, text, *, requested=False):
         self.said.append(text)
+        return True
     def stop(self):
         self.stopped += 1
 

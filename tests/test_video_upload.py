@@ -75,7 +75,7 @@ def test_a_video_plays_like_the_camera_and_ends_with_a_summary(tmp_path):
         assert 0 <= summary['Stair']['first_seen'] <= summary['Stair']['last_seen'] <= 1.5
         assert summary['Stair']['max_confidence'] == .8 and not summary['People']['seen']
         assert status['frames_processed'] >= summary['Stair']['frames']
-        assert status['accuracy_note'].startswith('This is a check on this video only. Tested accuracy on 920')
+        assert status['accuracy_note'].startswith('This is a check on this video only. Four-class scope.')
         assert speaker.said == ['Warning, Stair ahead']  # the live cooldown rules
         # The pipeline is still usable: Replay plays it again.
         [copy] = temp_files(state)
@@ -245,8 +245,14 @@ def test_recognition_view_for_video_skips_the_gate_and_never_speaks(tmp_path):
     with running({'local': FakeDetector('yolov8n', (FAR_STAIR,))}, speaker=speaker,
                  capture=camera_or_file()) as (state, client):
         assert send(client, video).status_code == 200
-        assert wait_for(lambda: client.get('/status').json['detections'])
-        status = client.get('/status').json
+        # Wait for the uploaded source's results in one snapshot. The camera can
+        # publish first, then correctly clear detections while the video opens.
+        status = {}
+        def video_results_ready():
+            nonlocal status
+            status = client.get('/status').json
+            return status['source']['type'] == 'video' and bool(status['detections'])
+        assert wait_for(video_results_ready)
         assert status['view'] == 'alert' and status['alert'] == '' and not status['detections'][0]['gated']
         assert [d['class'] for d in status['recognition']] == ['Stair']  # recorded in both views
         response = client.post('/source/control', json={'view': 'recognition'})

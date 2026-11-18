@@ -30,7 +30,7 @@ class DetectionTests(unittest.TestCase):
                              ('box_xyxy', [0, 0, float('inf'), 10]),
                              ('box_xyxy', [20, 0, 10, 10]),
                              ('box_xyxy', [0, 0, 101, 10])]:
-            item = {'class_id': 2, 'class': 'Pillar', 'confidence': .8, 'box_xyxy': [0, 0, 10, 10]}
+            item = {'class_id': 2, 'class': 'Stair', 'confidence': .8, 'box_xyxy': [0, 0, 10, 10]}
             item[field] = value
             with self.subTest(field=field, value=value), self.assertRaises(ValueError):
                 DetectionBatch.from_dict({'detections': [item], 'latency_ms': 1, 'model': 'rfdetr-nano'}, names, (100, 100))
@@ -41,7 +41,7 @@ class DetectionTests(unittest.TestCase):
         local = detector_settings(parser.parse_args([]))
         self.assertEqual((local['confidence'], local['input_size'], local['nms_iou']), (.35, 640, .7))
         self.assertTrue(local['weights'].is_absolute())
-        self.assertEqual(local['weights'].name, 'yolov8n_v4.pt')
+        self.assertEqual(local['weights'].name, 'yolov8n_v4_four_class.pt')
         cloud = detector_settings(parser.parse_args(['--backend', 'cloud', '--endpoint', 'http://localhost:9000']))
         self.assertEqual((cloud['confidence'], cloud['input_size']), (.4, 384))
         override = detector_settings(parser.parse_args(['--conf', '.6', '--imgsz', '320', '--model', 'other.pt']))
@@ -61,7 +61,7 @@ class DetectionTests(unittest.TestCase):
         names = load_config()['classes']
         detections = [Detection(i, n, .8, (0, 0, 20, 20)) for i, n in enumerate(names)]
         hazards = build_hazards(detections, None, 100)
-        self.assertEqual([h.label for h in hazards], ['Stair', 'Escalator', 'Wet Floor Sign', 'Pillar', 'People'])
+        self.assertEqual([h.label for h in hazards], ['Stair', 'Escalator', 'Wet Floor Sign', 'People'])
         self.assertEqual(hazards[0].position, 'left')
         self.assertIsNone(hazards[0].proximity)
         self.assertIn('distance unavailable', phrase_for(hazards[0]).lower())
@@ -72,7 +72,7 @@ class DetectionTests(unittest.TestCase):
 
     def test_depth_formula_and_three_position_buckets(self):
         import numpy as np
-        detections = [Detection(3, 'Stair', .8, (x, 0, x + 10, 10)) for x in [0, 45, 90]]
+        detections = [Detection(2, 'Stair', .8, (x, 0, x + 10, 10)) for x in [0, 45, 90]]
         hazards = build_hazards(detections, np.full((10, 100), .8), 100)
         self.assertEqual([h.position for h in hazards], ['left', 'center', 'right'])
         self.assertAlmostEqual(hazards[0].priority, .9)
@@ -90,7 +90,7 @@ class DetectionTests(unittest.TestCase):
 
     def test_named_hazards_keep_priority_over_distant_generic_objects(self):
         detections = [Detection(-1, 'Object', .9, (0, 0, 10, 10)),
-                      Detection(3, 'Stair', .8, (45, 0, 55, 10))]
+                      Detection(2, 'Stair', .8, (45, 0, 55, 10))]
         hazards = build_hazards(detections, None, 100)
         self.assertEqual([h.label for h in hazards], ['Stair', 'Object'])
 

@@ -1,0 +1,222 @@
+{
+  "model": "yolov8n_v4.pt",
+  "labels": "Not fully annotated; no mAP/class-accuracy claim",
+  "camera": false,
+  "speech": false,
+  "cloud": false,
+  "general_detector": false,
+  "video_source": {
+    "id": "SG003",
+    "venue": "VivoCity",
+    "role": "external_challenge_video",
+    "title": "File:Vivo City Escalators.ogv",
+    "status": "downloaded_pending_annotation",
+    "file": "SG003.ogv",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Vivo_City_Escalators.ogv",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Vivo_City_Escalators.ogv?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Vivo_City_Escalators.ogv?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "original_sha1": "413ab3d463ba01e3e880fb5c3be3615ee10033fd",
+    "sha256": "d9fb9aec4decf595820058df55deea8a7acdcb8e19a126cb1267dc9ddde80444",
+    "author": "ElHeineken",
+    "licence": "CC BY 3.0",
+    "licence_url": "https://creativecommons.org/licenses/by/3.0",
+    "modification": "Downloaded original video",
+    "attribution": "",
+    "annotation_status": "pending",
+    "duplicate_audit_status": "pending",
+    "model_prediction_used_for_selection": false
+  },
+  "video_modification": "Converted Theora to MP4 without audio; no frame scaling/cropping",
+  "source_frames": 284,
+  "source_fps": 30.0,
+  "images": [
+    {
+      "id": "SG001",
+      "venue": "VivoCity",
+      "role": "external_challenge",
+      "recognition": []
+    },
+    {
+      "id": "SG002",
+      "venue": "VivoCity",
+      "role": "external_challenge",
+      "recognition": []
+    },
+    {
+      "id": "SG004",
+      "venue": "Nex",
+      "role": "external_challenge",
+      "recognition": []
+    },
+    {
+      "id": "SG005",
+      "venue": "Marina Bay Sands",
+      "role": "development_candidate",
+      "recognition": []
+    },
+    {
+      "id": "SG006",
+      "venue": "Marina Bay Sands",
+      "role": "development_candidate",
+      "recognition": []
+    },
+    {
+      "id": "SG007",
+      "venue": "Marina Bay Sands",
+      "role": "development_candidate",
+      "recognition": [
+        {
+          "box_xyxy": [
+            446.347900390625,
+            280.55078125,
+            462.133056640625,
+            313.81878662109375
+          ],
+          "class": "People",
+          "class_id": 1,
+          "confidence": 0.6057060360908508,
+          "position": "center",
+          "size": 0.03895550980221751
+        }
+      ]
+    },
+    {
+      "id": "SG008",
+      "venue": "Plaza Singapura",
+      "role": "development_candidate",
+      "recognition": []
+    },
+    {
+      "id": "SG009",
+      "venue": "Suntec City",
+      "role": "development_candidate",
+      "recognition": [
+        {
+          "box_xyxy": [
+            1072.92578125,
+            701.5106811523438,
+            1123.935546875,
+            808.9705200195312
+          ],
+          "class": "People",
+          "class_id": 1,
+          "confidence": 0.49986448884010315,
+          "position": "right",
+          "size": 0.11193733215332032
+        },
+        {
+          "box_xyxy": [
+            127.15606689453125,
+            203.6112060546875,
+            381.6499938964844,
+            562.09228515625
+          ],
+          "class": "Pillar",
+          "class_id": 2,
+          "confidence": 0.4471302926540375,
+          "position": "left",
+          "size": 0.3734177907307943
+        },
+        {
+          "box_xyxy": [
+            1104.84814453125,
+            492.9205322265625,
+            1221.2919921875,
+            623.4183349609375
+          ],
+          "class": "Pillar",
+          "class_id": 2,
+          "confidence": 0.3531523644924164,
+          "position": "right",
+          "size": 0.13593521118164062
+        }
+      ]
+    },
+    {
+      "id": "SG010",
+      "venue": "Capitol Piazza",
+      "role": "development_candidate",
+      "recognition": []
+    },
+    {
+      "id": "SG011",
+      "venue": "Capitol Piazza",
+      "role": "development_candidate",
+      "recognition": []
+    },
+    {
+      "id": "SG012",
+      "venue": "National Gallery Singapore",
+      "role": "supplemental_non_mall_candidate",
+      "recognition": [
+        {
+          "box_xyxy": [
+            411.935791015625,
+            241.51324462890625,
+            1040.9276123046875,
+            593.8775024414062
+          ],
+          "class": "Stair",
+          "class_id": 3,
+          "confidence": 0.7124788165092468,
+          "position": "center",
+          "size": 0.4893948025173611
+        }
+      ]
+    },
+    {
+      "id": "SG013",
+      "venue": "Resorts World Sentosa",
+      "role": "development_candidate",
+      "recognition": []
+    }
+  ],
+  "video": {
+    "ended": true,
+    "frames_processed": 160,
+    "recognition_summary": [
+      {
+        "class": "Escalator",
+        "first_seen": null,
+        "frames": 0,
+        "last_seen": null,
+        "max_confidence": null,
+        "seen": false
+      },
+      {
+        "class": "People",
+        "first_seen": null,
+        "frames": 0,
+        "last_seen": null,
+        "max_confidence": null,
+        "seen": false
+      },
+      {
+        "class": "Pillar",
+        "first_seen": null,
+        "frames": 0,
+        "last_seen": null,
+        "max_confidence": null,
+        "seen": false
+      },
+      {
+        "class": "Stair",
+        "first_seen": null,
+        "frames": 0,
+        "last_seen": null,
+        "max_confidence": null,
+        "seen": false
+      },
+      {
+        "class": "Wet Floor Sign",
+        "first_seen": null,
+        "frames": 0,
+        "last_seen": null,
+        "max_confidence": null,
+        "seen": false
+      }
+    ]
+  },
+  "replay_accepted": true,
+  "cleanup_passed": true
+}
