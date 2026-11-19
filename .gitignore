@@ -6,6 +6,8 @@ venv/
 runs/
 data/
 *.log
+golden/
+visionaid_pt
 
 # Deployment weights, exports and verification artifacts
 *.pth
