@@ -9,7 +9,16 @@ from golden import iou
 from path_utils import native_path
 
 
-def load_ground_truth(split_directory, names):
+def load_ground_truth(split_directory, names, label_names=None):
+    """COCO ground truth for a YOLO split in the active class order `names`.
+
+    `label_names` is the class order the label files were written in, when it
+    differs (for example the original five-class v4 split). Classes missing from
+    `names` are dropped and the rest are remapped by name, never by position.
+    """
+    if label_names is not None and list(label_names) != list(names):
+        gt, paths = load_ground_truth(split_directory, label_names)
+        return remap_ground_truth(gt, label_names, names), paths
     root = native_path(split_directory)
     paths = sorted(p for p in (root / 'images').iterdir() if p.suffix.lower() in ('.jpg', '.jpeg', '.png', '.bmp', '.webp'))
     if not paths:
@@ -36,6 +45,20 @@ def load_ground_truth(split_directory, names):
                                     bbox=[x, y, w, h], area=w*h, iscrowd=0))
     return dict(images=images, annotations=annotations,
                 categories=[dict(id=i+1, name=n) for i, n in enumerate(names)]), paths
+
+
+def remap_ground_truth(gt, source_names, target_names):
+    """Keep annotations whose class is in `target_names`, renumbered by name."""
+    if not set(target_names) <= set(source_names):
+        raise ValueError('Every active class must exist in the label class list')
+    to_target = {i + 1: target_names.index(n) + 1 for i, n in enumerate(source_names) if n in target_names}
+    annotations = [dict(a, category_id=to_target[a['category_id']]) for a in gt['annotations']
+                   if a['category_id'] in to_target]
+    dropped = Counter(source_names[a['category_id'] - 1] for a in gt['annotations']
+                      if a['category_id'] not in to_target)
+    return dict(images=gt['images'], annotations=annotations,
+                categories=[dict(id=i + 1, name=n) for i, n in enumerate(target_names)],
+                excluded_label_boxes=dict(dropped))
 
 
 def score_detections(gt, paths, outputs, names, threshold, safety_classes):
@@ -85,7 +108,9 @@ def score_detections(gt, paths, outputs, names, threshold, safety_classes):
     per_class = {}
     for i, name in enumerate(names):
         ap = evaluator.eval['precision'][0, :, i, 0, -1]
+        ap_all = evaluator.eval['precision'][:, :, i, 0, -1]   # IoU 0.50:0.95, all areas, 100 detections
         per_class[name] = dict(ap50=float(ap[ap > -1].mean()) if (ap > -1).any() else None,
+                               ap50_95=float(ap_all[ap_all > -1].mean()) if (ap_all > -1).any() else None,
                                tp=tp[i], fp=fp[i], fn=fn[i],
                                precision=tp[i] / max(tp[i] + fp[i], 1),
                                recall=tp[i] / (tp[i] + fn[i]) if tp[i] + fn[i] else None,

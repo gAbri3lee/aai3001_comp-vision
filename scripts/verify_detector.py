@@ -23,6 +23,9 @@ def main():
     parser.add_argument('--images', required=True, type=Path)
     parser.add_argument('--reference', type=Path)
     parser.add_argument('--evaluate', action='store_true', help='Images must be a split/images folder; loads sibling labels')
+    parser.add_argument('--label-classes', choices=['active', 'legacy'], default='active',
+                        help='Class order of the label files. legacy = original five-class v4 labels: '
+                             'Pillar boxes are excluded and the rest remapped by name to the active classes')
     parser.add_argument('--frames', type=int, default=50, help='Additional warmed detector benchmark frames; 0 disables')
     parser.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
@@ -79,7 +82,11 @@ def main():
         report['golden'] = compare_outputs(json.loads(args.reference.read_text()), parity_outputs)
     if args.evaluate:
         from evaluation import load_ground_truth, score_detections
-        gt, evaluated_paths = load_ground_truth(args.images.parent, config['classes'])
+        from config import LEGACY_CLASS_NAMES
+        label_names = list(LEGACY_CLASS_NAMES) if args.label_classes == 'legacy' else config['classes']
+        gt, evaluated_paths = load_ground_truth(args.images.parent, config['classes'], label_names)
+        report['label_classes'] = label_names
+        report['excluded_label_boxes'] = gt.get('excluded_label_boxes', {})
         report['metrics'] = score_detections(gt, evaluated_paths, outputs, config['classes'], alert_threshold, config['safety_classes'])
     if args.frames:
         import numpy as np

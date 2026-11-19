@@ -1,0 +1,236 @@
+{
+  "date": "2026-11-19",
+  "purpose": "Four-class (Pillar excluded) mAP50 and mAP50-95 for all three detectors on one shared test set, replacing the mixed five-class/four-class README table.",
+  "test_set": {
+    "source": "original v4 scene-split test (visionaid_pt/test_set/test)",
+    "images": 920,
+    "label_classes": [
+      "Escalator",
+      "People",
+      "Pillar",
+      "Stair",
+      "Wet Floor Sign"
+    ],
+    "active_classes": [
+      "Escalator",
+      "People",
+      "Stair",
+      "Wet Floor Sign"
+    ],
+    "excluded_label_boxes": {
+      "Pillar": 153
+    },
+    "mapping": "by name: Pillar dropped, Stair 3->2, Wet Floor Sign 4->3",
+    "note": "The cleaned 769-image split (data/v4_four_class_clean) was not available on this machine; it was not used here."
+  },
+  "method": "scripts/verify_detector.py --evaluate --label-classes legacy --frames 0 (confidence 0.001, notebook-equivalent pycocotools COCO AP; mAP50-95 averages IoU 0.50:0.95). CPU.",
+  "commands": [
+    "python scripts/verify_detector.py --runtime yolo --images <test>/images --evaluate --label-classes legacy --frames 0 --output results/yolo_pt_test.json",
+    "python scripts/export_detector.py",
+    "python scripts/verify_detector.py --runtime yolo --model models/local/yolov8n_v4_four_class.onnx --images <test>/images --evaluate --label-classes legacy --frames 0 --output results/onnx_test.json",
+    "python scripts/verify_detector.py --runtime rfdetr --images <test>/images --evaluate --label-classes legacy --frames 0 --output results/rfdetr_test.json"
+  ],
+  "environment": {
+    "python": "3.13 (Linux x86_64, CPU)",
+    "torch": "2.9.0",
+    "ultralytics": "8.4.183",
+    "rfdetr": "1.11.2",
+    "onnx": "1.23.2",
+    "onnxruntime": "1.32.0",
+    "pycocotools": "2.0.11"
+  },
+  "weights": {
+    "models/local/yolov8n_v4_four_class.pt": "37c1b2c3321d9e9bf956b6db6f0e1eb84ef7b7369f2b3428c23ae0203eede42b",
+    "models/local/yolov8n_v4_four_class.onnx": "ae786bea79610df98d54a9f34e2ca8403111ea5d0c50d741b86233b2da6b2af9",
+    "models/local/yolov8n_v4.pt (original five-class, cross-check only)": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe",
+    "models/cloud/rfdetr-nano_v4.pth": "78d9a55860ead05e0ae064a34ec06b251201d5ef5bed1e1c5c20750183fdb16a"
+  },
+  "checkpoint_note": "The four-class .pt on this machine hashes 37c1b2c3..., not the 58626a26... recorded on 2026-11-17/18. Cross-check: the documented original five-class weights (7d59f6ee..., hash matches the record) with Pillar predictions dropped give the same per-class AP (max difference 0.0002 AP50, Wet Floor Sign), so the copy behaves equivalently. Its origin is unrecorded.",
+  "results": {
+    "yolov8n_pytorch": {
+      "map50": 0.7636565483565401,
+      "map50_95": 0.4977901163776397,
+      "precision_at_alert": 0.8114663726571113,
+      "recall_at_alert": 0.6507515473032714,
+      "alert_threshold": 0.35,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.9632599355979423,
+          "ap50_95": 0.6082208781186581,
+          "precision": 0.9466666666666667,
+          "recall": 0.8987341772151899,
+          "boxes": 158
+        },
+        "People": {
+          "ap50": 0.693123584164881,
+          "ap50_95": 0.374761751297405,
+          "precision": 0.7471783295711061,
+          "recall": 0.5817223198594025,
+          "boxes": 569
+        },
+        "Stair": {
+          "ap50": 0.7745970432406427,
+          "ap50_95": 0.5629162470970797,
+          "precision": 0.8181818181818182,
+          "recall": 0.6875,
+          "boxes": 288
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.6236456304226938,
+          "ap50_95": 0.4452615889974161,
+          "precision": 0.9027777777777778,
+          "recall": 0.5603448275862069,
+          "boxes": 116
+        }
+      }
+    },
+    "yolov8n_onnx": {
+      "map50": 0.7636565483565401,
+      "map50_95": 0.49779012418386775,
+      "precision_at_alert": 0.8114663726571113,
+      "recall_at_alert": 0.6507515473032714,
+      "alert_threshold": 0.35,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.9632599355979423,
+          "ap50_95": 0.6082208781186581,
+          "precision": 0.9466666666666667,
+          "recall": 0.8987341772151899,
+          "boxes": 158
+        },
+        "People": {
+          "ap50": 0.693123584164881,
+          "ap50_95": 0.3747617825223173,
+          "precision": 0.7471783295711061,
+          "recall": 0.5817223198594025,
+          "boxes": 569
+        },
+        "Stair": {
+          "ap50": 0.7745970432406427,
+          "ap50_95": 0.5629162470970797,
+          "precision": 0.8181818181818182,
+          "recall": 0.6875,
+          "boxes": 288
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.6236456304226938,
+          "ap50_95": 0.4452615889974161,
+          "precision": 0.9027777777777778,
+          "recall": 0.5603448275862069,
+          "boxes": 116
+        }
+      }
+    },
+    "rfdetr_nano": {
+      "map50": 0.8364839743795202,
+      "map50_95": 0.5137445696008617,
+      "precision_at_alert": 0.8654048370136698,
+      "recall_at_alert": 0.7276746242263483,
+      "alert_threshold": 0.4,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.9312553650268894,
+          "ap50_95": 0.5499657782377138,
+          "precision": 0.9370629370629371,
+          "recall": 0.8481012658227848,
+          "boxes": 158
+        },
+        "People": {
+          "ap50": 0.8071677583252247,
+          "ap50_95": 0.3990279529413448,
+          "precision": 0.8263598326359832,
+          "recall": 0.6942003514938488,
+          "boxes": 569
+        },
+        "Stair": {
+          "ap50": 0.796537048879647,
+          "ap50_95": 0.5857666327073618,
+          "precision": 0.8571428571428571,
+          "recall": 0.7291666666666666,
+          "boxes": 288
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8109757252863188,
+          "ap50_95": 0.5202179145170263,
+          "precision": 0.9882352941176471,
+          "recall": 0.7241379310344828,
+          "boxes": 116
+        }
+      }
+    },
+    "cross_check_original_five_class_pillar_dropped": {
+      "map50": 0.7637139355596066,
+      "map50_95": 0.49781655531617913,
+      "precision_at_alert": 0.8114663726571113,
+      "recall_at_alert": 0.6507515473032714,
+      "alert_threshold": 0.35,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.9632823558269484,
+          "ap50_95": 0.6082359543448596,
+          "precision": 0.9466666666666667,
+          "recall": 0.8987341772151899,
+          "boxes": 158
+        },
+        "People": {
+          "ap50": 0.6931414634502592,
+          "ap50_95": 0.3747627514528113,
+          "precision": 0.7471783295711061,
+          "recall": 0.5817223198594025,
+          "boxes": 569
+        },
+        "Stair": {
+          "ap50": 0.7746245263564469,
+          "ap50_95": 0.5629280468129829,
+          "precision": 0.8181818181818182,
+          "recall": 0.6875,
+          "boxes": 288
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.6238073966047724,
+          "ap50_95": 0.4453394686540629,
+          "precision": 0.9027777777777778,
+          "recall": 0.5603448275862069,
+          "boxes": 116
+        }
+      }
+    }
+  },
+  "onnx_golden": {
+    "passed": true,
+    "matched": 20,
+    "total": 20
+  },
+  "limitations": [
+    "Same weights as before; nothing was retrained. Pillar is excluded, not learned away.",
+    "RF-DETR is still a five-class model; its configured source_classes mapping drops Pillar predictions.",
+    "Historical development test set, not an unseen final evaluation; four-class means are not comparable with the old five-class means.",
+    "Per-image predictions are not committed (large); rerun the commands to regenerate."
+  ],
+  "verification": {
+    "independent_rescore": "Ground truth rebuilt from raw label files with a separate script (Pillar dropped, ids remapped there), scored with pycocotools directly: identical to the repo pipeline for all three models (difference 0.0 in mAP50, mAP50-95 and every per-class AP).",
+    "box_counts": {
+      "Escalator": 158,
+      "People": 569,
+      "Stair": 288,
+      "Wet Floor Sign": 116,
+      "Pillar_excluded": 153
+    },
+    "archived_five_class_agreement": "Per-class AP50 for the four retained classes matches the archived five-class runs in docs/verification_results.json (YOLOv8n within 0.0002, RF-DETR identical to 4 d.p.), which also confirms the Stair/Wet Floor Sign remapping is not swapped.",
+    "ultralytics_val": {
+      "note": "Different implementation (own AP interpolation, max_det 300, rectangular batching for .pt); close agreement expected, not identity.",
+      "pytorch": {
+        "map50": 0.7724,
+        "map50_95": 0.4972
+      },
+      "onnx": {
+        "map50": 0.7661,
+        "map50_95": 0.4977
+      }
+    },
+    "original_five_class_weights_pillar_dropped": {
+      "map50": 0.76371,
+      "map50_95": 0.49782
+    }
+  }
+}
