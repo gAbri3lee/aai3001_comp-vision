@@ -1,0 +1,144 @@
+{
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "test_used": false,
+  "baseline_ap50": [
+    0.797586644973197,
+    0.797586644973197,
+    0.797586644973197
+  ],
+  "arms": {
+    "control": {
+      "ap50_by_seed": [
+        0.7984528252087169,
+        0.7862434952099306,
+        0.7965819374488264
+      ],
+      "ap50_mean": 0.7937594192891579,
+      "ap50_sample_sd": 0.006575856699020965,
+      "paired_delta_vs_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean_delta_vs_baseline": -0.0038272256840390004,
+      "mean_delta_vs_control": 0.0,
+      "per_class_mean": {
+        "Escalator": {
+          "ap50": 0.8267774782562948,
+          "precision": 0.8730815472659944,
+          "recall": 0.7768595041322314
+        },
+        "People": {
+          "ap50": 0.7579580591183578,
+          "precision": 0.8051869514133665,
+          "recall": 0.690359477124183
+        },
+        "Stair": {
+          "ap50": 0.727860809587306,
+          "precision": 0.7840068978089811,
+          "recall": 0.6603375527426161
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8624413301946733,
+          "precision": 0.9015183615819209,
+          "recall": 0.8088235294117647
+        }
+      },
+      "accuracy_gate_passed": false,
+      "external_and_runtime_gate_completed": false,
+      "automatically_deployed": false
+    },
+    "reviewed": {
+      "ap50_by_seed": [
+        0.7900467232210653,
+        0.7889352057910051,
+        0.7961480767651626
+      ],
+      "ap50_mean": 0.7917100019257444,
+      "ap50_sample_sd": 0.0038834583761822783,
+      "paired_delta_vs_control": [
+        -0.00840610198765157,
+        0.0026917105810744246,
+        -0.00043386068366380037
+      ],
+      "mean_delta_vs_baseline": -0.005876643047452649,
+      "mean_delta_vs_control": -0.002049417363413649,
+      "per_class_mean": {
+        "Escalator": {
+          "ap50": 0.8262846899026915,
+          "precision": 0.8873268187909933,
+          "recall": 0.7796143250688705
+        },
+        "People": {
+          "ap50": 0.7571237707012908,
+          "precision": 0.8029436326635743,
+          "recall": 0.6919934640522876
+        },
+        "Stair": {
+          "ap50": 0.734070935295972,
+          "precision": 0.7915472176454461,
+          "recall": 0.6677215189873418
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8493606118030232,
+          "precision": 0.890313088512241,
+          "recall": 0.7990196078431372
+        }
+      },
+      "accuracy_gate_passed": false,
+      "external_and_runtime_gate_completed": false,
+      "automatically_deployed": false
+    },
+    "reviewed_scene_balanced": {
+      "ap50_by_seed": [
+        0.7913751301367595,
+        0.782230085944314,
+        0.7960353222742115
+      ],
+      "ap50_mean": 0.7898801794517617,
+      "ap50_sample_sd": 0.007022983389843103,
+      "paired_delta_vs_control": [
+        -0.007077695071957324,
+        -0.004013409265616663,
+        -0.0005466151746149617
+      ],
+      "mean_delta_vs_baseline": -0.007706465521435317,
+      "mean_delta_vs_control": -0.0038792398373963164,
+      "per_class_mean": {
+        "Escalator": {
+          "ap50": 0.8201575426695351,
+          "precision": 0.8340227025345981,
+          "recall": 0.7961432506887053
+        },
+        "People": {
+          "ap50": 0.7417303768361507,
+          "precision": 0.7835341670203627,
+          "recall": 0.684640522875817
+        },
+        "Stair": {
+          "ap50": 0.7331662006338668,
+          "precision": 0.7939262791186298,
+          "recall": 0.6782700421940928
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8644665976674939,
+          "precision": 0.9327586206896552,
+          "recall": 0.8137254901960784
+        }
+      },
+      "accuracy_gate_passed": false,
+      "external_and_runtime_gate_completed": false,
+      "automatically_deployed": false
+    }
+  },
+  "plan_hashes": [
+    "8a1727a6d7546698921c410d3d43dc5ece9b1c9859ddda4abbf85f66d540c3f8",
+    "8a1727a6d7546698921c410d3d43dc5ece9b1c9859ddda4abbf85f66d540c3f8",
+    "ef544d257d740adb0b81551ccb508b7413fad376af1481f09a7415f19d63c6c0"
+  ],
+  "orchestration_revision_only_may_differ": true
+}

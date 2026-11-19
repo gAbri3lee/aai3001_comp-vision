@@ -1,5 +1,6 @@
 """Report paired preregistered runs without selecting a favourable seed."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import statistics
@@ -11,11 +12,6 @@ def summarize(summaries):
     if any(s['test_used'] for s in summaries):
         raise ValueError('Study must not use the test set')
     summaries = sorted(summaries, key=lambda s: s['seed'])
-    if len(summaries) != 3 or sorted(s['seed'] for s in summaries) != [0, 1, 2]:
-        raise ValueError('All three registered seeds are required')
-    plans = {s['plan_sha256'] for s in summaries}
-    if len(plans) != 1 or any(s['test_used'] for s in summaries):
-        raise ValueError('Inconsistent plans or test-set use')
     names = list(summaries[0]['baseline']['per_class'])
     result = {'seeds': [0, 1, 2], 'test_used': False,
               'baseline_ap50': [s['baseline']['map50'] for s in summaries], 'arms': {}}
@@ -51,12 +47,21 @@ if __name__ == '__main__':
     parser.add_argument('summaries', type=Path, nargs=3)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    plans = [json.loads((p.parent/'registered-plan.json').read_text()) for p in args.summaries]
+    plans, summaries = [], []
+    for path in args.summaries:
+        summary = json.loads(path.read_text())
+        plan_text = (path.parent / 'registered-plan.json').read_text()
+        # Registered Windows and Linux runs used different line endings.
+        encodings = (plan_text, plan_text.replace('\n', '\r\n'))
+        if summary['plan_sha256'] not in {hashlib.sha256(text.encode()).hexdigest() for text in encodings}:
+            raise ValueError(f'Summary does not belong to the registered plan beside {path}')
+        summaries.append(summary)
+        plans.append(json.loads(plan_text))
     normalized = [{k: v for k, v in p.items() if k not in {'implementation_revision', 'study_script_sha256'}} for p in plans]
     if any(p != normalized[0] for p in normalized[1:]):
         raise ValueError('Unmatched data or training protocol across seeds')
-    result = summarize([json.loads(p.read_text()) for p in args.summaries])
-    result['plan_hashes'] = [json.loads(p.read_text())['plan_sha256'] for p in args.summaries]
+    result = summarize(summaries)
+    result['plan_hashes'] = [s['plan_sha256'] for s in sorted(summaries, key=lambda s: s['seed'])]
     result['orchestration_revision_only_may_differ'] = True
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + '\n')

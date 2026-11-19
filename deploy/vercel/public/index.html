@@ -144,6 +144,13 @@
     }
   }
 
+  const HAZARD_ACTION = {
+    "Escalator": "Check the direction before stepping on.",
+    "People": "Give people room to pass.",
+    "Stair": "Slow down and check the next step.",
+    "Wet Floor Sign": "Slow down and watch your footing.",
+    "Object": "Slow down and check your path."
+  };
   const side = (box, w) => { const c = (box[0] + box[2]) / 2 / w; return c < 1 / 3 ? 'on your left' : c > 2 / 3 ? 'on your right' : 'ahead'; };
 
   function render(ctx, w, h, data, roundTrip, bytes) {
@@ -171,7 +178,7 @@
     } else {
       const top = dets[0], level = LEVEL[top.class];
       message = `${level}, ${top.class} ${side(top.box_xyxy, w)}`;
-      alert.textContent = message; alert.className = level.toLowerCase();
+      alert.textContent = message + ". " + HAZARD_ACTION[top.class]; alert.className = level.toLowerCase();
     }
 
     list.replaceChildren(...dets.map(d => {
@@ -180,7 +187,7 @@
       const name = Object.assign(document.createElement('span'), { className: 'name', textContent: d.class });
       const meta = Object.assign(document.createElement('span'), { className: 'meta',
         textContent: `${Math.round(d.confidence * 100)}% confidence · ${side(d.box_xyxy, w)}` });
-      li.append(sw, name, meta); return li;
+      li.append(sw, name, meta, document.createTextNode(HAZARD_ACTION[d.class])); return li;
     }));
 
     $('stats').replaceChildren(...[

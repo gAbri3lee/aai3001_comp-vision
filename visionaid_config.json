@@ -88,7 +88,7 @@
   },
   "cloud": {
     "model": "rfdetr-nano",
-    "file": "models/cloud/rfdetr-nano_v4.pth",
+    "file": "models/cloud/rfdetr-nano_v4_four_class.pth",
     "library": "rfdetr==1.11.2",
     "input_size": 384,
     "colour_order": "RGB PIL image",
@@ -102,9 +102,11 @@
     "expected": {
       "t4_gpu_ms": 22.8,
       "kaggle_cpu_ms": 221,
-      "status": "Four-class cloud benchmark pending teammate deployment; original five-class metrics archived"
+      "status": "Native four-class checkpoint evaluated locally on 769 cleaned test images. Hosted service verification is separate.",
+      "test_map50": 0.8445058954282983,
+      "test_map50_95": 0.5233570279262496
     },
-    "source_classes": [
+    "legacy_service_classes": [
       "Escalator",
       "People",
       "Pillar",

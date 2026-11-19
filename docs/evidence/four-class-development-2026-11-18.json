@@ -194,8 +194,239 @@
       1,
       2
     ],
-    "status": "in_progress",
+    "status": "complete",
     "completed_seed_summaries": [
+      {
+        "seed": 0,
+        "baseline": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 859,
+          "alert_threshold": 0.35,
+          "map50": 0.797586644973197,
+          "map50_95": 0.4979592718805569,
+          "precision": 0.795798319327731,
+          "recall": 0.7168811506434519,
+          "f1": 0.7542811628833134,
+          "safety_recall": 0.7777169242003737,
+          "per_class": {
+            "Escalator": {
+              "ap50": 0.8244066971588638,
+              "tp": 95,
+              "fp": 12,
+              "fn": 26,
+              "precision": 0.8878504672897196,
+              "recall": 0.7851239669421488,
+              "boxes": 121
+            },
+            "People": {
+              "ap50": 0.7508700871032717,
+              "tp": 578,
+              "fp": 160,
+              "fn": 238,
+              "precision": 0.7831978319783198,
+              "recall": 0.7083333333333334,
+              "boxes": 816
+            },
+            "Stair": {
+              "ap50": 0.7406808745903816,
+              "tp": 215,
+              "fp": 65,
+              "fn": 101,
+              "precision": 0.7678571428571429,
+              "recall": 0.680379746835443,
+              "boxes": 316
+            },
+            "Wet Floor Sign": {
+              "ap50": 0.8743889210402701,
+              "tp": 59,
+              "fp": 6,
+              "fn": 9,
+              "precision": 0.9076923076923077,
+              "recall": 0.8676470588235294,
+              "boxes": 68
+            }
+          }
+        },
+        "arms": {
+          "control": {
+            "metrics": {
+              "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+              "images": 859,
+              "alert_threshold": 0.35,
+              "map50": 0.7984528252087169,
+              "map50_95": 0.5059539359031283,
+              "precision": 0.8192446043165468,
+              "recall": 0.6896290688872067,
+              "f1": 0.7488697081792026,
+              "safety_recall": 0.7392586598401261,
+              "per_class": {
+                "Escalator": {
+                  "ap50": 0.8251905775232014,
+                  "tp": 93,
+                  "fp": 14,
+                  "fn": 28,
+                  "precision": 0.8691588785046729,
+                  "recall": 0.768595041322314,
+                  "boxes": 121
+                },
+                "People": {
+                  "ap50": 0.7591508938851412,
+                  "tp": 557,
+                  "fp": 132,
+                  "fn": 259,
+                  "precision": 0.8084179970972424,
+                  "recall": 0.6825980392156863,
+                  "boxes": 816
+                },
+                "Stair": {
+                  "ap50": 0.733016516507847,
+                  "tp": 207,
+                  "fp": 49,
+                  "fn": 109,
+                  "precision": 0.80859375,
+                  "recall": 0.6550632911392406,
+                  "boxes": 316
+                },
+                "Wet Floor Sign": {
+                  "ap50": 0.8764533129186772,
+                  "tp": 54,
+                  "fp": 6,
+                  "fn": 14,
+                  "precision": 0.9,
+                  "recall": 0.7941176470588235,
+                  "boxes": 68
+                }
+              }
+            },
+            "seconds": 285.3933352370001,
+            "draws": 7749,
+            "unique_draws": 7749,
+            "maximum_image_repeats": 1,
+            "labels_changed": false,
+            "final_checkpoint": "control/fit/weights/last.pt",
+            "recovered_completed_training": false
+          },
+          "reviewed": {
+            "metrics": {
+              "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+              "images": 859,
+              "alert_threshold": 0.35,
+              "map50": 0.7900467232210653,
+              "map50_95": 0.5073478330257504,
+              "precision": 0.8205357142857143,
+              "recall": 0.6956850870552612,
+              "f1": 0.7529700942236789,
+              "safety_recall": 0.7395935254528633,
+              "per_class": {
+                "Escalator": {
+                  "ap50": 0.8271638593551228,
+                  "tp": 94,
+                  "fp": 13,
+                  "fn": 27,
+                  "precision": 0.8785046728971962,
+                  "recall": 0.7768595041322314,
+                  "boxes": 121
+                },
+                "People": {
+                  "ap50": 0.759496365722124,
+                  "tp": 559,
+                  "fp": 130,
+                  "fn": 257,
+                  "precision": 0.8113207547169812,
+                  "recall": 0.6850490196078431,
+                  "boxes": 816
+                },
+                "Stair": {
+                  "ap50": 0.7349593692033664,
+                  "tp": 214,
+                  "fp": 51,
+                  "fn": 102,
+                  "precision": 0.8075471698113208,
+                  "recall": 0.6772151898734177,
+                  "boxes": 316
+                },
+                "Wet Floor Sign": {
+                  "ap50": 0.8385672986036481,
+                  "tp": 52,
+                  "fp": 7,
+                  "fn": 16,
+                  "precision": 0.8813559322033898,
+                  "recall": 0.7647058823529411,
+                  "boxes": 68
+                }
+              }
+            },
+            "seconds": 284.38115264400017,
+            "draws": 7749,
+            "unique_draws": 7749,
+            "maximum_image_repeats": 1,
+            "labels_changed": true,
+            "final_checkpoint": "reviewed/fit/weights/last.pt",
+            "recovered_completed_training": false
+          },
+          "reviewed_scene_balanced": {
+            "metrics": {
+              "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+              "images": 859,
+              "alert_threshold": 0.35,
+              "map50": 0.7913751301367595,
+              "map50_95": 0.49634605264865317,
+              "precision": 0.8043290043290043,
+              "recall": 0.7032551097653293,
+              "f1": 0.7504038772213248,
+              "safety_recall": 0.7598464848854073,
+              "per_class": {
+                "Escalator": {
+                  "ap50": 0.8161141839360805,
+                  "tp": 95,
+                  "fp": 14,
+                  "fn": 26,
+                  "precision": 0.8715596330275229,
+                  "recall": 0.7851239669421488,
+                  "boxes": 121
+                },
+                "People": {
+                  "ap50": 0.7450898958175127,
+                  "tp": 566,
+                  "fp": 157,
+                  "fn": 250,
+                  "precision": 0.7828492392807745,
+                  "recall": 0.6936274509803921,
+                  "boxes": 816
+                },
+                "Stair": {
+                  "ap50": 0.7334464020197053,
+                  "tp": 212,
+                  "fp": 51,
+                  "fn": 104,
+                  "precision": 0.8060836501901141,
+                  "recall": 0.6708860759493671,
+                  "boxes": 316
+                },
+                "Wet Floor Sign": {
+                  "ap50": 0.8708500387737397,
+                  "tp": 56,
+                  "fp": 4,
+                  "fn": 12,
+                  "precision": 0.9333333333333333,
+                  "recall": 0.8235294117647058,
+                  "boxes": 68
+                }
+              }
+            },
+            "seconds": 287.56906633899985,
+            "draws": 7749,
+            "unique_draws": 4430,
+            "maximum_image_repeats": 3,
+            "labels_changed": true,
+            "final_checkpoint": "reviewed_scene_balanced/fit/weights/last.pt",
+            "recovered_completed_training": false
+          }
+        },
+        "test_used": false,
+        "device": "Tesla T4",
+        "plan_sha256": "8a1727a6d7546698921c410d3d43dc5ece9b1c9859ddda4abbf85f66d540c3f8"
+      },
       {
         "seed": 1,
         "baseline": {
@@ -659,10 +890,10 @@
         "plan_sha256": "ef544d257d740adb0b81551ccb508b7413fad376af1481f09a7415f19d63c6c0"
       }
     ],
-    "remaining_seed": 0,
     "temporary_session_results_saved_and_stop_requested": true,
     "interactive_actual_script_verified": true,
-    "interactive_plan_difference": "Only orchestration revision metadata/script hash differed; actual executed script matches current registered fixed script."
+    "interactive_plan_difference": "Only orchestration revision metadata/script hash differed; actual executed script matches current registered fixed script.",
+    "comparison_report": "four-class-gpu-final.json"
   },
   "browser": {
     "overall_passed": true,

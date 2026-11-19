@@ -9,6 +9,6 @@ COPY src /app/src
 COPY visionaid_config.json /app/visionaid_config.json
 ENV PYTHONPATH=/app/src VISIONAID_DEVICE=cpu
 EXPOSE 9000
-# Mount the supplied checkpoint at /app/models/cloud/rfdetr-nano_v4.pth.
+# Mount the supplied checkpoint at /app/models/cloud/rfdetr-nano_v4_four_class.pth.
 # One worker loads the model once; the app rejects concurrent inference.
 CMD ["gunicorn", "--bind", "0.0.0.0:9000", "--workers", "1", "--threads", "2", "--timeout", "120", "cloud_service:create_app()"]

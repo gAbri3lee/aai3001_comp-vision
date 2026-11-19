@@ -65,8 +65,9 @@ class CloudDetector:
         if info.get('status') != 'ready' or info.get('model') != 'rfdetr-nano':
             raise DetectorError('Cloud service is not ready or serves an unexpected model')
         allowed = [list(self.settings['classes'])]
-        if self.settings.get('source_classes') is not None:
-            allowed.append(list(self.settings['source_classes']))
+        legacy = self.settings.get('legacy_service_classes', self.settings.get('source_classes'))
+        if legacy is not None:
+            allowed.append(list(legacy))
         if info.get('classes') not in allowed:
             raise DetectorError('Cloud service class order does not match the canonical IDs')
         return info
@@ -117,7 +118,7 @@ class CloudDetector:
                 # Explicit compatibility with the teammate's original five-class
                 # service. Validate its full ID/name contract before projecting;
                 # never infer class semantics from bare numeric IDs.
-                source = self.settings.get('source_classes')
+                source = self.settings.get('legacy_service_classes', self.settings.get('source_classes'))
                 if source is None or list(source) == list(names):
                     raise
                 legacy = DetectionBatch.from_dict(payload, source, (width, height))

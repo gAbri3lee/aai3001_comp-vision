@@ -26,6 +26,8 @@ def load_config(path=None):
         source = spec.get('source_classes', names)
         if source not in (names, list(LEGACY_CLASS_NAMES)) or not set(names).issubset(source):
             raise ValueError(f'{backend}: unsupported checkpoint class mapping')
+        if 'legacy_service_classes' in spec and spec['legacy_service_classes'] != list(LEGACY_CLASS_NAMES):
+            raise ValueError('Unsupported legacy service class order')
         for value in spec['class_thresholds'].values():
             if not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 <= value <= 1:
                 raise ValueError('Confidence thresholds must be finite and between 0 and 1')

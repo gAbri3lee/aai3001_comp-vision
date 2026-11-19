@@ -887,8 +887,12 @@ class PipelineState:
                 spoken_at = None
                 annotated = debug_annotated = frame
 
+                # A local recording in Recognition view shows the analysed frame and its
+                # boxes together. A slow inference still describes that exact frame.
+                recorded_recognition = view == "recognition" and mode == "local"
+
                 def check_fresh(what):
-                    if time.monotonic() - captured_at > self.args.max_frame_age:
+                    if not recorded_recognition and time.monotonic() - captured_at > self.args.max_frame_age:
                         raise StaleFrame(what)
                 def cancelled():
                     with self._lock:
@@ -959,7 +963,7 @@ class PipelineState:
                     if ok_jpeg and ok_debug:
                         self._latest_jpeg = buffer.tobytes()
                         self._latest_debug_jpeg = debug_buffer.tobytes()
-                        self._frame_captured_at = captured_at
+                        self._frame_captured_at = None if recorded_recognition else captured_at
                     self.status["fps"] = round(fps, 1)
                     self.status["alert"] = result.banner if result else ""
                     self.status["alerts"] = result.alerts if result else []

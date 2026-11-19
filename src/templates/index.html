@@ -426,6 +426,16 @@
 
   const BAND_LEVEL = {"near": "level-warning", "mid-close": "level-caution", "mid": "level-note"};
   const REASON_TEXT = {"far": "far", "side": "at the side", "low_confidence": "low confidence"};
+  const HAZARD_ACTION = {
+    "Escalator": "Check the direction before stepping on.",
+    "People": "Give people room to pass.",
+    "Stair": "Slow down and check the next step.",
+    "Wet Floor Sign": "Slow down and watch your footing.",
+    "Object": "Slow down and check your path."
+  };
+  function actionFor(detection) {
+    return HAZARD_ACTION[detection.class] || (detection.source === "general" ? HAZARD_ACTION.Object : "");
+  }
   const POSITION_TEXT = {"left": "left", "center": "ahead", "right": "right"};
 
   function span(cls, text) {
@@ -795,7 +805,9 @@
     for (const h of ["Class", "Seen", "First seen", "Last seen", "Frames", "Best confidence"]) head.appendChild(cell("th", h));
     const rows = (data.video_summary || []).map(r => {
       const tr = document.createElement("tr");
-      tr.append(cell("td", r.class), cell("td", r.seen ? "Yes" : "Not seen"),
+      const label = cell("td", r.class);
+      if (r.seen && actionFor(r)) label.appendChild(cell("div", actionFor(r)));
+      tr.append(label, cell("td", r.seen ? "Yes" : "Not seen"),
                 cell("td", r.seen ? clock(r.first_seen) : ""), cell("td", r.seen ? clock(r.last_seen) : ""),
                 cell("td", String(r.frames)), cell("td", r.seen ? r.max_confidence.toFixed(2) : ""));
       return tr;
@@ -832,7 +844,9 @@
     for (const d of rows) {
       const tr = document.createElement("tr");
       const name = d.class + (d.source === "general" && d.class !== "Object" ? " (general)" : "");
-      tr.append(cell("td", name), cell("td", d.confidence.toFixed(2)), cell("td", POSITION_TEXT[d.position] || d.position));
+      const label = cell("td", name);
+      if (actionFor(d)) label.appendChild(cell("div", actionFor(d)));
+      tr.append(label, cell("td", d.confidence.toFixed(2)), cell("td", POSITION_TEXT[d.position] || d.position));
       if (!recognition) {
         tr.appendChild(cell("td", d.gated ? (bandLabels[d.band] || "Alert") + (isSpoken(d, run.selected) ? ", selected" : "")
                                           : "ignored: " + (REASON_TEXT[d.reason] || d.reason)));
@@ -991,7 +1005,7 @@
 
   // Recognition view: detections as list rows, and a one-line summary for the banner.
   function asRows(recognition) {
-    return recognition.map(d => ({...d, gated: true, band: null, source: "trained", priority: d.confidence}));
+    return recognition.map(d => ({...d, gated: true, band: null, priority: d.confidence}));
   }
   function recognitionText(recognition) {
     if (!recognition.length) return "Recognition view: nothing recognised";
@@ -1013,6 +1027,8 @@
     const li = document.createElement("li");
     const name = d.class + (d.source === "general" && d.class !== "Object" ? " (general model)" : "");
     li.appendChild(span("name", name));
+    const action = actionFor(d);
+    if (action) li.appendChild(span("action", action));
     li.appendChild(span("meta", `${(d.confidence * 100).toFixed(0)}%`));
     li.appendChild(span("meta", POSITION_TEXT[d.position] || d.position));
     if (d.band) li.appendChild(span("band " + d.band, d.band));
@@ -1085,6 +1101,9 @@
       const problem = blocking ? blocking.message : view.error;
       alertText.textContent = problem || (view.paused ? "Paused. No detection or speech." : "") ||
         view.alert || (run ? "No hazards present" : "No hazards");
+      if (!problem && !view.paused && top && actionFor(top)) {
+        alertText.textContent += " " + actionFor(top);
+      }
       // Recognition results and batch summaries are information, not alerts.
       const informational = recognising || (analysis && !run) || (!analysis && source.ended);
       alertBanner.className = "alert-banner " + (problem ? "level-warning" : informational ? "level-clear"
