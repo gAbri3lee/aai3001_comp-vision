@@ -1,0 +1,5 @@
+# Vercel function only: no torch/ultralytics (the repo-root requirements.txt is for the local app).
+flask>=3.1,<4
+onnxruntime>=1.18
+numpy>=1.26
+Pillow>=10

@@ -6,8 +6,7 @@ venv/
 runs/
 data/
 *.log
-golden/
-visionaid_pt
+visionaid_pt/
 
 # Deployment weights, exports and verification artifacts
 *.pth
@@ -29,6 +28,8 @@ demo/videos/*
 *.webm
 *.avi
 
+# Vercel photo-check function ships its ONNX model (12 MB); allow it past the *.onnx rule
+!deploy/vercel/model/*.onnx
 # Redistributable motion demos, credited in demo/README.md
 !demo/videos/VivoCity - escalator atrium.mp4
 !demo/videos/* - field sequence.mp4
