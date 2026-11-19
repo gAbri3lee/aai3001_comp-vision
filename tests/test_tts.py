@@ -16,6 +16,40 @@ class FakeClock:
 
 
 class SpeakerTests(unittest.TestCase):
+    def test_stopped_dequeued_phrase_cannot_start_later(self):
+        speaker = self.speaker()
+        speaker.say('old hazard')
+        text = speaker._next(block=False)
+        speaker.stop()
+        with patch('pyttsx3.init', side_effect=AssertionError('cancelled speech started')):
+            speaker._play(text)
+        self.assertIsNone(speaker.error)
+
+    def test_windows_reuses_external_loop_and_handles_stop_on_worker(self):
+        speaker = self.speaker()
+        callbacks, played, loops, stopped = {}, [], [], []
+        def iterate():
+            callbacks['finished-utterance'](None, not speaker._stopped)
+        engine = SimpleNamespace(setProperty=lambda *a: None, say=played.append,
+            startLoop=loops.append, connect=lambda event, fn: callbacks.update({event: fn}),
+            disconnect=lambda token: None, iterate=iterate, stop=lambda: stopped.append(True))
+        with patch.object(sys, 'platform', 'win32'), patch('pyttsx3.init', return_value=engine):
+            for phrase in ('first hazard', 'second hazard'):
+                speaker.say(phrase)
+                self.drain(speaker)
+            speaker.stop()
+        self.assertEqual(played, ['first hazard', 'second hazard'])
+        self.assertEqual(loops, [False])
+        self.assertEqual(stopped, [])  # COM is never called by stop's caller.
+        self.assertIsNone(speaker.error)
+
+    def test_close_releases_idle_worker_and_rejects_later_speech(self):
+        speaker = Speaker()
+        speaker.close()
+        self.assertFalse(speaker._thread.is_alive())
+        speaker.say('obsolete')
+        self.assertIsNone(speaker._next(block=False))
+
     def speaker(self, clock=None):
         return Speaker(clock=clock or FakeClock(), start=False)
 

@@ -9,7 +9,6 @@ can click a prepared image or video instead of using a file dialog on stage.
 |---|---|
 | `demo/Escalator/` | JPEG or PNG images that show an escalator |
 | `demo/People/` | images that show people |
-| `demo/Pillar/` | images that show a pillar |
 | `demo/Stair/` | images that show stairs |
 | `demo/Wet Floor Sign/` | images that show a wet floor sign |
 | `demo/videos/` | MP4, MOV or WebM videos (at most 150 MB and 120 seconds) |
@@ -26,17 +25,22 @@ shown. Hidden files and links that lead outside this folder are ignored.
 
 ## Which images to use
 
-- Prefer images from the **test split** (`test/` in the Roboflow v4 export) or
-  newly taken photos. Images the model was trained on look better than reality,
-  so they do not give an honest demo.
-- A check on a handful of images is not the model's accuracy. The tested result
-  on 920 test images is mAP50 0.658 for local YOLOv8n and 0.739 for cloud
-  RF-DETR Nano. The page shows this next to every score.
-- **Pillar is the weakest class** (recall about 17 percent local, 29 percent
-  cloud). A missed pillar is expected and is a training limitation, not a bug.
+The active library has four classes: Escalator, People, Stair and Wet Floor Sign.
+Prefer the cleaned **test split** or new held-out photos. Selected examples are demonstrations, not accuracy estimates. Historical five-class metrics are archived; see `docs/FOUR_CLASS_MIGRATION_2026-11-17.md` for current provenance and limits.
 
-## Videos are not committed
+## Bundled clips and obstacle examples
 
-Videos stay on the demo laptop. `demo/videos/` and all video files are listed in
-`.gitignore`. See `docs/DEMO_VIDEO_GUIDE.md` for how to film the walking video.
-Small example images may be committed; keep them small.
+**VivoCity - escalator atrium** is a wide Singapore mall shot. Source: [Vivo City Escalators by ElHeineken](https://commons.wikimedia.org/wiki/File:Vivo_City_Escalators.ogv), [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). The clip was transcoded and audio removed.
+
+Four other clips use different, chronologically ordered frames from single videos in the [team's v4 export](https://universe.roboflow.com/potatos-workspace-kequm/version2-nvt5l/dataset/4), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Playback uses six sampled images per second. Original timing and filming locations are unverified. These are selected demonstrations. Source scene IDs in the v4 scene manifest are:
+
+| Clip | Source scene |
+|---|---|
+| Escalator | `761978818_826474_mp4` |
+| Pedestrian | `764212632_214446_mp4` |
+| Stairs and pedestrians | `VID_20260108_094455_mp4` |
+| Wet floor sign | `11_mp4` |
+
+The sample-image picker includes three Singapore mall crops that exercise the general obstacle detector. [Photo credits](obstacles/Credits.md)
+
+Additional personal videos remain excluded by `.gitignore`.

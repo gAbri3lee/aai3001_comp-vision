@@ -18,6 +18,11 @@ from config import resolve_path
 CALIBRATION_FILE = 'camera_calibration.json'
 
 
+def positive_number(value):
+    return (not isinstance(value, bool) and isinstance(value, (int, float))
+            and math.isfinite(value) and value > 0)
+
+
 def load_calibration(path=None):
     """Return {'focal_px', 'frame_height'} or None when the camera is not calibrated."""
     path = resolve_path(path or CALIBRATION_FILE)
@@ -30,11 +35,11 @@ def load_calibration(path=None):
     if not isinstance(data, dict):
         return None
     samples = data.get('samples', [])
-    if not samples:
+    if not isinstance(samples, list) or not samples:
         return None
     try:
-        if not all(isinstance(s, dict) and all(isinstance(s.get(k), (int, float))
-                   and math.isfinite(s[k]) and s[k] > 0 for k in ('focal_px', 'frame_height')) for s in samples):
+        if not all(isinstance(s, dict) and all(positive_number(s.get(k))
+                   for k in ('focal_px', 'frame_height')) for s in samples):
             return None
         height = samples[-1]['frame_height']
         # Normalize each measurement BEFORE the median; samples may have been
@@ -46,7 +51,7 @@ def load_calibration(path=None):
 
 
 def focal_from_measurement(box_height_px, distance_m, real_height_m):
-    if not all(math.isfinite(v) and v > 0 for v in (box_height_px, distance_m, real_height_m)):
+    if not all(positive_number(v) for v in (box_height_px, distance_m, real_height_m)):
         raise ValueError('Box height, distance and real height must be positive')
     return box_height_px * distance_m / real_height_m
 
@@ -61,6 +66,10 @@ def estimate(label, xyxy, frame_height, calibration, known_heights):
         return None, 'not calibrated'
     if label not in known_heights:
         return None, 'no known height for this class'
+    if (not positive_number(frame_height) or not isinstance(calibration, dict)
+            or not all(positive_number(calibration.get(k)) for k in ('focal_px', 'frame_height'))
+            or not positive_number(known_heights[label])):
+        return None, 'invalid calibration or frame size'
     if (not all(math.isfinite(v) for v in xyxy) or xyxy[3] <= xyxy[1]
             or xyxy[2] <= xyxy[0]):
         return None, 'invalid box'

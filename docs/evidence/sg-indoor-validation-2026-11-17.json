@@ -1,0 +1,391 @@
+{
+  "scope": "Online real Singapore mall media validation, not in-person camera/range trials",
+  "images": 21,
+  "venues": [
+    "Bugis Junction",
+    "Bugis+ (Iluma)",
+    "City Square Mall",
+    "Funan",
+    "Nex",
+    "Suntec City",
+    "Thomson Plaza",
+    "VivoCity"
+  ],
+  "primary_targets": 34,
+  "labels_exhaustive": false,
+  "reviewer": "AI visual review; team review pending",
+  "baseline": {
+    "Pillar": {
+      "targets": 13,
+      "matched": 1,
+      "alert_eligible": 1
+    },
+    "Object": {
+      "targets": 10,
+      "matched": 2,
+      "alert_eligible": 0
+    },
+    "People": {
+      "targets": 10,
+      "matched": 10,
+      "alert_eligible": 0
+    },
+    "Escalator": {
+      "targets": 1,
+      "matched": 0,
+      "alert_eligible": 0
+    },
+    "Stair": {
+      "targets": 0,
+      "matched": 0,
+      "alert_eligible": 0
+    },
+    "Wet Floor Sign": {
+      "targets": 0,
+      "matched": 0,
+      "alert_eligible": 0
+    }
+  },
+  "experiments": {
+    "baseline": {
+      "primary_targets": {
+        "Pillar": {
+          "targets": 13,
+          "matched": 1,
+          "alert_eligible": 1
+        },
+        "Object": {
+          "targets": 10,
+          "matched": 2,
+          "alert_eligible": 0
+        },
+        "People": {
+          "targets": 10,
+          "matched": 10,
+          "alert_eligible": 0
+        },
+        "Escalator": {
+          "targets": 1,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Stair": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Wet Floor Sign": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        }
+      },
+      "median_inference_ms": 81.13160001812503,
+      "checkpoint_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe"
+    },
+    "text specialist": {
+      "primary_targets": {
+        "Pillar": {
+          "targets": 13,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Object": {
+          "targets": 10,
+          "matched": 2,
+          "alert_eligible": 0
+        },
+        "People": {
+          "targets": 10,
+          "matched": 10,
+          "alert_eligible": 0
+        },
+        "Escalator": {
+          "targets": 1,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Stair": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Wet Floor Sign": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        }
+      },
+      "median_inference_ms": 136.885300045833,
+      "checkpoint_sha256": "3bcecf188636658a745d3b3bea547262b956780bc428628e1b8d442dd06acf6e"
+    },
+    "visual specialist": {
+      "primary_targets": {
+        "Pillar": {
+          "targets": 13,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Object": {
+          "targets": 10,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "People": {
+          "targets": 10,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Escalator": {
+          "targets": 1,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Stair": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Wet Floor Sign": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        }
+      },
+      "median_inference_ms": 145.40559996385127,
+      "checkpoint_sha256": "077476b7de3a11dc08c228df60ac77d6581d69e8648be22e66ef1822d8ec8e54"
+    },
+    "Grounding DINO": {
+      "primary_targets": {
+        "Pillar": {
+          "targets": 13,
+          "matched": 3,
+          "alert_eligible": 2
+        },
+        "Object": {
+          "targets": 10,
+          "matched": 7,
+          "alert_eligible": 1
+        },
+        "People": {
+          "targets": 10,
+          "matched": 7,
+          "alert_eligible": 0
+        },
+        "Escalator": {
+          "targets": 1,
+          "matched": 1,
+          "alert_eligible": 0
+        },
+        "Stair": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Wet Floor Sign": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        }
+      },
+      "median_inference_ms": 8482.446100038942,
+      "checkpoint_sha256": "1a2412ef99bd74bcd3c2a246fa1e48581f8889a1300c9051974741314fc042f3"
+    },
+    "column pilot": {
+      "primary_targets": {
+        "Pillar": {
+          "targets": 13,
+          "matched": 1,
+          "alert_eligible": 1
+        },
+        "Object": {
+          "targets": 10,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "People": {
+          "targets": 10,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Escalator": {
+          "targets": 1,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Stair": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Wet Floor Sign": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        }
+      },
+      "median_inference_ms": 26.00959996925667,
+      "checkpoint_sha256": "b0cc1d14b16cbe4ab4449d1da929b4843878025827c9a39906bfa0a536e3f14d"
+    },
+    "hard-negative pilot": {
+      "primary_targets": {
+        "Pillar": {
+          "targets": 13,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Object": {
+          "targets": 10,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "People": {
+          "targets": 10,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Escalator": {
+          "targets": 1,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Stair": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        },
+        "Wet Floor Sign": {
+          "targets": 0,
+          "matched": 0,
+          "alert_eligible": 0
+        }
+      },
+      "median_inference_ms": 24.399199988693,
+      "checkpoint_sha256": "10d89b8bc29d2fb00b6ccf04cb440349cc58401720a90fb70f52ad7a447c3100"
+    }
+  },
+  "validation_comparisons": {
+    "context": {
+      "before": {
+        "ap50": 0.3439150428605269,
+        "tp": 47,
+        "fp": 13,
+        "fn": 114,
+        "precision": 0.7833333333333333,
+        "recall": 0.2919254658385093,
+        "boxes": 161
+      },
+      "after": {
+        "ap50": 0.34401582026175564,
+        "tp": 47,
+        "fp": 14,
+        "fn": 114,
+        "precision": 0.7704918032786885,
+        "recall": 0.2919254658385093,
+        "boxes": 161
+      },
+      "added_ms": 59.390475892247885
+    },
+    "binary": {
+      "before": {
+        "ap50": 0.3439150428605269,
+        "tp": 47,
+        "fp": 13,
+        "fn": 114,
+        "precision": 0.7833333333333333,
+        "recall": 0.2919254658385093,
+        "boxes": 161
+      },
+      "after": {
+        "ap50": 0.114859898372919,
+        "tp": 49,
+        "fp": 172,
+        "fn": 112,
+        "precision": 0.22171945701357465,
+        "recall": 0.30434782608695654,
+        "boxes": 161
+      },
+      "added_ms": 25.309155784685768
+    },
+    "binary-hard-negative": {
+      "before": {
+        "ap50": 0.3439150428605269,
+        "tp": 47,
+        "fp": 13,
+        "fn": 114,
+        "precision": 0.7833333333333333,
+        "recall": 0.2919254658385093,
+        "boxes": 161
+      },
+      "after": {
+        "ap50": 0.21588248692361972,
+        "tp": 48,
+        "fp": 67,
+        "fn": 113,
+        "precision": 0.41739130434782606,
+        "recall": 0.2981366459627329,
+        "boxes": 161
+      },
+      "added_ms": 29.025165512465644
+    }
+  },
+  "http": {
+    "images": 21,
+    "real_video_frames": 84,
+    "trained_classes_seen": [],
+    "corrupt_images_isolated": true,
+    "corrupt_video_rejected": true,
+    "pause_resume": true,
+    "replay": true,
+    "mjpeg": true,
+    "return_to_camera": true,
+    "cleanup": true
+  },
+  "regression": {
+    "passed": 195,
+    "subtests": 12
+  },
+  "exact_overlap": {
+    "images_checked": 10092,
+    "new_images": 21,
+    "exact_matches": [],
+    "note": "Exact bytes only; resized/cropped images, venue overlap and pretraining overlap remain possible."
+  },
+  "active_checkpoint_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe",
+  "deployed_changes": false,
+  "pillar_resolved": false,
+  "untested": [
+    "physical mall camera walk",
+    "measured distance accuracy",
+    "physical audible alert timing",
+    "representative-user usability",
+    "friend-owned hosted cloud"
+  ],
+  "video_acquisition_note": "A longer Suntec walking video was identified but its media endpoints returned HTTP 429, including Retry-After:120. No walking-video result is claimed. The tested clip is the already acquired real 9.47s VivoCity escalator clip.",
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.15.0+cpu",
+    "ultralytics": "8.4.183",
+    "device": "cpu",
+    "threads": 4
+  },
+  "general_checkpoint_sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+  "accepted_experiments": 0,
+  "all_other_class_validation_counts_unchanged": true,
+  "confirmed_baseline_false_classification": {
+    "image": "M010",
+    "predicted": "Stair",
+    "actual_region": "ceiling",
+    "confidence": 0.5637689828872681,
+    "warning_issued": false
+  },
+  "people_target_sources": {
+    "team_five_class_model": 7,
+    "general_supplement": 3
+  },
+  "column_only_arms": [
+    "visual specialist",
+    "column pilot",
+    "hard-negative pilot"
+  ]
+}

@@ -2,14 +2,40 @@
   "project": "VisionAid",
   "dataset": {
     "roboflow_project": "version2-nvt5l",
-    "version": 4,
-    "split_fingerprint": "49601080aac1f838190341d331785578",
-    "split_images": {"train": 8247, "valid": 925, "test": 920}
+    "version": "v4-four-class-clean-reviewed-2026-11-18",
+    "derived_from_version": 4,
+    "path": "data/v4_four_class_clean/data.yaml",
+    "split_fingerprint": "d4242de8c1d3776941c614a99dc432a6",
+    "split_images": {
+      "train": 7749,
+      "valid": 859,
+      "test": 769
+    },
+    "training_annotation_revision": {
+      "reviewed_train_images": 60,
+      "patched_train_images": 7,
+      "added_boxes": 14,
+      "added_people_boxes": 13,
+      "added_sign_boxes": 1,
+      "review_sha256": "bb40421b1166b0fbbb158b4eb6017d52a80cd31083ceabaa289817e549e732b3",
+      "human_review_pending": true,
+      "control_records_frozen_before_edit": true,
+      "validation_test_changed": false,
+      "images_changed": false,
+      "label_hashes": {
+        "v4_3c12c55f3d38bbbe13e936ef.txt": "d1f57c51a77c2db91ea48f2906f9e4c6b55c28bf25fb49ee41c553579a2e9b08",
+        "v4_c3eee98c6c1d3776eae1c9a3.txt": "8ae36024ff7c36755d4ea0f1d325f64814ae3a9269919c90c87c1c99934899fb",
+        "v4_963eb63c7ad2dc0c39dd17a2.txt": "7fadaa0e5b04bbd72489b955ecfc26edb3f7c4e06438368a8f94d422d0da9032",
+        "v4_5718f3e70c5a43b13d2d8e06.txt": "63a28e4e9c9c48d8b8c912bcd4133ff45d3dfa84da4f0acdec3eabb313d479d5",
+        "v4_55e893c1f32befabbaafa00a.txt": "bd9c25fc176f5fe5659d5e9c85ffc595e8cf284f62b3664d2b2db3b11846c687",
+        "v4_442482037f8d7546f4e218bc.txt": "83147d7b2ce5aafcb203999796ec3cd0767466012f1f2edf244126741257cb02",
+        "v4_a60cde99eadf4a133c24fe49.txt": "9c41b372d444324b4d4e95ebc3dd81e156ef460fc8a834061195fc021c91e82a"
+      }
+    }
   },
   "classes": [
     "Escalator",
     "People",
-    "Pillar",
     "Stair",
     "Wet Floor Sign"
   ],
@@ -22,7 +48,6 @@
     "Stair",
     "Escalator",
     "Wet Floor Sign",
-    "Pillar",
     "People"
   ],
   "output_format": {
@@ -36,7 +61,7 @@
   },
   "local": {
     "model": "yolov8n",
-    "file": "models/local/yolov8n_v4.pt",
+    "file": "models/local/yolov8n_v4_four_class.pt",
     "library": "ultralytics==8.4.183",
     "input_size": 640,
     "colour_order": "BGR numpy array or a file path",
@@ -44,27 +69,21 @@
     "class_thresholds": {
       "Escalator": 0.35,
       "People": 0.35,
-      "Pillar": 0.35,
       "Stair": 0.35,
       "Wet Floor Sign": 0.35
     },
     "expected": {
-      "test_map50": 0.6585,
-      "test_map50_95": 0.4194,
-      "test_safety_recall": 0.7155,
       "t4_gpu_ms": 9.8,
       "kaggle_cpu_ms": 65,
+      "test_map50": 0.7743848205584185,
+      "test_map50_95": 0.5090367327427092,
+      "test_safety_recall": 0.7297929694321521,
       "per_class_recall": {
-        "Escalator": 0.899,
-        "People": 0.582,
-        "Pillar": 0.17,
-        "Stair": 0.688,
-        "Wet Floor Sign": 0.56
+        "Escalator": 0.8446601941747572,
+        "People": 0.5796064400715564,
+        "Stair": 0.6716417910447762,
+        "Wet Floor Sign": 0.6730769230769231
       }
-    },
-    "ultralytics_val_test_baseline": {
-      "map50": 0.6617,
-      "map50_95": 0.4177
     }
   },
   "cloud": {
@@ -77,49 +96,72 @@
     "class_thresholds": {
       "Escalator": 0.4,
       "People": 0.4,
-      "Pillar": 0.4,
       "Stair": 0.4,
       "Wet Floor Sign": 0.4
     },
     "expected": {
-      "test_map50": 0.7395,
-      "test_map50_95": 0.4471,
-      "test_safety_recall": 0.7671,
       "t4_gpu_ms": 22.8,
       "kaggle_cpu_ms": 221,
-      "per_class_recall": {
-        "Escalator": 0.848,
-        "People": 0.694,
-        "Pillar": 0.294,
-        "Stair": 0.729,
-        "Wet Floor Sign": 0.724
-      }
-    }
+      "status": "Four-class cloud benchmark pending teammate deployment; original five-class metrics archived"
+    },
+    "source_classes": [
+      "Escalator",
+      "People",
+      "Pillar",
+      "Stair",
+      "Wet Floor Sign"
+    ]
   },
   "severity": {
     "Stair": 1.0,
     "Escalator": 0.9,
     "Wet Floor Sign": 0.8,
-    "Pillar": 0.7,
     "People": 0.5
   },
   "alert_gate": {
     "enabled": true,
     "calibrated": false,
     "size_metric": "box_height_over_frame_height",
-    "centre_third": [0.3333, 0.6667],
+    "centre_third": [
+      0.3333,
+      0.6667
+    ],
     "side_multiplier": 1.5,
     "min_size": {
-      "Stair": 0.20, "Escalator": 0.25, "Wet Floor Sign": 0.18,
-      "Pillar": 0.35, "People": 0.40, "Object": 0.35
+      "Stair": 0.2,
+      "Escalator": 0.25,
+      "Wet Floor Sign": 0.18,
+      "People": 0.4,
+      "Object": 0.35
     },
     "near_size": {
-      "Stair": 0.35, "Escalator": 0.45, "Wet Floor Sign": 0.28,
-      "Pillar": 0.60, "People": 0.60, "Object": 0.55
+      "Stair": 0.35,
+      "Escalator": 0.45,
+      "Wet Floor Sign": 0.28,
+      "People": 0.6,
+      "Object": 0.55
     },
     "object_min_confidence": 0.5,
-    "cooldown_seconds": {"trained": 4.0, "Object": 8.0},
+    "cooldown_seconds": {
+      "trained": 4.0,
+      "Object": 8.0
+    },
     "proximity_jump_to_realert": 0.15,
-    "known_heights_m": {"People": 1.7, "Wet Floor Sign": 0.65}
-  }
+    "known_heights_m": {
+      "People": 1.7,
+      "Wet Floor Sign": 0.65
+    }
+  },
+  "model_training_provenance": {
+    "original_version": 4,
+    "original_split_fingerprint": "49601080aac1f838190341d331785578",
+    "original_images": {
+      "train": 8247,
+      "valid": 925,
+      "test": 920
+    },
+    "retrained_on_cleaned_dataset": false,
+    "derivation": "Removed final pillar class-logit rows, preserved all remaining weights"
+  },
+  "benchmark_note": "Four-class scope. The model was derived from the original checkpoint; dataset cleanup did not retrain it. Historical five-class scores are archived. Physical distance accuracy is unverified."
 }

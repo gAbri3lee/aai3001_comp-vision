@@ -1,0 +1,345 @@
+{
+  "date": "2026-11-17",
+  "active_classes": [
+    "Escalator",
+    "People",
+    "Stair",
+    "Wet Floor Sign"
+  ],
+  "mapping_old_to_new": {
+    "0": 0,
+    "1": 1,
+    "3": 2,
+    "4": 3
+  },
+  "original_audit": {
+    "images": 10092,
+    "splits": {
+      "train": 8247,
+      "valid": 925,
+      "test": 920
+    },
+    "corrupt_or_invalid": 0,
+    "orphan_labels": 0,
+    "duplicate_label_rows": 0,
+    "byte_duplicate_groups": 0,
+    "pixel_duplicate_groups": 0,
+    "byte_cross_split_groups": 0,
+    "pixel_cross_split_groups": 0,
+    "perceptual_candidates": 2177,
+    "perceptual_cross_split_candidates": 0,
+    "close_aligned_candidates": 1357,
+    "scene_cross_split": 0,
+    "source_stem_cross_split": 0
+  },
+  "cleaned_audit": {
+    "images": 9377,
+    "splits": {
+      "train": 7749,
+      "valid": 859,
+      "test": 769
+    },
+    "corrupt_or_invalid": 0,
+    "orphan_labels": 0,
+    "duplicate_label_rows": 0,
+    "byte_duplicate_groups": 0,
+    "pixel_duplicate_groups": 0,
+    "byte_cross_split_groups": 0,
+    "pixel_cross_split_groups": 0,
+    "perceptual_candidates": 0,
+    "perceptual_cross_split_candidates": 0,
+    "close_aligned_candidates": 0,
+    "scene_cross_split": 0,
+    "source_stem_cross_split": 0
+  },
+  "cleaned_dataset": {
+    "source": "data/v4_scene_split",
+    "output": "data/v4_four_class_clean",
+    "classes": [
+      "Escalator",
+      "People",
+      "Stair",
+      "Wet Floor Sign"
+    ],
+    "old_to_new": {
+      "0": 0,
+      "1": 1,
+      "3": 2,
+      "4": 3
+    },
+    "images": {
+      "train": 7749,
+      "valid": 859,
+      "test": 769
+    },
+    "boxes": {
+      "train": {
+        "People": 8109,
+        "Escalator": 919,
+        "Stair": 2677,
+        "Wet Floor Sign": 1415
+      },
+      "valid": {
+        "People": 816,
+        "Wet Floor Sign": 68,
+        "Stair": 316,
+        "Escalator": 121
+      },
+      "test": {
+        "Wet Floor Sign": 52,
+        "People": 559,
+        "Stair": 268,
+        "Escalator": 103
+      }
+    },
+    "backgrounds": {
+      "train": 1135,
+      "valid": 140,
+      "test": 143
+    },
+    "pillar_boxes_removed_in_retained_images": {
+      "train": 1097,
+      "valid": 144,
+      "test": 143
+    },
+    "pillar_annotations_remaining": 0,
+    "quarantined_images": 715,
+    "quarantine_reasons": {
+      "similar_frame_candidate_quarantined": 715
+    },
+    "fingerprint": "d4242de8c1d3776941c614a99dc432a6",
+    "source_audit_sha256": "7de900d2ba0ede0ce09ebd2f424ad93cb330cf20f8422dce6db2563f81216b8f",
+    "splits_moved": 0,
+    "byte_and_pixel_duplicates_remaining": 0,
+    "retained_audited_perceptual_pairs": 0,
+    "policy": "Remove pillar labels, retain useful photos and negatives, preserve original scene split. Candidate-similar images quarantined to originals; not all candidates are certified duplicates. Short content-derived names avoid Windows path failures.",
+    "limitation": "No exhaustive human reannotation of every image. Unlabelled targets, unrelated viewpoints/crops and background pillars may remain. This is a new dataset version; old model metrics are historical."
+  },
+  "model_conversion": {
+    "source_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe",
+    "class_mapping": {
+      "0": 0,
+      "1": 1,
+      "3": 2,
+      "4": 3
+    },
+    "removed_original_class": 2,
+    "retrained": false,
+    "purpose": "Inference-only head projection; original features and retained weights preserved",
+    "destination_sha256": "58626a2662586f1a9c55de6a8b5aa3843dbbcb29f9e8ddc4455fd0583ceb9a39",
+    "raw_parity": [
+      {
+        "input": "black",
+        "max_raw_difference": 0.0,
+        "anchors": 8400
+      },
+      {
+        "input": "random",
+        "max_raw_difference": 0.0,
+        "anchors": 8400
+      }
+    ],
+    "remaining_class_weights_equal": true,
+    "post_nms_parity": "Must compare on labelled data before promotion"
+  },
+  "comparison": {
+    "valid": {
+      "delta": {
+        "Escalator": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "ap50": -5.313453291622139e-05,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "People": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "ap50": -3.25544429083946e-05,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "Stair": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "ap50": -7.34150002912326e-06,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "Wet Floor Sign": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "ap50": -0.00021722699433679438,
+          "precision": 0.0,
+          "recall": 0.0
+        }
+      },
+      "strict_no_degradation": false,
+      "limitation": "Historical development set, not an unseen final evaluation. Pillar excluded on both sides; four-class mean AP is not comparable with old five-class mean AP.",
+      "deployed_prediction_parity": {
+        "images": 925,
+        "different_images": 0,
+        "iou_tolerance": 0.999,
+        "confidence_tolerance": 1e-05,
+        "cutoff": 0.35
+      }
+    },
+    "test": {
+      "delta": {
+        "Escalator": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "ap50": -2.2420229006114845e-05,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "People": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "ap50": -1.7879285378219478e-05,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "Stair": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "ap50": -2.748311580413887e-05,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "Wet Floor Sign": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "ap50": -0.00016176618207852655,
+          "precision": 0.0,
+          "recall": 0.0
+        }
+      },
+      "strict_no_degradation": false,
+      "limitation": "Historical development set, not an unseen final evaluation. Pillar excluded on both sides; four-class mean AP is not comparable with old five-class mean AP.",
+      "deployed_prediction_parity": {
+        "images": 920,
+        "different_images": 0,
+        "iou_tolerance": 0.999,
+        "confidence_tolerance": 1e-05,
+        "cutoff": 0.35
+      }
+    }
+  },
+  "deployment_acceptance": {
+    "accepted": true,
+    "criteria": "All retained-class per-image predictions agree at deployed 0.35 (IoU>.999, confidence delta<1e-5), counts identical, maximum AP50 drop <=0.001 absolute.",
+    "max_ap50_drop": 0.00021722699433679438,
+    "exact_ap_gate_passed": false,
+    "note": "Strict AP identity failed; removed competing class changes low-confidence NMS/argmax. No training or threshold tuning. This tiny difference is disclosed, not claimed as exact AP parity."
+  },
+  "regression": {
+    "tests": 207,
+    "subtests": 12,
+    "passed": true,
+    "log": "artifacts/four-class-migration-tests-final.log"
+  },
+  "golden": {
+    "passed": true,
+    "matched": 20,
+    "total": 20,
+    "extra": 0,
+    "missing_images": [],
+    "unexpected_images": [],
+    "largest_confidence_difference": 4.6992683410684855e-05
+  },
+  "real_uploads": {
+    "photos": 11,
+    "videos": [
+      {
+        "file": "opencv-vtest-first20s.mp4",
+        "frames": 156,
+        "completed": true
+      },
+      {
+        "file": "vivocity-source-converted.mp4",
+        "frames": 59,
+        "completed": true
+      }
+    ],
+    "UI_config_and_library_four_classes": true,
+    "corrupt_image_isolated": true,
+    "cleanup_passed": true,
+    "pillar_expected_rejected": true
+  },
+  "cleaned_test": {
+    "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+    "images": 769,
+    "alert_threshold": 0.35,
+    "map50": 0.7743848205584185,
+    "map50_95": 0.5090367327427092,
+    "precision": 0.7964376590330788,
+    "recall": 0.6374745417515275,
+    "f1": 0.7081447963800905,
+    "safety_recall": 0.7297929694321521,
+    "per_class": {
+      "Escalator": {
+        "ap50": 0.9439296271365659,
+        "tp": 87,
+        "fp": 7,
+        "fn": 16,
+        "precision": 0.925531914893617,
+        "recall": 0.8446601941747572,
+        "boxes": 103
+      },
+      "People": {
+        "ap50": 0.6941154678369762,
+        "tp": 324,
+        "fp": 106,
+        "fn": 235,
+        "precision": 0.7534883720930232,
+        "recall": 0.5796064400715564,
+        "boxes": 559
+      },
+      "Stair": {
+        "ap50": 0.7634449447891097,
+        "tp": 180,
+        "fp": 44,
+        "fn": 88,
+        "precision": 0.8035714285714286,
+        "recall": 0.6716417910447762,
+        "boxes": 268
+      },
+      "Wet Floor Sign": {
+        "ap50": 0.6960492424710218,
+        "tp": 35,
+        "fp": 3,
+        "fn": 17,
+        "precision": 0.9210526315789473,
+        "recall": 0.6730769230769231,
+        "boxes": 52
+      }
+    }
+  },
+  "training_provenance": "Original five-class weights with final class rows projected; not retrained on cleaned data",
+  "duplicate_leakage_found_under_screen": false,
+  "exhaustive_human_annotation_review": false,
+  "unchanged_originals": {
+    "dataset": "data/v4_scene_split",
+    "model": "models/local/yolov8n_v4.pt",
+    "config": "configs/legacy_v4_five_class.json"
+  },
+  "limits": [
+    "No proof of all crops, venue overlap or checkpoint training history.",
+    "Background pillars can remain; removed target class, not every pillar pixel.",
+    "Small external challenge still exposes escalator/stair/crowd weaknesses.",
+    "No hosted-cloud, physical camera distance, audible speech or representative-user testing in this pass.",
+    "Cleaned four-class metrics use a changed subset; cannot be sold as a retraining gain over five-class scores."
+  ],
+  "uploaded": false,
+  "pushed": false,
+  "merged": false
+}

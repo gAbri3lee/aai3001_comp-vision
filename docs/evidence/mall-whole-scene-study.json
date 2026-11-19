@@ -1,0 +1,1008 @@
+{
+  "dataset_counts": {
+    "train": 10,
+    "val": 2,
+    "test": 4
+  },
+  "annotation_boxes": 23,
+  "annotation_review": "AI whole-image/overlay review; independent human review pending",
+  "training_runs": 9,
+  "arms": [
+    "standard",
+    "degradation_augmented",
+    "pillar_warmstart"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "selection": "Mean validation F1 across seeds; fixed seed0 for runtime; no best-test-seed selection",
+  "fresh_column_baseline": {
+    "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+    "images": 4,
+    "alert_threshold": 0.35,
+    "map50": 0.20792079207920786,
+    "map50_95": 0.18712871287128707,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "safety_recall": null,
+    "per_class": {
+      "large structural column": {
+        "ap50": 0.20792079207920786,
+        "tp": 0,
+        "fp": 0,
+        "fn": 5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "boxes": 5
+      }
+    }
+  },
+  "fresh_column_runs": [
+    {
+      "arm": "standard",
+      "seed": 0,
+      "last_sha256": "f1f49e5b283fcb482da13fd9e78e0f4136e89fa19a4a3971c9f58a369a7040ab",
+      "metrics": {
+        "val": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 2,
+          "alert_threshold": 0.5,
+          "map50": 0.3831683168316831,
+          "map50_95": 0.13676253339619673,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.3831683168316831,
+              "tp": 0,
+              "fp": 1,
+              "fn": 3,
+              "precision": 0.0,
+              "recall": 0.0,
+              "boxes": 3
+            }
+          }
+        },
+        "test": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 4,
+          "alert_threshold": 0.5,
+          "map50": 0.6794661798335307,
+          "map50_95": 0.45678550187174194,
+          "precision": 1.0,
+          "recall": 0.4,
+          "f1": 0.5714285714285715,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.6794661798335307,
+              "tp": 2,
+              "fp": 0,
+              "fn": 3,
+              "precision": 1.0,
+              "recall": 0.4,
+              "boxes": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "arm": "degradation_augmented",
+      "seed": 0,
+      "last_sha256": "cae84c35ebaa42dd81927143b8c0c52a241c8bb11c982cb313fa82b023a8162b",
+      "metrics": {
+        "val": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 2,
+          "alert_threshold": 0.5,
+          "map50": 0.36138613861386115,
+          "map50_95": 0.0726889022935907,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.36138613861386115,
+              "tp": 0,
+              "fp": 0,
+              "fn": 3,
+              "precision": 0.0,
+              "recall": 0.0,
+              "boxes": 3
+            }
+          }
+        },
+        "test": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 4,
+          "alert_threshold": 0.5,
+          "map50": 0.9669966996699667,
+          "map50_95": 0.7011551155115512,
+          "precision": 1.0,
+          "recall": 0.4,
+          "f1": 0.5714285714285715,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.9669966996699667,
+              "tp": 2,
+              "fp": 0,
+              "fn": 3,
+              "precision": 1.0,
+              "recall": 0.4,
+              "boxes": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "arm": "standard",
+      "seed": 1,
+      "last_sha256": "57edebb18cc4a7e5a18326ddc912323cbe087afbd94da19904f58ee12a540b67",
+      "metrics": {
+        "val": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 2,
+          "alert_threshold": 0.5,
+          "map50": 0.12192362093352194,
+          "map50_95": 0.05149929278642149,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.12192362093352194,
+              "tp": 0,
+              "fp": 1,
+              "fn": 3,
+              "precision": 0.0,
+              "recall": 0.0,
+              "boxes": 3
+            }
+          }
+        },
+        "test": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 4,
+          "alert_threshold": 0.5,
+          "map50": 0.7359735973597358,
+          "map50_95": 0.5331683168316832,
+          "precision": 1.0,
+          "recall": 0.6,
+          "f1": 0.7499999999999999,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.7359735973597358,
+              "tp": 3,
+              "fp": 0,
+              "fn": 2,
+              "precision": 1.0,
+              "recall": 0.6,
+              "boxes": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "arm": "degradation_augmented",
+      "seed": 1,
+      "last_sha256": "7afef0572a7c9784673dd15a7f0b7dfb066071e32f6a08f4f722d2e75e904f8f",
+      "metrics": {
+        "val": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 2,
+          "alert_threshold": 0.5,
+          "map50": 0.14191419141914186,
+          "map50_95": 0.07138867732927137,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.14191419141914186,
+              "tp": 0,
+              "fp": 2,
+              "fn": 3,
+              "precision": 0.0,
+              "recall": 0.0,
+              "boxes": 3
+            }
+          }
+        },
+        "test": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 4,
+          "alert_threshold": 0.5,
+          "map50": 0.6976126184046978,
+          "map50_95": 0.4526916977412027,
+          "precision": 1.0,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.6976126184046978,
+              "tp": 1,
+              "fp": 0,
+              "fn": 4,
+              "precision": 1.0,
+              "recall": 0.2,
+              "boxes": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "arm": "standard",
+      "seed": 2,
+      "last_sha256": "8c173d0e464feebdfef0248fc44ab8184a83932d933cd9c0ea1b189d05b980f2",
+      "metrics": {
+        "val": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 2,
+          "alert_threshold": 0.5,
+          "map50": 0.13267326732673265,
+          "map50_95": 0.04646864686468646,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.13267326732673265,
+              "tp": 0,
+              "fp": 2,
+              "fn": 3,
+              "precision": 0.0,
+              "recall": 0.0,
+              "boxes": 3
+            }
+          }
+        },
+        "test": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 4,
+          "alert_threshold": 0.5,
+          "map50": 0.40896913220733844,
+          "map50_95": 0.1898776936517181,
+          "precision": 0.3333333333333333,
+          "recall": 0.2,
+          "f1": 0.25,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.40896913220733844,
+              "tp": 1,
+              "fp": 2,
+              "fn": 4,
+              "precision": 0.3333333333333333,
+              "recall": 0.2,
+              "boxes": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "arm": "degradation_augmented",
+      "seed": 2,
+      "last_sha256": "63946ab6b324433157edb5bf05553b06b88cb3397e93ff10c7b63a4c70fb7ac2",
+      "metrics": {
+        "val": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 2,
+          "alert_threshold": 0.5,
+          "map50": 0.13267326732673265,
+          "map50_95": 0.04492194113541614,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.13267326732673265,
+              "tp": 0,
+              "fp": 1,
+              "fn": 3,
+              "precision": 0.0,
+              "recall": 0.0,
+              "boxes": 3
+            }
+          }
+        },
+        "test": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 4,
+          "alert_threshold": 0.5,
+          "map50": 0.6424642464246424,
+          "map50_95": 0.3612961296129613,
+          "precision": 1.0,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.6424642464246424,
+              "tp": 1,
+              "fp": 0,
+              "fn": 4,
+              "precision": 1.0,
+              "recall": 0.2,
+              "boxes": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "arm": "pillar_warmstart",
+      "seed": 0,
+      "last_sha256": "7b4eeb879d2374df0da075dc4c12e8446d2612a0e40ea70d999c76406143b3c7",
+      "metrics": {
+        "val": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 2,
+          "alert_threshold": 0.5,
+          "map50": 0.10627595017566277,
+          "map50_95": 0.02593865279506394,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.10627595017566277,
+              "tp": 0,
+              "fp": 0,
+              "fn": 3,
+              "precision": 0.0,
+              "recall": 0.0,
+              "boxes": 3
+            }
+          }
+        },
+        "test": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 4,
+          "alert_threshold": 0.5,
+          "map50": 0.5146314631463146,
+          "map50_95": 0.23453025302530253,
+          "precision": 1.0,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.5146314631463146,
+              "tp": 1,
+              "fp": 0,
+              "fn": 4,
+              "precision": 1.0,
+              "recall": 0.2,
+              "boxes": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "arm": "pillar_warmstart",
+      "seed": 1,
+      "last_sha256": "d9397221198c948c087e02c032ed9ada1738798b864462451d218774fe6ab70d",
+      "metrics": {
+        "val": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 2,
+          "alert_threshold": 0.5,
+          "map50": 0.591859185918592,
+          "map50_95": 0.19679396511079675,
+          "precision": 1.0,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.591859185918592,
+              "tp": 1,
+              "fp": 0,
+              "fn": 2,
+              "precision": 1.0,
+              "recall": 0.3333333333333333,
+              "boxes": 3
+            }
+          }
+        },
+        "test": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 4,
+          "alert_threshold": 0.5,
+          "map50": 0.5469118340405471,
+          "map50_95": 0.2632078294459063,
+          "precision": 1.0,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.5469118340405471,
+              "tp": 1,
+              "fp": 0,
+              "fn": 4,
+              "precision": 1.0,
+              "recall": 0.2,
+              "boxes": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "arm": "pillar_warmstart",
+      "seed": 2,
+      "last_sha256": "b63eaca08489aff5680fcafb6ca64e3ea21e9ee002463d4ed917e4d300c10364",
+      "metrics": {
+        "val": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 2,
+          "alert_threshold": 0.5,
+          "map50": 0.7054455445544554,
+          "map50_95": 0.28047192170954544,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.7054455445544554,
+              "tp": 0,
+              "fp": 0,
+              "fn": 3,
+              "precision": 0.0,
+              "recall": 0.0,
+              "boxes": 3
+            }
+          }
+        },
+        "test": {
+          "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+          "images": 4,
+          "alert_threshold": 0.5,
+          "map50": 0.649113262974649,
+          "map50_95": 0.3835656166025044,
+          "precision": 1.0,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
+          "safety_recall": null,
+          "per_class": {
+            "large structural column": {
+              "ap50": 0.649113262974649,
+              "tp": 1,
+              "fp": 0,
+              "fn": 4,
+              "precision": 1.0,
+              "recall": 0.2,
+              "boxes": 5
+            }
+          }
+        }
+      }
+    }
+  ],
+  "selected_arm": "pillar_warmstart",
+  "selected_seed": 0,
+  "original_validation": {
+    "before": {
+      "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+      "images": 925,
+      "alert_threshold": 0.35,
+      "map50": 0.7091212080909991,
+      "map50_95": 0.44349160431310086,
+      "precision": 0.7961832061068702,
+      "recall": 0.6777128005198181,
+      "f1": 0.7321867321867321,
+      "safety_recall": 0.7800827711761859,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.8244534463483024,
+          "tp": 95,
+          "fp": 12,
+          "fn": 26,
+          "precision": 0.8878504672897196,
+          "recall": 0.7851239669421488,
+          "boxes": 121
+        },
+        "People": {
+          "ap50": 0.7491156001169057,
+          "tp": 579,
+          "fp": 166,
+          "fn": 239,
+          "precision": 0.7771812080536913,
+          "recall": 0.7078239608801956,
+          "boxes": 818
+        },
+        "Pillar": {
+          "ap50": 0.3439150428605269,
+          "tp": 47,
+          "fp": 13,
+          "fn": 114,
+          "precision": 0.7833333333333333,
+          "recall": 0.2919254658385093,
+          "boxes": 161
+        },
+        "Stair": {
+          "ap50": 0.7426728644474714,
+          "tp": 219,
+          "fp": 66,
+          "fn": 102,
+          "precision": 0.7684210526315789,
+          "recall": 0.6822429906542056,
+          "boxes": 321
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8854490866817893,
+          "tp": 103,
+          "fp": 10,
+          "fn": 15,
+          "precision": 0.911504424778761,
+          "recall": 0.8728813559322034,
+          "boxes": 118
+        }
+      }
+    },
+    "after": {
+      "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+      "images": 925,
+      "alert_threshold": 0.35,
+      "map50": 0.7017965265581495,
+      "map50_95": 0.44038593879798155,
+      "precision": 0.7835205992509363,
+      "recall": 0.6796621182586094,
+      "f1": 0.7279053583855253,
+      "safety_recall": 0.7800827711761859,
+      "per_class": {
+        "Escalator": {
+          "ap50": 0.8244534463483024,
+          "tp": 95,
+          "fp": 12,
+          "fn": 26,
+          "precision": 0.8878504672897196,
+          "recall": 0.7851239669421488,
+          "boxes": 121
+        },
+        "People": {
+          "ap50": 0.7491156001169057,
+          "tp": 579,
+          "fp": 166,
+          "fn": 239,
+          "precision": 0.7771812080536913,
+          "recall": 0.7078239608801956,
+          "boxes": 818
+        },
+        "Pillar": {
+          "ap50": 0.30729163519627883,
+          "tp": 50,
+          "fp": 35,
+          "fn": 111,
+          "precision": 0.5882352941176471,
+          "recall": 0.3105590062111801,
+          "boxes": 161
+        },
+        "Stair": {
+          "ap50": 0.7426728644474714,
+          "tp": 219,
+          "fp": 66,
+          "fn": 102,
+          "precision": 0.7684210526315789,
+          "recall": 0.6822429906542056,
+          "boxes": 321
+        },
+        "Wet Floor Sign": {
+          "ap50": 0.8854490866817893,
+          "tp": 103,
+          "fp": 10,
+          "fn": 15,
+          "precision": 0.911504424778761,
+          "recall": 0.8728813559322034,
+          "boxes": 118
+        }
+      }
+    },
+    "gate_passed": false,
+    "extra_mean_ms": 35.394860756633854,
+    "application_changed": false,
+    "other_classes_unchanged": true
+  },
+  "obstacles": {
+    "scope": "Bins, seating and planters >=10% height only; two new venues; AI labels need independent review",
+    "results": {
+      "COCO": {
+        "metrics": {
+          "0.35": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 6,
+            "precision": 1.0,
+            "recall": 0.25
+          },
+          "0.5": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 6,
+            "precision": 1.0,
+            "recall": 0.25
+          }
+        },
+        "cases": [
+          {
+            "id": "F001",
+            "targets": [],
+            "predictions": [],
+            "elapsed_ms": 1910.097100015264
+          },
+          {
+            "id": "F002",
+            "targets": [
+              {
+                "label": "planter",
+                "box_xyxy": [
+                  302.08,
+                  560.64,
+                  453.12,
+                  791.04
+                ]
+              }
+            ],
+            "predictions": [
+              {
+                "label": "planter",
+                "box": [
+                  305.0279541015625,
+                  554.5491943359375,
+                  452.939453125,
+                  783.7100830078125
+                ],
+                "confidence": 0.5696434378623962
+              }
+            ],
+            "elapsed_ms": 86.57370001310483
+          },
+          {
+            "id": "F003",
+            "targets": [
+              {
+                "label": "planter",
+                "box_xyxy": [
+                  596.48,
+                  388.92307692307696,
+                  727.04,
+                  612.8097165991903
+                ]
+              }
+            ],
+            "predictions": [
+              {
+                "label": "planter",
+                "box": [
+                  608.6724853515625,
+                  389.77545166015625,
+                  736.6319580078125,
+                  559.5908813476562
+                ],
+                "confidence": 0.7085301280021667
+              }
+            ],
+            "elapsed_ms": 76.5868000453338
+          },
+          {
+            "id": "F004",
+            "targets": [],
+            "predictions": [],
+            "elapsed_ms": 68.86409997241572
+          },
+          {
+            "id": "F005",
+            "targets": [
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  0.0,
+                  418.88429752066116,
+                  101.12,
+                  527.7685950413223
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  170.24,
+                  390.702479338843,
+                  345.6,
+                  518.801652892562
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  128.0,
+                  508.55371900826447,
+                  437.76,
+                  775.0
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  551.6800000000001,
+                  521.3636363636364,
+                  808.96,
+                  753.2231404958677
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  784.64,
+                  457.31404958677683,
+                  1082.88,
+                  666.1157024793388
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  1112.32,
+                  652.0247933884298,
+                  1280.0,
+                  775.0
+                ]
+              }
+            ],
+            "predictions": [],
+            "elapsed_ms": 57.85840004682541
+          }
+        ]
+      },
+      "World": {
+        "metrics": {
+          "0.35": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 4,
+            "precision": 1.0,
+            "recall": 0.5
+          },
+          "0.5": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 7,
+            "precision": 1.0,
+            "recall": 0.125
+          }
+        },
+        "cases": [
+          {
+            "id": "F001",
+            "targets": [],
+            "predictions": [],
+            "elapsed_ms": 338.7011999730021
+          },
+          {
+            "id": "F002",
+            "targets": [
+              {
+                "label": "planter",
+                "box_xyxy": [
+                  302.08,
+                  560.64,
+                  453.12,
+                  791.04
+                ]
+              }
+            ],
+            "predictions": [
+              {
+                "label": "planter",
+                "box": [
+                  309.5517883300781,
+                  554.66796875,
+                  452.5077209472656,
+                  784.2215576171875
+                ],
+                "confidence": 0.4415777325630188
+              }
+            ],
+            "elapsed_ms": 203.912400000263
+          },
+          {
+            "id": "F003",
+            "targets": [
+              {
+                "label": "planter",
+                "box_xyxy": [
+                  596.48,
+                  388.92307692307696,
+                  727.04,
+                  612.8097165991903
+                ]
+              }
+            ],
+            "predictions": [
+              {
+                "label": "planter",
+                "box": [
+                  620.974853515625,
+                  388.64508056640625,
+                  745.6495361328125,
+                  611.1412963867188
+                ],
+                "confidence": 0.6224355697631836
+              }
+            ],
+            "elapsed_ms": 205.42399998521432
+          },
+          {
+            "id": "F004",
+            "targets": [],
+            "predictions": [],
+            "elapsed_ms": 207.64009997947142
+          },
+          {
+            "id": "F005",
+            "targets": [
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  0.0,
+                  418.88429752066116,
+                  101.12,
+                  527.7685950413223
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  170.24,
+                  390.702479338843,
+                  345.6,
+                  518.801652892562
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  128.0,
+                  508.55371900826447,
+                  437.76,
+                  775.0
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  551.6800000000001,
+                  521.3636363636364,
+                  808.96,
+                  753.2231404958677
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  784.64,
+                  457.31404958677683,
+                  1082.88,
+                  666.1157024793388
+                ]
+              },
+              {
+                "label": "seating",
+                "box_xyxy": [
+                  1112.32,
+                  652.0247933884298,
+                  1280.0,
+                  775.0
+                ]
+              }
+            ],
+            "predictions": [
+              {
+                "label": "seating",
+                "box": [
+                  782.309326171875,
+                  453.8372497558594,
+                  1074.355712890625,
+                  662.3511352539062
+                ],
+                "confidence": 0.4643350839614868
+              },
+              {
+                "label": "seating",
+                "box": [
+                  0.023101806640625,
+                  380.17864990234375,
+                  145.7480010986328,
+                  527.3949584960938
+                ],
+                "confidence": 0.40081787109375
+              }
+            ],
+            "elapsed_ms": 174.94539998006076
+          }
+        ]
+      }
+    }
+  },
+  "warning_check": {
+    "results": {
+      "current": {
+        "duration_seconds": 9.466666666666667,
+        "sampled_frames": 142,
+        "column_warning_events": [],
+        "gated_column_frames": 0,
+        "events_per_minute": 0.0
+      },
+      "research_supplement": {
+        "duration_seconds": 9.466666666666667,
+        "sampled_frames": 142,
+        "column_warning_events": [],
+        "gated_column_frames": 0,
+        "events_per_minute": 0.0
+      }
+    },
+    "limitation": "Only 9.47 seconds, repeated source from prior work. No clear large structural columns observed in visual review. Normalised rate is not a population false-warning estimate; audio is not played."
+  },
+  "runtime": {
+    "current": {
+      "fps": 7.110300820437435,
+      "latency": {
+        "median": 170.99999997299165,
+        "p95": 251.549999997951
+      },
+      "errors": []
+    },
+    "research": {
+      "fps": 7.94944965345761,
+      "latency": {
+        "median": 141.00000000325963,
+        "p95": 206.15000003599545
+      },
+      "errors": []
+    },
+    "current-repeat": {
+      "fps": 10.064516129032258,
+      "latency": {
+        "median": 109.99999998603016,
+        "p95": 187.04999997571576
+      },
+      "errors": []
+    },
+    "research-repeat": {
+      "fps": 4.942965779458929,
+      "latency": {
+        "median": 233.99999999674037,
+        "p95": 281.05000001669396
+      },
+      "errors": []
+    }
+  },
+  "tests": {
+    "passed": 197,
+    "subtests": 12
+  },
+  "physical_trials": "Explicitly deferred by user: no measured setup available",
+  "deployment": "Rejected; original weights/config preserved",
+  "active_weights_sha256": "7d59f6ee9bd6c1ada26ca74436185ee7d9bb2cc4668520401bd390c6f025fabe"
+}

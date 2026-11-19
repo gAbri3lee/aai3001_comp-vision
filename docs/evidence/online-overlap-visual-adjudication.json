@@ -1,0 +1,15 @@
+{
+  "records": [
+    {
+      "id": "SG012",
+      "verdict": "AI visually reviewed false-positive hash candidate",
+      "observation": "Online National Gallery stairs differ from v4 test wet-floor sign beside Coca-Cola vending machine."
+    },
+    {
+      "id": "SG013",
+      "verdict": "AI visually reviewed false-positive hash candidate",
+      "observation": "Online round RWS carpark column differs from v4 downward view of tactile paving and a person."
+    }
+  ],
+  "limitation": "Visual review of flagged nearest matches only; no proof of complete source or pretraining independence."
+}

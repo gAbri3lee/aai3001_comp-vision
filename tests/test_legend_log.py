@@ -8,7 +8,7 @@ from webapp import SPOKEN_LOG_SIZE, create_app, priority_order
 
 def test_priority_order_follows_the_config_severity():
     assert priority_order(load_config()['severity']) == [
-        'Stair', 'Escalator', 'Wet Floor Sign', 'Pillar', 'People', 'Object']
+        'Stair', 'Escalator', 'Wet Floor Sign', 'People', 'Object']
     changed = {'Stair': .1, 'Escalator': .9, 'Wet Floor Sign': .5, 'Pillar': .7, 'People': .3}
     assert priority_order(changed) == ['Escalator', 'Pillar', 'Wet Floor Sign', 'People', 'Stair', 'Object']
 
