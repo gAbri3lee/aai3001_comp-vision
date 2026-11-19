@@ -221,26 +221,39 @@ are described in the [demo library guide](demo/README.md).
 
 ### Detection benchmarks (by Model and Class)
 
+All three detectors are scored on the **same 920 original test images** with the
+**four active classes**. The Pillar boxes in those images are excluded and
+Pillar predictions are dropped. RF-DETR is still a five-class model; its configured
+class mapping removes Pillar. No model was retrained for this.
+
 | Model | Test split | mAP50 | mAP50–95 |
 | --- | --- | ---: | ---: |
-| Local YOLOv8n | Cleaned four-class split, 769 images | 77.4% | 50.9% |
-| Original YOLOv8n ONNX | Original five-class split, 920 images | 65.8% | 41.9% |
-| Original RF-DETR Nano | Original five-class split, 920 images | 73.9% | 44.7% |
+| Local YOLOv8n (PyTorch) | Original split, 920 images, four classes | 76.4% | 49.8% |
+| Local YOLOv8n ONNX (four-class export) | Original split, 920 images, four classes | 76.4% | 49.8% |
+| RF-DETR Nano (cloud) | Original split, 920 images, four classes | 83.6% | 51.4% |
 
-The ONNX and RF-DETR rows are archived CPU benchmarks. The local YOLOv8n
-row uses a different split and class set. [Four-class results](docs/evidence/four-class-migration-2026-11-17.json),
-[five-class results](docs/verification_results.json)
+| Class | YOLOv8n AP50 | YOLOv8n AP50–95 | RF-DETR AP50 | RF-DETR AP50–95 |
+| --- | ---: | ---: | ---: | ---: |
+| Escalator | 96.3% | 60.8% | 93.1% | 55.0% |
+| People | 69.3% | 37.5% | 80.7% | 39.9% |
+| Stairs | 77.5% | 56.3% | 79.7% | 58.6% |
+| Wet Floor Sign | 62.4% | 44.5% | 81.1% | 52.0% |
 
-| Class AP50 | Local YOLOv8n | Original YOLOv8n ONNX | Original RF-DETR Nano |
-| --- | ---: | ---: | ---: |
-| Escalator | 94.4% | 96.3% | 93.1% |
-| People | 69.4% | 69.3% | 80.7% |
-| Stairs | 76.3% | 77.5% | 79.7% |
-| Wet Floor Sign | 69.6% | 62.4% | 81.1% |
+The ONNX export matches PyTorch to four decimal places in every class and passes
+all 20 golden checks, so it shares the YOLOv8n columns. Evidence, commands and
+weight checksums: [four-class test results](docs/evidence/four-class-test-2026-11-19.json).
+
+Older numbers are not comparable with these. The archived five-class means
+(YOLOv8n 65.8% / 41.9%, RF-DETR 73.9% / 44.7% mAP50 / mAP50–95) include Pillar,
+which scored only 23.4% and 35.1% AP50. On the cleaned four-class split
+(769 images, near-duplicate frames removed), local YOLOv8n scores 77.4% / 50.9%
+([four-class migration](docs/evidence/four-class-migration-2026-11-17.json));
+the other two models have not been run on that split. These are historical
+development test images, not an unseen final evaluation.
 
 AP50 measures average precision for one class at 0.50 intersection over union
 (IoU). mAP50 averages that score across classes. mAP50–95 averages across classes
-and IoU thresholds from 0.50 to 0.95. The saved per-class breakdown reports mAP50.
+and IoU thresholds from 0.50 to 0.95.
 
 ### Run the checks
 
