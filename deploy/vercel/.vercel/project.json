@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_uvf8hLYyI72GRwRgDKpfAt0dgHYl",
+  "orgId": "team_Mlj1LaUXVUvro5oh8sVfKiAJ",
+  "projectName": "aai3001",
+  "settings": {
+    "createdAt": 1794898518326,
+    "framework": "python",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "26.x"
+  }
+}

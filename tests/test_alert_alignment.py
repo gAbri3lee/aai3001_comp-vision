@@ -90,7 +90,7 @@ def test_webapp_status_speech_and_banner_agree():
 
     with patch('webapp.create_detector', return_value=Predictor()), \
          patch('webapp.LatestFrameCapture', Capture), \
-         patch.dict('sys.modules', {'tts': SimpleNamespace(Speaker=lambda: SimpleNamespace(say=spoken.append))}):
+         patch.dict('sys.modules', {'tts': SimpleNamespace(Speaker=lambda: SimpleNamespace(say=lambda text, requested=False: spoken.append(text) or True))}):
         state = PipelineState(_args())
         try:
             deadline = time.monotonic() + 2
@@ -124,3 +124,26 @@ def test_page_has_spoken_marker_ignored_section_debug_view_and_distance_caveat()
                  'Distance is an estimate from box size, not measured metres.'):
         assert text in page
     assert '—' not in page and '–' not in page
+
+
+def test_person_encounter_rearms_only_on_a_meaningful_change():
+    p = policy()
+
+    def step(t, *people):
+        return p.process([Detection(1, "People", .95, box(x, h, .22))
+                          for x, h in people], (W, H), now=t)
+
+    assert step(0, (.5, .45)).speak
+    for i in range(1, 30):
+        result = step(i / 4, (.5, .45))
+        assert result.banner and result.speak is None
+    step(7.5)
+    assert step(8, (.5, .45)).speak is None
+    assert step(8.2, (.5, .68)).speak
+    for t, x in [(8.4, .4), (8.6, .31), (8.8, .24), (9, .31)]:
+        step(t, (x, .68))
+    assert step(9.2, (.4, .68)).speak
+    assert step(9.4, (.4, .68), (.62, .5)).speak
+    assert step(9.6, (.62, .5), (.4, .68)).speak is None
+    step(10)
+    assert step(12, (.4, .68)).speak

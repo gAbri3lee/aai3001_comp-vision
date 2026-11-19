@@ -192,8 +192,16 @@ def test_a_video_frame_gets_the_same_alert_as_the_live_camera(tmp_path):
         assert wait_for(lambda: client.get('/status').json['alert'] == 'Warning, Stair ahead')
         live = client.get('/status').json
         assert send(client, video).status_code == 200
-        assert wait_for(lambda: source(client)['type'] == 'video' and client.get('/status').json['alert'])
-        played = client.get('/status').json
+        def active_video_alert():
+            snapshot = client.get('/status').json
+            return snapshot if snapshot['source']['type'] == 'video' and snapshot['alert'] else None
+
+        deadline = time.monotonic() + 2
+        played = active_video_alert()
+        while played is None and time.monotonic() < deadline:
+            time.sleep(.01)
+            played = active_video_alert()
+        assert played is not None
         assert played['alert'] == live['alert'] and played['alerts'] == live['alerts']
         assert key(played['detections']) == key(live['detections'])
         assert played['selected']['phrase'] == live['selected']['phrase']

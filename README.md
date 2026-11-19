@@ -193,41 +193,12 @@ are demonstration checks. Use the labelled split for a model evaluation.
 ### Play sample videos from the Demo library
 
 1. In the local GUI, open **Upload → Demo library** and click **Reload**.
-2. Under **Videos**, click **Play** beside the clip you want to test. Each class
-   (Escalator, People, Stair, and Wet Floor Sign) has a six-second still-frame
-   clip in MP4, MOV, and WebM format.
+2. Under **Videos**, click **Play** beside the clip you want to test. Choose the VivoCity atrium clip or one of the four field sequences.
 3. Use **Alert** to check the banner and spoken alert, or **Recognition** to
    check detection boxes and final classification of the hazard type.
    When the clip ends, click on **Replay** or **Back to camera** for live view.
 
-The library reads videos from `demo/videos/`. These files are Git-ignored, so
-if **Videos** is empty, copy the sample clips into that folder or make one
-using the steps below. [Demo library guide](demo/README.md)
-
-### Make a short video from a bundled photo
-
-If you have no clip handy, start the project Python interpreter from the repo
-root (`.venv/bin/python` on Mac or `.\.venv\Scripts\python.exe` in PowerShell)
-and paste the following lines. This makes a six-second still-frame MP4 for checking
-playback and controls.
-
-```python
-from pathlib import Path
-import cv2
-source = next(Path("golden/images").glob("761978429*"))
-frame = cv2.imread(str(source))
-height, width = frame.shape[:2]
-codec = cv2.VideoWriter_fourcc(*"mp4v")
-writer = cv2.VideoWriter("demo/videos/golden-escalator.mp4", codec, 10, (width, height))
-assert writer.isOpened(), "OpenCV could not create the MP4"
-for _ in range(60):
-    writer.write(frame)
-
-writer.release()
-exit()
-```
-
-Click **Reload** in the Demo library, then **Play golden-escalator.mp4**.
+The library reads videos from `demo/videos/`. Bundled clips are included in Git. [Demo library guide](demo/README.md)
 
 ## Verification and Model Testing Results
 
