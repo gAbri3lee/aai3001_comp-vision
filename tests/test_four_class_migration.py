@@ -69,7 +69,7 @@ def test_cloud_health_only_accepts_declared_contracts(names,ok):
 
 def test_server_legacy_background_and_removed_class_are_filtered_before_remap():
     config=load_config();detector=RFDetrDetector.__new__(RFDetrDetector)
-    detector.config,detector.spec=config,config['cloud']
+    detector.config,detector.spec=config,{**config['cloud'], 'source_classes':list(LEGACY_CLASS_NAMES)}
     detector.model=SimpleNamespace(predict=lambda *a,**k:SimpleNamespace(
         class_id=np.array([2,3,4,5]),confidence=np.array([.9,.8,.7,.6]),
         xyxy=np.array([[0,0,20,20]]*4)))
@@ -86,3 +86,14 @@ def test_dataset_quarantine_preserves_splits_and_never_keeps_candidate_pair():
     kept,excluded=module.select_rows(audit)
     assert kept=={0,2} and excluded[0]['index']==1
     assert [x['split'] for x in rows]==['train','valid','test']
+
+def test_native_server_enforces_per_class_threshold_and_skips_background():
+    config = load_config()
+    detector = RFDetrDetector.__new__(RFDetrDetector)
+    detector.config = config
+    detector.spec = {**config['cloud'], 'class_thresholds': {**config['cloud']['class_thresholds'], 'People': .8}}
+    detector.model = SimpleNamespace(predict=lambda *a, **k: SimpleNamespace(
+        class_id=[1, 2, 3, 4], confidence=[.6, .8, .7, .9], xyxy=[[0, 0, 20, 20]] * 4))
+    image = Image.new('RGB', (40, 40))
+    assert [d.label for d in detector.predict(image).detections] == ['Stair', 'Wet Floor Sign']
+    assert [d.label for d in detector.predict(image, confidence=.5).detections] == ['Stair', 'Wet Floor Sign', 'People']

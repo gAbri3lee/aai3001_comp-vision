@@ -290,3 +290,17 @@ def test_one_upload_at_a_time(tmp_path):
         finally:
             state._upload_lock.release()
         assert temp_files(state) == []
+
+
+def test_slow_recorded_recognition_keeps_the_result_with_its_frame(tmp_path):
+    class SlowDetector(FakeDetector):
+        def predict(self, frame):
+            time.sleep(.09)
+            return super().predict(frame)
+
+    clip = write_video(tmp_path / 'slow.mp4', frames=32, fps=16, size=(320, 240))
+    with running({'local': SlowDetector('yolov8n')}, '--max-frame-age', '.05',
+                 capture=camera_or_file()) as (_, client):
+        assert send(client, clip).status_code == 200
+        assert client.post('/source/control', json={'view': 'recognition'}).status_code == 200
+        assert wait_for(lambda: any(d['class'] == 'Stair' for d in client.get('/status').json.get('recognition', [])))

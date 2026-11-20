@@ -1,0 +1,200 @@
+{
+  "split": "v4_four_class_clean/test",
+  "images": 769,
+  "classes": [
+    "Escalator",
+    "People",
+    "Stair",
+    "Wet Floor Sign"
+  ],
+  "image_label_manifest_sha256": "9240587b1655bc537b2a61fa283a195b0649b3514979e1c687df26c3458b6c87",
+  "ap_confidence_floor": 0.001,
+  "models": {
+    "YOLOv8n PyTorch": {
+      "weights": "models/local/yolov8n_v4_four_class.pt",
+      "sha256": "58626a2662586f1a9c55de6a8b5aa3843dbbcb29f9e8ddc4455fd0583ceb9a39",
+      "runtime": "yolo",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "device": "cpu",
+      "images": 769,
+      "input_size": 640,
+      "alert_threshold": 0.35,
+      "metrics": {
+        "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+        "images": 769,
+        "alert_threshold": 0.35,
+        "map50": 0.7743848205584185,
+        "map50_95": 0.5090367327427092,
+        "precision": 0.7964376590330788,
+        "recall": 0.6374745417515275,
+        "f1": 0.7081447963800905,
+        "safety_recall": 0.7297929694321521,
+        "per_class": {
+          "Escalator": {
+            "ap50": 0.9439296271365659,
+            "tp": 87,
+            "fp": 7,
+            "fn": 16,
+            "precision": 0.925531914893617,
+            "recall": 0.8446601941747572,
+            "boxes": 103
+          },
+          "People": {
+            "ap50": 0.6941154678369762,
+            "tp": 324,
+            "fp": 106,
+            "fn": 235,
+            "precision": 0.7534883720930232,
+            "recall": 0.5796064400715564,
+            "boxes": 559
+          },
+          "Stair": {
+            "ap50": 0.7634449447891097,
+            "tp": 180,
+            "fp": 44,
+            "fn": 88,
+            "precision": 0.8035714285714286,
+            "recall": 0.6716417910447762,
+            "boxes": 268
+          },
+          "Wet Floor Sign": {
+            "ap50": 0.6960492424710218,
+            "tp": 35,
+            "fp": 3,
+            "fn": 17,
+            "precision": 0.9210526315789473,
+            "recall": 0.6730769230769231,
+            "boxes": 52
+          }
+        }
+      }
+    },
+    "YOLOv8n ONNX": {
+      "weights": "models/local/yolov8n_v4_four_class.onnx",
+      "sha256": "9c33eb43d85810d1adfcdfada68c7e13602ee8b68872a2db96d3c9016b710d9b",
+      "runtime": "yolo",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "device": "cpu",
+      "images": 769,
+      "input_size": 640,
+      "alert_threshold": 0.35,
+      "metrics": {
+        "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+        "images": 769,
+        "alert_threshold": 0.35,
+        "map50": 0.7743848205584185,
+        "map50_95": 0.5090367225770867,
+        "precision": 0.7964376590330788,
+        "recall": 0.6374745417515275,
+        "f1": 0.7081447963800905,
+        "safety_recall": 0.7297929694321521,
+        "per_class": {
+          "Escalator": {
+            "ap50": 0.9439296271365659,
+            "tp": 87,
+            "fp": 7,
+            "fn": 16,
+            "precision": 0.925531914893617,
+            "recall": 0.8446601941747572,
+            "boxes": 103
+          },
+          "People": {
+            "ap50": 0.6941154678369762,
+            "tp": 324,
+            "fp": 106,
+            "fn": 235,
+            "precision": 0.7534883720930232,
+            "recall": 0.5796064400715564,
+            "boxes": 559
+          },
+          "Stair": {
+            "ap50": 0.7634449447891097,
+            "tp": 180,
+            "fp": 44,
+            "fn": 88,
+            "precision": 0.8035714285714286,
+            "recall": 0.6716417910447762,
+            "boxes": 268
+          },
+          "Wet Floor Sign": {
+            "ap50": 0.6960492424710218,
+            "tp": 35,
+            "fp": 3,
+            "fn": 17,
+            "precision": 0.9210526315789473,
+            "recall": 0.6730769230769231,
+            "boxes": 52
+          }
+        }
+      }
+    },
+    "RF-DETR Nano": {
+      "weights": "models/cloud/rfdetr-nano_v4_four_class.pth",
+      "sha256": "033e2c16e32cc41a8e32cfea73473726c4bb05483110a2cf05f335700eeb1809",
+      "runtime": "rfdetr",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "device": "cpu",
+      "images": 769,
+      "input_size": 384,
+      "alert_threshold": 0.4,
+      "metrics": {
+        "evaluator": "notebook COCO AP / greedy IoU>=0.5 alerts",
+        "images": 769,
+        "alert_threshold": 0.4,
+        "map50": 0.8445058954282983,
+        "map50_95": 0.5233570279262496,
+        "precision": 0.8543689320388349,
+        "recall": 0.7169042769857433,
+        "f1": 0.7796234772978959,
+        "safety_recall": 0.7618944114379559,
+        "per_class": {
+          "Escalator": {
+            "ap50": 0.9180032127244757,
+            "tp": 84,
+            "fp": 8,
+            "fn": 19,
+            "precision": 0.9130434782608695,
+            "recall": 0.8155339805825242,
+            "boxes": 103
+          },
+          "People": {
+            "ap50": 0.8093401525226038,
+            "tp": 388,
+            "fp": 81,
+            "fn": 171,
+            "precision": 0.8272921108742004,
+            "recall": 0.6940966010733453,
+            "boxes": 559
+          },
+          "Stair": {
+            "ap50": 0.7938735865355047,
+            "tp": 193,
+            "fp": 30,
+            "fn": 75,
+            "precision": 0.8654708520179372,
+            "recall": 0.7201492537313433,
+            "boxes": 268
+          },
+          "Wet Floor Sign": {
+            "ap50": 0.8568066299306092,
+            "tp": 39,
+            "fp": 1,
+            "fn": 13,
+            "precision": 0.975,
+            "recall": 0.75,
+            "boxes": 52
+          }
+        }
+      }
+    }
+  },
+  "software": {
+    "python": "3.12.14",
+    "torch": "2.15.0+cpu",
+    "ultralytics": "8.4.183",
+    "onnxruntime": "1.31.1",
+    "rfdetr": "1.11.2",
+    "transformers": "5.23.0",
+    "pycocotools": "2.0.11"
+  }
+}

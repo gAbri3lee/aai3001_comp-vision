@@ -21,14 +21,16 @@ A separate small CPU pilot completed all nine runs: 512 fixed training images, t
 
 All CPU candidates failed acceptance. Label repair showed no consistent gain over the matched control; the balancing recipe was worse. These outcomes support retaining the starting model, not claiming an accuracy improvement. Full-data four-epoch GPU runs use a separate registered plan. The historical validation set has already informed development and is not a fresh final holdout.
 
-Two full-data GPU seed comparisons have completed on Tesla T4. These are partial results, not the final three-seed aggregate:
+All nine full-data GPU runs completed on Tesla T4. Each used 7,749 training images and the same 859 validation images.
 
 | Seed | Starting AP50 | Control AP50 | Repaired-label AP50 | Repaired + balanced AP50 |
 | --- | ---: | ---: | ---: | ---: |
+| 0 | 79.76% | 79.85% | 79.00% | 79.14% |
 | 1 | 79.76% | 78.62% | 78.89% | 78.22% |
 | 2 | 79.76% | 79.66% | 79.61% | 79.60% |
+| Mean | 79.76% | 79.38% | 79.17% | 78.99% |
 
-Neither completed seed shows the required gain. Seed 0 remains queued on Kaggle; the full GPU study is **incomplete** until it finishes. Seed 1's batch output and seed 2's interactive output/checkpoints were downloaded. The temporary interactive session was asked to stop after saving and CRC-checking its archive, with explicit user approval. Seed 2 executed the identical fixed script used by the corrected batch submissions; its attached plan differs only in orchestration revision/hash metadata. Data and training/evaluation parameters match. No notebooks or datasets were deleted.
+The starting checkpoint achieved the highest mean validation AP50. Neither training change met the predefined improvement threshold. The app therefore retains the starting checkpoint. Per-class AP50, precision, recall and paired differences are in the [full GPU results](evidence/four-class-gpu-final.json). Seed 2 used the verified corrected study script with the same data and training settings.
 
 ## Program defects corrected
 
@@ -48,7 +50,7 @@ This is browser automation, with **zero human participants**. It demonstrates fu
 
 The user could not provide tape-measured distances. No valid physical measurement can be recovered from arbitrary online photographs or unknown camera intrinsics. Software calibration maths, source scoping and warning logic are checked, but actual metre error, maximum useful detection range and audible end-to-end warning timing remain unmeasured. No camera calibration was fabricated or installed.
 
-Remaining evidence needed for a strong submission: team review of annotations, completed GPU comparisons reported honestly, a new independent venue/scene challenge, representative-user tasks, and measured laptop-camera distance/alert tests. Existing online escalator/crowd misses remain disclosed. The supplementary COCO detector covers its own vocabulary; it cannot recognise every unknown obstruction. The teammate should provide hosted-cloud integration and latency evidence. None of these checks guarantees an A+ grade.
+Remaining evidence needed for a strong submission: team review of annotations, a new independent venue/scene challenge, representative-user tasks, and measured laptop-camera distance/alert tests. Existing online escalator/crowd misses remain disclosed. The supplementary COCO detector covers its own vocabulary; it cannot recognise every unknown obstruction. The teammate should provide hosted-cloud integration and latency evidence. None of these checks guarantees an A+ grade.
 
 ## Reproduce and inspect
 

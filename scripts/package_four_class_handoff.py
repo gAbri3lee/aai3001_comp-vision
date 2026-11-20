@@ -29,6 +29,8 @@ if __name__=='__main__':
     assert contract['classes']==config['classes']
     contract['training_annotation_revision']=config['dataset']['training_annotation_revision']
     contract['dataset_version']=config['dataset']['version']
+    contract['cloud_native_classes']=config['classes']
+    contract['native_cloud_checkpoint']=config['cloud']['file']
     contract['model_trained_on_annotation_revision']=False
     (DEST/'CLASS_CONTRACT.json').write_text(json.dumps(contract,indent=2)+'\n')
     entries=[]
@@ -44,7 +46,8 @@ if __name__=='__main__':
     sums={}
     sums['visionaid-four-class-dataset.zip']=package(DEST/'visionaid-four-class-dataset.zip',entries)
     model_entries=[(ROOT/p,p) for p in [
-        'models/local/yolov8n_v4_four_class.pt','visionaid_config.json',
+        'models/local/yolov8n_v4_four_class.pt','models/local/yolov8n_v4_four_class.onnx',
+        config['cloud']['file'],'visionaid_config.json','docs/evidence/four-class-demo-benchmark.json',
         'docs/FOUR_CLASS_MIGRATION_2026-11-17.md','docs/evidence/four-class-migration-2026-11-17.json',
         'docs/FOUR_CLASS_DEVELOPMENT_2026-11-18.md','docs/evidence/four-class-development-2026-11-18.json',
         'annotations/four_class_training_review.json',

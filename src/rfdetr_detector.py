@@ -25,12 +25,12 @@ class RFDetrDetector:
         width, height = image_rgb.size
         detections = []
         source_names = self.spec.get('source_classes', self.config['classes'])
-        for cid, confidence, box in zip(output.class_id, output.confidence, output.xyxy):
-            # RF-DETR has five foreground logits plus a final background slot.
+        for cid, score, box in zip(output.class_id, output.confidence, output.xyxy):
+            # RF-DETR has one logit per source class plus a final background slot.
             # Low-threshold AP runs can expose that slot; it is never a hazard.
             if int(cid) == len(source_names):
                 continue
-            detection = make_detection(cid, confidence, box, source_names, width, height)
+            detection = make_detection(cid, score, box, source_names, width, height)
             if detection is not None and detection.label not in self.config['classes']:
                 continue
             if detection is not None:

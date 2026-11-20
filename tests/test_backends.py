@@ -138,7 +138,7 @@ class BackendTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'camera'):
                 LatestFrameCapture(999)
 
-    def test_rfdetr_background_slot_is_not_a_sixth_hazard(self):
+    def test_native_rfdetr_skips_background_slot(self):
         from types import SimpleNamespace
         from rfdetr_detector import RFDetrDetector
         config = load_config()
@@ -147,7 +147,7 @@ class BackendTests(unittest.TestCase):
         detector.config, detector.spec = config, config['cloud']
         class Predictor:
             def predict(self, *args, **kwargs):
-                return SimpleNamespace(class_id=np.array([3, 5]), confidence=np.array([.8, .002]),
+                return SimpleNamespace(class_id=np.array([2, 4]), confidence=np.array([.8, .002]),
                                        xyxy=np.array([[0, 0, 20, 20], [0, 0, 30, 30]]))
         detector.model = Predictor()
         result = detector.predict(Image.new('RGB', (40, 40)))
