@@ -41,6 +41,26 @@ py -3.12 -m venv .venv
 
 ### 2. Set Model Weights
 
+**Fresh clone, local demo:** The repository includes the four-class YOLOv8n ONNX model. After installing the local app dependencies in step 1, use the commands for your platform below. This starts the GUI on CPU and lets you try the four hazard classes before obtaining the separate PyTorch or RF-DETR weights.
+
+**Windows (PowerShell)**
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-onnx.txt
+.\.venv\Scripts\python.exe src/webapp.py --model deploy/vercel/model/yolov8n_v4_four_class.onnx --no-depth --port 5001
+```
+
+**macOS Terminal (on a platform supported by the pinned ONNX Runtime)**
+
+```bash
+.venv/bin/python -m pip install -r requirements-onnx.txt
+.venv/bin/python src/webapp.py --model deploy/vercel/model/yolov8n_v4_four_class.onnx --no-depth --port 5001
+```
+
+Open [the local GUI](http://127.0.0.1:5001), select **Upload → Demo library**, and click **Escalator landing**. Recognition view should display **Escalator** and “Check the direction before stepping on.” You can run the photo demo without a webcam.
+
+**Default PyTorch GUI or self-hosted RF-DETR:** Use the following handoff weights.
+
 Copy the weights from the project handoff to the paths below. Git ignores these
 files.
 
