@@ -211,7 +211,7 @@ are demonstration checks. Use the labelled split for a model evaluation.
 ### Play sample videos from the Demo library
 
 1. In the local GUI, open **Upload → Demo library** and click **Reload**.
-2. Under **Videos**, click **Play** beside the clip you want to test. Choose a field sequence or one of the two pedestrian videos.
+2. Under **Videos**, click **Play** beside **Commuters descending station stairs** for a 20-second example of People and Stair in the same scene.
 3. Use **Alert** to check the banner and spoken alert, or **Recognition** to
    check detection boxes and final classification of the hazard type.
    When the clip ends, click on **Replay** or **Back to camera** for live view.

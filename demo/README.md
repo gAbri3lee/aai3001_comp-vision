@@ -38,6 +38,8 @@ Both GUI backends identified the four photos and placed a box over the labelled 
 
 ## Bundled clips and obstacle examples
 
+**Commuters descending station stairs** shows passengers walking down the central staircase with an escalator on the right. In Recognition view, look for **People** and **Stair**. The continuous excerpt uses seconds 8–33 of the original at 1.25× speed, with audio adjusted to match. [Original footage by 3 Vintage Lenses](https://www.pexels.com/video/people-are-walking-up-the-stairs-at-a-train-station-19319640/) · [Pexels licence](https://www.pexels.com/license/)
+
 **VivoCity - escalator atrium** is in `demo/challenges/`. The GUI displayed no trained-class action during a complete playback of this wide Singapore mall shot. Use it to demonstrate a miss by uploading it manually. Source: [Vivo City Escalators by ElHeineken](https://commons.wikimedia.org/wiki/File:Vivo_City_Escalators.ogv), [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). The clip was transcoded and audio removed.
 
 Four other clips use different, chronologically ordered frames from single videos in the [team's v4 export](https://universe.roboflow.com/potatos-workspace-kequm/version2-nvt5l/dataset/4), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Playback uses six sampled images per second. Original timing and filming locations are unverified. These are selected demonstrations. Source scene IDs in the v4 scene manifest are:

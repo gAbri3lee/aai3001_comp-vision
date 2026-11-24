@@ -7,7 +7,7 @@ walking clip to show how alerts change as objects move into view.
 ## Play a sample video clip from the Demo library
 
 1. Open **Upload → Demo library** in the local GUI and click **Reload**.
-2. Under **Videos**, choose a field sequence or one of the two pedestrian clips and click **Play**.
+2. Under **Videos**, click **Play** beside **Commuters descending station stairs** to see passengers and steps together.
 3. In **Alert** view, check the banner and listen to the alert
    with speech enabled and the GUI unmuted. Switch to **Recognition** to inspect the model's detections.
 4. When **Video finished** appears, review the hazard type. Click **Replay**
