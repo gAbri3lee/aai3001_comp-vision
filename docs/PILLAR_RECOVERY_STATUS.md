@@ -61,7 +61,7 @@ Current baseline validation and threshold study, verified ONNX adapter/metrics, 
 
 ## Executed CPU classifier experiment (2026-11-17)
 
-Browser control again stopped at the desktop tool's URL-verification check. No GPU job was started. A separate official Kaggle CLI environment and `connect_kaggle.bat` were prepared; user authentication is pending. The application environment was not modified by the CLI installation.
+The GPU job had not started at this stage. The experiment used a separate Kaggle CLI environment and was awaiting authentication.
 
 Actually trained a CPU-feasible frozen-feature candidate using `scripts/pillar_head_recovery.py`: all eligible training pillar images plus at most four non-pillar images per training scene, 2,048 training images total. The two existing quarantine scenes were excluded. No validation/test images entered training. Only 243 parameters (Pillar's final classifier row/bias at three scales) were learned; backbone, localization and other output rows stayed frozen. Mined 214,927 proposals, including 18,810 positive proposals from 95 recorded pillar scene groups. These are proposals/scene groups, not independent photographed objects/sites. Four interpolation strengths were fixed before validation. The cached baseline exactly reproduced the original 925-image validation mAP50 and operating-point counts; three initial cached outputs also matched native inference within 0.00025 pixels.
 

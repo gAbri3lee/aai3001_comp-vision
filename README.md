@@ -41,6 +41,26 @@ py -3.12 -m venv .venv
 
 ### 2. Set Model Weights
 
+**Fresh clone, local demo:** The repository includes the four-class YOLOv8n ONNX model. After installing the local app dependencies in step 1, use the commands for your platform below. This starts the GUI on CPU and lets you try the four hazard classes before obtaining the separate PyTorch or RF-DETR weights.
+
+**Windows (PowerShell)**
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-onnx.txt
+.\.venv\Scripts\python.exe src/webapp.py --model deploy/vercel/model/yolov8n_v4_four_class.onnx --no-depth --port 5001
+```
+
+**macOS Terminal (on a platform supported by the pinned ONNX Runtime)**
+
+```bash
+.venv/bin/python -m pip install -r requirements-onnx.txt
+.venv/bin/python src/webapp.py --model deploy/vercel/model/yolov8n_v4_four_class.onnx --no-depth --port 5001
+```
+
+Open [the local GUI](http://127.0.0.1:5001), select **Upload → Demo library**, and click **Escalator landing**. Recognition view should display **Escalator** and “Check the direction before stepping on.” You can run the photo demo without a webcam.
+
+**Default PyTorch GUI or self-hosted RF-DETR:** Use the following handoff weights.
+
 Copy the weights from the project handoff to the paths below. Git ignores these
 files.
 
@@ -78,7 +98,7 @@ hazard detector can still run.
 **macOS**
 
 ```bash
-.venv/bin/python src/webapp.py --port 5001
+.venv/bin/python src/webapp.py --port 5001 --no-depth
 ```
 
 **Windows**
@@ -251,7 +271,7 @@ All three runs used the same 769 cleaned test images, ground-truth boxes and COC
 
 We excluded Pillar from the final scope because the original local model detected only 17.0% of labelled pillars at its alert threshold on the earlier five-class test. A reliable pillar warning would need stronger evidence.
 
-In the desktop GUI, open **Demo library**, play **Stairs and pedestrians**, and select **Recognition**. Point out the separate step and pedestrian actions. Switch to **Alert** to see which detection the app prioritises. Then play **Wet floor sign** and **Escalator**. The two new pedestrian clips show movement through shared spaces. These clips illustrate behavior. Accuracy estimates come from the labelled test set.
+In **Upload → Demo library**, analyse one named photo in each class folder. Read out the label and the action beside it. Then play **Stairs and pedestrians**, switch to **Recognition** and point out the separate step and pedestrian actions. Switch to **Alert** to see which detection the app prioritises. Use the 769-image table above for precision and mAP. The four photos are selected examples from that test set. [Photo and clip guide](demo/README.md)
 
 | Tested class | Ground-truth boxes | Local YOLO precision | Local YOLO recall | Local YOLO AP50 | RF-DETR AP50 |
 |---|---:|---:|---:|---:|---:|
