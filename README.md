@@ -78,7 +78,7 @@ hazard detector can still run.
 **macOS**
 
 ```bash
-.venv/bin/python src/webapp.py --port 5001
+.venv/bin/python src/webapp.py --port 5001 --no-depth
 ```
 
 **Windows**
@@ -251,7 +251,7 @@ All three runs used the same 769 cleaned test images, ground-truth boxes and COC
 
 We excluded Pillar from the final scope because the original local model detected only 17.0% of labelled pillars at its alert threshold on the earlier five-class test. A reliable pillar warning would need stronger evidence.
 
-In the desktop GUI, open **Demo library**, play **Stairs and pedestrians**, and select **Recognition**. Point out the separate step and pedestrian actions. Switch to **Alert** to see which detection the app prioritises. Then play **Wet floor sign** and **Escalator**. The two new pedestrian clips show movement through shared spaces. These clips illustrate behavior. Accuracy estimates come from the labelled test set.
+In **Upload → Demo library**, analyse one named photo in each class folder. Read out the label and the action beside it. Then play **Stairs and pedestrians**, switch to **Recognition** and point out the separate step and pedestrian actions. Switch to **Alert** to see which detection the app prioritises. Use the 769-image table above for precision and mAP. The four photos are selected examples from that test set. [Photo and clip guide](demo/README.md)
 
 | Tested class | Ground-truth boxes | Local YOLO precision | Local YOLO recall | Local YOLO AP50 | RF-DETR AP50 |
 |---|---:|---:|---:|---:|---:|

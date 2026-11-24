@@ -1,0 +1,279 @@
+{
+  "date": "2026-11-24",
+  "environment": "Local Chrome GUI, CPU, camera acquisition stubbed and speech disabled. Local and cloud modes tested using the actual YOLO and RF-DETR weights. RF-DETR served over loopback.",
+  "library_photos": {
+    "local": {
+      "Escalator landing.jpg": {
+        "confidence": 0.8599947690963745,
+        "best_box_iou": 0.9557964631443957
+      },
+      "Pedestrians in a concourse.jpg": {
+        "confidence": 0.6993818283081055,
+        "best_box_iou": 0.8669840536508487
+      },
+      "Staircase with handrails.jpg": {
+        "confidence": 0.9553054571151733,
+        "best_box_iou": 0.9947923839171589
+      },
+      "Caution sign beside a column.jpg": {
+        "confidence": 0.8178750872612,
+        "best_box_iou": 0.7243099146237292
+      }
+    },
+    "cloud": {
+      "Escalator landing.jpg": {
+        "confidence": 0.8990229964256287,
+        "best_box_iou": 0.9886273479940596
+      },
+      "Pedestrians in a concourse.jpg": {
+        "confidence": 0.6862034797668457,
+        "best_box_iou": 0.8585418073540331
+      },
+      "Staircase with handrails.jpg": {
+        "confidence": 0.9728339314460754,
+        "best_box_iou": 0.9985439500498584
+      },
+      "Caution sign beside a column.jpg": {
+        "confidence": 0.9169613122940063,
+        "best_box_iou": 0.7148032434688859
+      }
+    }
+  },
+  "local_video_playback": {
+    "Escalator - field sequence.mp4": {
+      "expected": [
+        "Escalator"
+      ],
+      "observed_gui_actions": {
+        "Escalator": "Check the direction before stepping on."
+      },
+      "summary": "Class\tSeen\tFirst seen\tLast seen\tFrames\tBest confidence\nEscalator\nCheck the direction before stepping on.\n\tYes\t0:00\t0:08\t82\t0.97\nPeople\tNot seen\t\t\t0\t\nStair\tNot seen\t\t\t0\t\nWet Floor Sign\tNot seen\t\t\t0\t",
+      "frames": "89 frames analysed in recognition view (frames are skipped when processing is slower than the video)."
+    },
+    "Pedestrian - field sequence.mp4": {
+      "expected": [
+        "People"
+      ],
+      "observed_gui_actions": {
+        "People": "Give people room to pass."
+      },
+      "summary": "Class\tSeen\tFirst seen\tLast seen\tFrames\tBest confidence\nEscalator\tNot seen\t\t\t0\t\nPeople\nGive people room to pass.\n\tYes\t0:00\t0:07\t49\t0.79\nStair\tNot seen\t\t\t0\t\nWet Floor Sign\tNot seen\t\t\t0\t",
+      "frames": "69 frames analysed in recognition view (frames are skipped when processing is slower than the video)."
+    },
+    "Stairs and pedestrians - field sequence.mp4": {
+      "expected": [
+        "Stair",
+        "People"
+      ],
+      "observed_gui_actions": {
+        "Stair": "Slow down and check the next step.",
+        "People": "Give people room to pass."
+      },
+      "summary": "Class\tSeen\tFirst seen\tLast seen\tFrames\tBest confidence\nEscalator\tNot seen\t\t\t0\t\nPeople\nGive people room to pass.\n\tYes\t0:00\t0:08\t10\t0.80\nStair\nSlow down and check the next step.\n\tYes\t0:00\t0:07\t61\t0.97\nWet Floor Sign\tNot seen\t\t\t0\t",
+      "frames": "66 frames analysed in recognition view (frames are skipped when processing is slower than the video)."
+    },
+    "Wet floor sign - field sequence.mp4": {
+      "expected": [
+        "Wet Floor Sign"
+      ],
+      "observed_gui_actions": {
+        "Wet Floor Sign": "Slow down and watch your footing."
+      },
+      "summary": "Class\tSeen\tFirst seen\tLast seen\tFrames\tBest confidence\nEscalator\tNot seen\t\t\t0\t\nPeople\tNot seen\t\t\t0\t\nStair\tNot seen\t\t\t0\t\nWet Floor Sign\nSlow down and watch your footing.\n\tYes\t0:03\t0:10\t21\t0.65",
+      "frames": "82 frames analysed in recognition view (frames are skipped when processing is slower than the video)."
+    },
+    "People crossing a walkway.mp4": {
+      "expected": [
+        "People"
+      ],
+      "observed_gui_actions": {
+        "People": "Give people room to pass."
+      },
+      "summary": "Class\tSeen\tFirst seen\tLast seen\tFrames\tBest confidence\nEscalator\tNot seen\t\t\t0\t\nPeople\nGive people room to pass.\n\tYes\t0:00\t0:19\t165\t0.79\nStair\tNot seen\t\t\t0\t\nWet Floor Sign\tNot seen\t\t\t0\t",
+      "frames": "165 frames analysed in recognition view (frames are skipped when processing is slower than the video)."
+    },
+    "People passing through a shared space.mp4": {
+      "expected": [
+        "People"
+      ],
+      "observed_gui_actions": {
+        "People": "Give people room to pass."
+      },
+      "summary": "Class\tSeen\tFirst seen\tLast seen\tFrames\tBest confidence\nEscalator\tNot seen\t\t\t0\t\nPeople\nGive people room to pass.\n\tYes\t0:01\t0:43\t73\t0.84\nStair\tNot seen\t\t\t0\t\nWet Floor Sign\tNot seen\t\t\t0\t",
+      "frames": "404 frames analysed in recognition view (frames are skipped when processing is slower than the video)."
+    }
+  },
+  "local_challenge_video": "Class\tSeen\tFirst seen\tLast seen\tFrames\tBest confidence\nEscalator\tNot seen\t\t\t0\t\nPeople\tNot seen\t\t\t0\t\nStair\tNot seen\t\t\t0\t\nWet Floor Sign\tNot seen\t\t\t0\t",
+  "picker_photos": {
+    "Sample 1": {
+      "file": "11_mp4-154_jpg.rf.3bfa0b4b5c3f5fd4acc3145e21f206a7.jpg",
+      "trained_detections": {},
+      "cleaned_split_labels": {
+        "Wet Floor Sign": 1
+      }
+    },
+    "Sample 2": {
+      "file": "11_mp4-394_jpg.rf.07c2ca4b27d4ab7b451e785deb3ca104.jpg",
+      "trained_detections": {},
+      "cleaned_split_labels": null
+    },
+    "Sample 3": {
+      "file": "6684e708-9e43-4977-9209-c3097ea05d37_mp4-0002_jpg.rf.91549dbf92174b709906246e0c156e55.jpg",
+      "trained_detections": {},
+      "cleaned_split_labels": {
+        "Stair": 1
+      }
+    },
+    "Sample 4": {
+      "file": "761978429_726407_mp4-0052_jpg.rf.d81c43982f7bf704d73006ba4092440c.jpg",
+      "trained_detections": {
+        "Escalator": 1
+      },
+      "cleaned_split_labels": {
+        "Escalator": 1
+      }
+    },
+    "Sample 5": {
+      "file": "764212632_214446_mp4-0002_jpg.rf.dbce3ada2bafd7361f47ed08453c10b5.jpg",
+      "trained_detections": {},
+      "cleaned_split_labels": {
+        "People": 1
+      }
+    },
+    "Sample 6": {
+      "file": "764212632_214446_mp4-0037_jpg.rf.07998d443fffc3c10723b0ec4a540dd5.jpg",
+      "trained_detections": {},
+      "cleaned_split_labels": {
+        "People": 1
+      }
+    },
+    "Sample 7": {
+      "file": "IMG_4112_MOV-0011_jpg.rf.8e0bb02b891108f830ffa940f888cca2.jpg",
+      "trained_detections": {
+        "People": 1
+      },
+      "cleaned_split_labels": {
+        "People": 3
+      }
+    },
+    "Sample 8": {
+      "file": "IMG_4112_MOV-0013_jpg.rf.e752832b9305f9b3f13c2987e11d51bc.jpg",
+      "trained_detections": {},
+      "cleaned_split_labels": {}
+    },
+    "Sample 9": {
+      "file": "IMG_4112_MOV-0062_jpg.rf.52f376aa14e922f4b8095aac93971574.jpg",
+      "trained_detections": {
+        "People": 3
+      },
+      "cleaned_split_labels": {
+        "People": 3
+      }
+    },
+    "Sample 10": {
+      "file": "IMG_4112_MOV-0078_jpg.rf.f86ca3f1724d9778e8d2bb94a3d9e200.jpg",
+      "trained_detections": {
+        "People": 2
+      },
+      "cleaned_split_labels": {
+        "People": 1
+      }
+    },
+    "Sample 11": {
+      "file": "IMG_5024_MOV-0005_jpg.rf.afa3e4e10176ccc9eb84c2939a5a83d1.jpg",
+      "trained_detections": {
+        "Stair": 1
+      },
+      "cleaned_split_labels": {}
+    },
+    "Sample 12": {
+      "file": "IMG_5024_MOV-0031_jpg.rf.1b54e6a9e0df0d2fc1d73fa7501b340d.jpg",
+      "trained_detections": {
+        "People": 1
+      },
+      "cleaned_split_labels": {
+        "People": 1
+      }
+    },
+    "Sample 13": {
+      "file": "IMG_5027_MOV-0004_jpg.rf.3918c88f476bc451865be61321cac3ce.jpg",
+      "trained_detections": {
+        "Stair": 1,
+        "People": 1
+      },
+      "cleaned_split_labels": {
+        "Stair": 1,
+        "People": 2
+      }
+    },
+    "Sample 14": {
+      "file": "IMG_5027_MOV-0016_jpg.rf.70ab49c82bc6a493657f4d9878c123d0.jpg",
+      "trained_detections": {
+        "Stair": 1,
+        "People": 2
+      },
+      "cleaned_split_labels": {
+        "Stair": 1,
+        "People": 1
+      }
+    },
+    "Sample 15": {
+      "file": "IMG_9518_MOV-0010_jpg.rf.8d132efc9703fcc09f20a28e22b41dcc.jpg",
+      "trained_detections": {
+        "Stair": 1
+      },
+      "cleaned_split_labels": {}
+    },
+    "Sample 16": {
+      "file": "IMG_9690_MOV-0011_jpg.rf.da92702e9443d34cd83cdbd5b14f9ec7.jpg",
+      "trained_detections": {
+        "Stair": 1
+      },
+      "cleaned_split_labels": {
+        "Stair": 1
+      }
+    },
+    "Sample 17": {
+      "file": "IMG_9937_MOV-0003_jpg.rf.9f735624e0e973000bf8c7c3f2bafe64.jpg",
+      "trained_detections": {
+        "Stair": 1
+      },
+      "cleaned_split_labels": {
+        "Stair": 2
+      }
+    },
+    "Sample 18": {
+      "file": "VID_20260108_094455_mp4-0017_jpg.rf.795f482efe7e54a831d441f75c60c9b1.jpg",
+      "trained_detections": {
+        "Stair": 1
+      },
+      "cleaned_split_labels": {
+        "Stair": 1
+      }
+    },
+    "Sample 19": {
+      "file": "VID_20260108_094455_mp4-0045_jpg.rf.d81c2f362577d6a2e8bc951786de1ada.jpg",
+      "trained_detections": {
+        "Stair": 1
+      },
+      "cleaned_split_labels": {
+        "Stair": 1
+      }
+    },
+    "Sample 20": {
+      "file": "vlc-record-2026-04-06-15h00m29s-rtsp___192-168-137-100_554_Streaming_Channels_101-_13832_jpg.rf.a759fac3d91b1855b56f2d9e1bda8cdb.jpg",
+      "trained_detections": {
+        "Wet Floor Sign": 1
+      },
+      "cleaned_split_labels": {
+        "Wet Floor Sign": 1
+      }
+    }
+  },
+  "obstacle_alerts": {
+    "object-F003-planter": "Object detected ahead",
+    "object-M011-Object": "Object detected ahead",
+    "object-M012-Object": "Object detected ahead"
+  },
+  "browser_errors": []
+}

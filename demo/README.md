@@ -25,8 +25,16 @@ shown. Hidden files and links that lead outside this folder are ignored.
 
 ## Which images to use
 
-The active library has four classes: Escalator, People, Stair and Wet Floor Sign.
-Prefer the cleaned **test split** or new held-out photos. Selected examples are demonstrations, not accuracy estimates. Historical five-class metrics are archived; see `docs/FOUR_CLASS_MIGRATION_2026-11-17.md` for current provenance and limits.
+For the presentation, open **Upload → Demo library** and click each named image. These four JPEGs are unchanged frames from the cleaned test split of the [team's v4 dataset](https://universe.roboflow.com/potatos-workspace-kequm/version2-nvt5l/dataset/4), distributed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each row gives the expected output in Recognition view.
+
+| Photo | Class | Visible action | Source frame in cleaned split |
+|---|---|---|---|
+| Escalator landing | Escalator | Check the direction before stepping on. | `v4_a990ec4f18c9e82896d23a61` |
+| Pedestrians in a concourse | People | Give people room to pass. | `v4_36865e6411895ebeda97805d` |
+| Staircase with handrails | Stair | Slow down and check the next step. | `v4_82ffc5d62c37a214064c8bb4` |
+| Caution sign beside a column | Wet Floor Sign | Slow down and watch your footing. | `v4_902e9525e3a91699e698afc0` |
+
+Both GUI backends identified the four photos and placed a box over the labelled target. For a useful counterexample, open **Upload → Images → Sample 1**. Local YOLO missed the labelled wet-floor sign there. Explain that a sign can be present even when the GUI reports “Nothing recognised.” The separate sample picker includes 20 verification frames and three general-obstacle photos. [Individual image and video results](../docs/evidence/demo-media-audit-2026-11-24.json)
 
 ## Bundled clips and obstacle examples
 

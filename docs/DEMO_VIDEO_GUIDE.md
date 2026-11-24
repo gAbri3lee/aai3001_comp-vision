@@ -45,13 +45,13 @@ The four trained classes in the live GUI are **Escalator, People, Stair, and Wet
   model will look better than it really is.
 - If you use photos instead, take new ones or use images from the test split.
 - The end summary shows what the model recognised in that clip. For model
-  accuracy on the labelled test splits, use the [README benchmarks](../README.md#detection-benchmarks-by-model-and-class).
+  accuracy on the 769 cleaned test images, use the [four-class demo benchmark](../README.md#four-class-demo-benchmark).
 
 ## Upload your own Video to the GUI
 
 - Use **Upload → Video → Choose video** or drag the file into the video drop
   zone. To keep it in the library, copy it to `demo/videos/` and click **Reload**
   under **Demo library**.
-- Play the entire clip before the demo with speech enabled. Check the timing of
-  the announcements and the end summary. If RF-DETR is connected, switch between
+- Play the entire clip before the demo. Check the class, its visible action and
+  the end summary. If RF-DETR is connected, switch between
   **Local** and **Cloud** and replay the same clip for each detector.
