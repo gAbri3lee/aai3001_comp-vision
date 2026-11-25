@@ -32,6 +32,32 @@ def test_far_person_in_path_is_not_announced():
     assert not hazard.gated and hazard.reason == 'far' and hazard.band == 'far'
 
 
+def test_recorded_video_boxes_a_far_sign_without_announcing_it():
+    import numpy as np
+    from detection import annotate_hazards, IGNORED_COLOUR
+    sign = det('Wet Floor Sign', .5, .1)
+    hazards = run(sign)
+    frame = np.zeros((H, W, 3), dtype=np.uint8)
+    x, y = map(int, sign.box_xyxy[:2])
+    assert not spoken(sign)
+    assert not annotate_hazards(frame, hazards).any()
+    shown = annotate_hazards(frame, hazards, show_trained=True)
+    assert tuple(shown[y, x]) == IGNORED_COLOUR
+
+
+def test_sign_caption_stays_visible_at_right_edge():
+    import cv2
+    import numpy as np
+    from detection import annotate_recognition
+    frame = np.zeros((360, 204, 3), dtype=np.uint8)
+    sign = Detection(CLASS_NAMES.index('Wet Floor Sign'), 'Wet Floor Sign', .8, (180, 160, 203, 230))
+    hazards = assess([sign], (204, 360), GATE, SEVERITY)
+    image = annotate_recognition(frame, hazards)
+    # The caption must start well left of this box and leave the edge clear.
+    caption = cv2.cvtColor(image[120:157], cv2.COLOR_BGR2GRAY)
+    assert caption[:, :100].any() and not caption[:, -1].any()
+
+
 def test_near_person_in_path_is_a_warning():
     assert spoken(det('People', .5, .65)) == ['Warning, People ahead']
 

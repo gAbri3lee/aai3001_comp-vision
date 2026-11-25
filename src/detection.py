@@ -88,24 +88,34 @@ SPOKEN_COLOUR = (255, 80, 255)
 IGNORED_COLOUR = (130, 130, 130)
 
 
-def annotate_hazards(frame_bgr, hazards, selected=None, debug=False):
+def _draw_box_label(frame, text, x, y, scale, colour, thickness):
+    """Keep a box caption inside narrow frames when it fits their width."""
+    import cv2
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    (width, _), _ = cv2.getTextSize(text, font, scale, thickness)
+    x = max(0, min(x, frame.shape[1] - width - 2))
+    cv2.putText(frame, text, (x, y), font, scale, colour, thickness)
+
+
+def annotate_hazards(frame_bgr, hazards, selected=None, debug=False, show_trained=False):
     """Draw gated hazards by band and the spoken hazard in a distinct colour.
 
     Ignored (far, side, low-confidence) hazards are drawn thin and grey with their
-    reason only when debug is true; otherwise they are not drawn at all.
+    reason in debug view. Recorded video can also show ignored trained boxes
+    as visual context without marking them as alerts.
     """
     import cv2
     frame = frame_bgr.copy()
     # Draw ignored first and the spoken hazard last, so the highlight stays on top.
     order = sorted(hazards, key=lambda h: (h.gated, h is selected))
     for hazard in order:
-        if not hazard.gated and not debug:
+        if not hazard.gated and not (debug or (show_trained and hazard.source == 'trained')):
             continue
         x1, y1, x2, y2 = map(int, hazard.xyxy)
         name = hazard.label + (' (general)' if hazard.source == 'general' and hazard.label != 'Object' else '')
         if not hazard.gated:
-            colour, thickness = IGNORED_COLOUR, 1
-            text = f'{name} {hazard.confidence:.2f} ignored: {hazard.reason}'
+            colour, thickness = IGNORED_COLOUR, 1 if debug else 2
+            text = f'{name} {hazard.confidence:.2f} ({hazard.reason})'
         else:
             spoken = hazard is selected
             colour = SPOKEN_COLOUR if spoken else BAND_COLOURS.get(hazard.band, BAND_COLOURS[None])
@@ -118,7 +128,7 @@ def annotate_hazards(frame_bgr, hazards, selected=None, debug=False):
         cv2.rectangle(frame, (x1, y1), (x2, y2), colour, thickness)
         # Boxes touching the top edge get their label inside the box.
         text_y = y1 - 6 if y1 >= 24 else y1 + 18
-        cv2.putText(frame, text, (x1 + 2, text_y), cv2.FONT_HERSHEY_SIMPLEX, .5, colour, 1 if not hazard.gated else 2)
+        _draw_box_label(frame, text, x1 + 2, text_y, .5, colour, 1 if not hazard.gated else 2)
     return frame
 
 
@@ -137,8 +147,7 @@ def annotate_recognition(frame_bgr, hazards):
         colour = BAND_COLOURS.get(hazard.band, BAND_COLOURS[None])
         cv2.rectangle(frame, (x1, y1), (x2, y2), colour, 3)
         text_y = y1 - 6 if y1 >= 24 else y1 + 20
-        cv2.putText(frame, f'{hazard.label} {hazard.confidence:.2f}', (x1 + 2, text_y),
-                    cv2.FONT_HERSHEY_SIMPLEX, .6, colour, 2)
+        _draw_box_label(frame, f'{hazard.label} {hazard.confidence:.2f}', x1 + 2, text_y, .6, colour, 2)
     return frame
 
 

@@ -32,5 +32,7 @@ demo/videos/*
 # Redistributable motion demos, credited in demo/README.md
 !demo/challenges/VivoCity - escalator atrium.mp4
 !demo/videos/* - field sequence.mp4
-!demo/videos/People crossing a walkway.mp4
+!demo/videos/Passengers descending the central staircase.mp4
 !demo/videos/People passing through a shared space.mp4
+!demo/videos/Following a commuter down the escalator.mp4
+!demo/videos/Walk to the subway stairs.mp4
