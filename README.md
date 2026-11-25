@@ -265,13 +265,9 @@ All three runs used the same 769 cleaned test images, ground-truth boxes and COC
 | YOLOv8n ONNX | 0.35 | 79.6% | 63.7% | 77.4% | 50.9% |
 | RF-DETR Nano | 0.40 | 85.4% | 71.7% | 84.5% | 52.3% |
 
-#### What to say during the demo
-
-“We tested Escalator, People, Stair and Wet Floor Sign. We chose them because each changes a pedestrian’s next decision. An escalator has moving steps whose direction matters. A person may cross your path. Stairs change the floor level. A wet-floor sign signals a possible slip hazard even when the surface looks dry.”
+#### Per-class results
 
 We excluded Pillar from the final scope because the original local model detected only 17.0% of labelled pillars at its alert threshold on the earlier five-class test. A reliable pillar warning would need stronger evidence.
-
-In **Upload → Demo library**, analyse one named photo in each class folder. Read out the label and the action beside it. Then play **Stairs and pedestrians**, switch to **Recognition** and point out the separate step and pedestrian actions. Switch to **Alert** to see which detection the app prioritises. Use the 769-image table above for precision and mAP. The four photos are selected examples from that test set. [Photo and clip guide](demo/README.md)
 
 | Tested class | Ground-truth boxes | Local YOLO precision | Local YOLO recall | Local YOLO AP50 | RF-DETR AP50 |
 |---|---:|---:|---:|---:|---:|
@@ -280,11 +276,19 @@ In **Upload → Demo library**, analyse one named photo in each class folder. Re
 | Stair | 268 | 80.4% | 67.2% | 76.3% | 79.4% |
 | Wet Floor Sign | 52 | 92.1% | 67.3% | 69.6% | 85.7% |
 
-“Local YOLO reached 77.4% mAP at IoU 0.50. Averaging over ten increasingly strict overlap thresholds from 0.50 to 0.95 brought it to 50.9%. Precise box placement is harder for this detector. At the GUI threshold, 35 of its 38 wet-floor-sign detections matched a labelled sign, but it missed 17 of the 52 signs. Escalators were its strongest class by AP50. RF-DETR scored highest overall on this split at 52.3% mAP50–95. Both models fall below our professor’s 60–70% reference range. These results support a supervised classroom demonstration. Establishing reliability for independent travel would require new venues, missed-hazard and false-alert rates, and evidence that warnings arrive in time.”
+#### Model and deployment notes
 
 The old README quoted historical tests on 920 images and five classes. Removing Pillar from the dataset left those measurements and the original classifier weights intact. The active YOLO PyTorch and ONNX heads now emit four classes. For RF-DETR we retained the four foreground rows and the background slot across its encoder and decoder classifiers. All three use the same four class IDs. This conversion involved no retraining. Older hosted services can still return five classes through the explicitly validated compatibility mapping. Check the hosted service’s version before quoting local results for it. The Vercel function code was also evaluated locally on all 769 images and matched the displayed ONNX metrics to one decimal place.
 
 [Full metrics, model hashes and test-set fingerprint](docs/evidence/four-class-demo-benchmark.json) · [Historical five-class evidence](docs/verification_results.json)
+
+#### Demo steps
+
+1. In **Upload → Demo library**, analyse one named photo in each class folder. Check the label and the action beside it.
+2. Play **Stairs and pedestrians**. Switch to **Recognition** to see the separate step and pedestrian actions.
+3. Switch to **Alert** to see which detection the app prioritises.
+
+The four photos are selected examples from the 769-image test set. See the four-class demo benchmark above for precision and mAP. [Photo and clip guide](demo/README.md)
 
 ### Run the checks
 
