@@ -38,6 +38,10 @@ Both GUI backends identified the four photos and placed a box over the labelled 
 
 ## Bundled clips and obstacle examples
 
+**Walk to the subway stairs** follows a pedestrian from the pavement into a subway entrance. The 13-second sequence plays at its original speed. [Walking Into a Metro Station](https://www.pexels.com/video/walking-into-a-metro-station-6082575/) · [Pexels licence](https://www.pexels.com/license/).
+
+**Following a commuter down the escalator** follows a passenger from behind. Look for both People and Escalator from the opening seconds. [Original clip by Anastasia](https://www.pexels.com/video/man-walking-down-subway-escalator-9751571/) · [Pexels licence](https://www.pexels.com/license/).
+
 **VivoCity - escalator atrium** is in `demo/challenges/`. The GUI displayed no trained-class action during a complete playback of this wide Singapore mall shot. Use it to demonstrate a miss by uploading it manually. Source: [Vivo City Escalators by ElHeineken](https://commons.wikimedia.org/wiki/File:Vivo_City_Escalators.ogv), [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). The clip was transcoded and audio removed.
 
 Four other clips use different, chronologically ordered frames from single videos in the [team's v4 export](https://universe.roboflow.com/potatos-workspace-kequm/version2-nvt5l/dataset/4), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Playback uses six sampled images per second. Original timing and filming locations are unverified. These are selected demonstrations. Source scene IDs in the v4 scene manifest are:
@@ -49,10 +53,12 @@ Four other clips use different, chronologically ordered frames from single video
 | Stairs and pedestrians | `VID_20260108_094455_mp4` |
 | Wet floor sign | `11_mp4` |
 
+The wet-floor clip retains the full 10-second sequence in portrait format. Removing the black border gave the sign more of the detector input. On 60 matching frames (six per second), local YOLO reported the sign on 22 frames, up from 15, and RF-DETR reported it on 50, up from 27. These are counts on this clip at the usual thresholds. In recorded-video Alert view, a grey box shows a recognised hazard that has not triggered a warning.
+
 The sample-image picker includes three Singapore mall crops that exercise the general obstacle detector. [Photo credits](obstacles/Credits.md)
 
 Additional personal videos remain excluded by `.gitignore`.
 
-**People crossing a walkway** shows pedestrians moving through an outdoor scene. The bundled excerpt uses the first 20 seconds of the [OpenCV pedestrian sample](https://github.com/opencv/opencv/blob/4.x/samples/data/vtest.avi), previously converted to MP4 for the project. Use Recognition view to see people away from the centre of the path.
+**Passengers descending the central staircase** uses seconds 50–62 of the station footage at the original speed. Look for People and Stair. [Original clip by 3 Vintage Lenses](https://www.pexels.com/video/people-are-walking-up-the-stairs-at-a-train-station-19319640/) · [Pexels licence](https://www.pexels.com/license/).
 
 **People passing through a shared space** is the original Intel IoT DevKit pedestrian detection video with its filename changed. [Intel sample](https://github.com/intel-iot-devkit/sample-videos/blob/master/people-detection.mp4), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

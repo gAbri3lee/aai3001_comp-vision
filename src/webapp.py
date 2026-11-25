@@ -169,9 +169,9 @@ def decide(frame, batch, policy, depth_estimator=None, check=None, now=None):
     return policy.process(batch.detections, (frame.shape[1], frame.shape[0]), depth_map, now=now)
 
 
-def annotate(frame, result):
+def annotate(frame, result, show_trained=False):
     """Normal and debug renderings of one decision."""
-    return (annotate_hazards(frame, result.hazards, result.selected),
+    return (annotate_hazards(frame, result.hazards, result.selected, show_trained=show_trained),
             annotate_hazards(frame, result.hazards, result.selected, debug=True))
 
 
@@ -904,7 +904,12 @@ class PipelineState:
                         check_fresh('Captured frame expired while waiting for inference; discarded')
                         if cancelled():
                             continue
-                        batch = self.detectors[mode].predict(frame)
+                        detector = self.detectors[mode]
+                        if view == "recognition":
+                            # Recorded-video Recognition draws only trained boxes.
+                            # Alert view still needs the supplementary object detector.
+                            detector = getattr(detector, "trained", detector)
+                        batch = detector.predict(frame)
                 except StaleFrame as exc:
                     error = str(exc)
                 except Exception as exc:
@@ -933,7 +938,7 @@ class PipelineState:
                             result = decide(frame, batch, self.policy, self.depth_estimator,
                                             check=lambda: check_fresh('Inference result is stale; discarded'))
                         recognition = media.recognition_dicts(result.hazards)
-                        annotated, debug_annotated = annotate(frame, result)
+                        annotated, debug_annotated = annotate(frame, result, show_trained=self.video is not None)
                         if result.speak is not None and self._speak(result.speak, generation=generation):
                             spoken_at = time.time()
                     except Exception as exc:

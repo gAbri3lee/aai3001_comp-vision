@@ -118,7 +118,7 @@ def test_the_real_demo_folder_is_set_up_for_the_presenter():
     root = PROJECT_ROOT / 'demo'
     for name in ('Escalator', 'People', 'Stair', 'Wet Floor Sign', 'videos'):
         assert (root / name).is_dir()
-    readme = (root / 'README.md').read_text()
+    readme = (root / 'README.md').read_text(encoding='utf-8')
     assert 'test split' in readme and 'four' in readme and '.gitignore' in readme
     ignore = (PROJECT_ROOT / '.gitignore').read_text()
     assert 'demo/videos/*' in ignore and '*.mp4' in ignore
