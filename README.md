@@ -1,13 +1,11 @@
 # VisionAid
 
 AAI3001 hazard-detection prototype. The live GUI reports **Escalator, People,
-Stairs and Wet Floor Sign** using local YOLOv8n or a separate RF-DETR Nano
-service. The Vercel photo demo in this repository uses the four-class YOLOv8n ONNX export.
+Stairs and Wet Floor Sign** using local YOLOv8n. The Vercel photo demo in this repository uses the four-class YOLOv8n ONNX export.
 
 | What to try | Where to run it | Input |
 | --- | --- | --- |
 | **Local YOLOv8n** | Start the browser GUI on your Mac or Windows PC | Webcam, images or video |
-| **RF-DETR Nano** | Connect the same GUI to an RF-DETR service and click **Cloud** | Webcam, images or video |
 | **Vercel Upload Image** | Open the Vercel link below in your browser | One photo at a time |
 
 ## Local setup and launch
@@ -114,7 +112,13 @@ to check speech. Add `--no-tts` for a silent run. These commands skip the
 experimental MiDaS depth stage to keep the demo responsive. Press **Ctrl+C** to
 stop the GUI before starting it again on the same port.
 
-## Cloud detector with RF-DETR
+## Cloud detector with RF-DETR (hidden)
+
+**The RF-DETR cloud deployment is not working, so the GUI hides its Local/Cloud
+switch, Retry cloud button, C shortcut and compare option.** The service code
+and `--endpoint` option are unchanged. To show the controls again, set
+`SHOW_CLOUD_CONTROLS` to `true` in [the page template](src/templates/index.html).
+The steps below are kept for when the service is fixed.
 
 RF-DETR is a separate service. Start Docker Desktop on your device
 and run the commands below from the repo root. The build command is the same
@@ -169,8 +173,8 @@ The service loads the native four-class RF-DETR checkpoint. To build it from the
 
 1. Open [VisionAid Photo Check on Vercel](https://aai3001-gwup54owc-computer-vision2.vercel.app/).
    If prompted, sign in to Vercel with an account that has access to the deployment.
-2. Click **Choose a photo** and select a JPEG from [the bundled golden images](golden/images)
-   or from the test folder.
+2. Click **Choose a photo or video** and select a JPEG from [the bundled golden images](golden/images)
+   or from the test folder, or an MP4 such as one from [the demo videos](demo/videos).
 3. Look for the annotated photo, class labels and confidence, the highest-priority
    alert or **No hazards detected**, and the model and request timings. **Read the
    result aloud** uses your browser's audio feature.
@@ -178,9 +182,11 @@ The service loads the native four-class RF-DETR checkpoint. To build it from the
 The browser resizes each photo and sends it as a JPEG to `/api/detect`. A Python
 function runs YOLOv8n ONNX. The four-class deployment build uses the four-class export evaluated below. To check which build a hosted URL serves,
 open [the Vercel health endpoint](https://aai3001-gwup54owc-computer-vision2.vercel.app/api/health)
-while signed in and check the returned class list as well as the model name. This demo accepts
-still images only. To check a frame from a video on Vercel, save a screenshot
-from the clip as a photo. Use the live GUI for video playback and timed alerts.
+while signed in and check the returned class list as well as the model name. The page also accepts
+MP4 or WebM videos: press **Play** and boxes follow the video as about two JPEG frames per second are
+sent to the same endpoint (the video itself stays in your browser; see
+[the Vercel README](deploy/vercel/README.md#video)). Boxes trail the picture by one round trip and frames
+are skipped when the function is busy. Use the live GUI for timed alerts and spoken output.
 [Cloud branch deployment guide](https://github.com/gAbri3lee/aai3001_comp-vision/blob/cloud-deployment/deploy/vercel/README.md)
 
 ## Test sample images and videos in the live GUI
@@ -191,9 +197,6 @@ from the clip as a photo. Use the live GUI for video playback and timed alerts.
   picker accepts up to 20 JPEG or PNG files, each up to 10 MB. Use **Alert** view
   to check which detections would trigger a live alert. A small or off-centre
   detection can appear in Recognition and be filtered in Alert.
-- **Compare detectors.** With RF-DETR connected, tick **Compare local and cloud
-  side by side** before uploading the same image batch. Check each model's
-  detections and results. Use **Back to live** after the image check.
 - **Video.** Under **Upload → Video**, click **Choose video** and pick a short
   landscape MP4, MOV or WebM (up to 150 MB and 120 seconds). The clip plays
   through the selected detector. Check **Pause**, **Recognition** and **Alert**

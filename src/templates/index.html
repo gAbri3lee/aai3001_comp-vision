@@ -45,6 +45,7 @@
   header h1 { margin: 0; font-size: 1.45rem; letter-spacing: 0.02em; }
   .tagline { color: var(--muted); font-size: 0.8rem; }
   .controls { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; }
+  .controls[hidden] { display: none; }
   button, select {
     font: inherit; font-size: 0.9rem; color: var(--text); background: var(--button);
     border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.75rem; cursor: pointer;
@@ -238,7 +239,7 @@
     <h1>VisionAid</h1>
     <div class="tagline">Hazard-awareness demo console. Alerts show here and are spoken when speech is on.</div>
   </div>
-  <div class="controls" role="group" aria-label="Detector">
+  <div class="controls" id="detector-controls" role="group" aria-label="Detector" hidden>
     <span class="mode-badge" id="mode-badge">LOCAL</span>
     <div class="switch" role="group" aria-label="Detector mode">
       <button type="button" id="mode-local" data-mode="local" aria-pressed="true">Local</button>
@@ -401,6 +402,10 @@
   const modelStatus = $("model-status"), pipelineStatus = $("pipeline-status"), messages = $("messages");
   const modeBadge = $("mode-badge"), retryCloud = $("retry-cloud");
   const modeButtons = {local: $("mode-local"), cloud: $("mode-cloud")};
+  // The RF-DETR cloud service is not deployed, so its controls stay hidden. The backend and
+  // POST /mode are unchanged. Set this to true to bring the Local/Cloud switch back.
+  const SHOW_CLOUD_CONTROLS = false;
+  const detectorControls = $("detector-controls");
   const pauseButton = $("pause"), muteButton = $("mute"), rate = $("rate"), rateValue = $("rate-value");
   const lastSpoken = $("last-spoken"), legend = $("legend"), spokenLog = $("spoken-log");
   const uploadInput = $("upload"), sampleSelect = $("sample"), speakResult = $("speak-result");
@@ -475,7 +480,8 @@
     event.preventDefault();
     if (action === "pause") control({paused: !latest.paused});
     else if (action === "mute") control({muted: !latest.muted});
-    else if (action === "mode" && (latest.cloud_available || latest.mode === "cloud")) {
+    else if (action === "mode" && cloudControlsShown(latest) &&
+             (latest.cloud_available || latest.mode === "cloud")) {
       setMode(latest.mode === "cloud" ? "local" : "cloud");
     }
   });
@@ -928,7 +934,14 @@
   }).catch(() => {});
 
   // Rendering --------------------------------------------------------------
+  // Stay visible when the app was explicitly started in cloud mode, so it can be switched off.
+  function cloudControlsShown(data) {
+    return SHOW_CLOUD_CONTROLS || data.mode === "cloud";
+  }
+
   function renderMode(data) {
+    const show = cloudControlsShown(data);
+    detectorControls.hidden = !show;
     modeBadge.textContent = data.mode_label || data.backend;
     modeBadge.className = "mode-badge " + data.mode;
     for (const [mode, button] of Object.entries(modeButtons)) {
@@ -938,7 +951,7 @@
     modeButtons.cloud.textContent = data.cloud_available ? "Cloud" : "Cloud unavailable";
     modeButtons.cloud.title = data.cloud_unavailable_reason || "";
     retryCloud.hidden = !data.fallback_active;
-    compareRow.hidden = !data.cloud_available;  // decision V6
+    compareRow.hidden = !show || !data.cloud_available;  // decision V6
   }
 
   function renderMessages(data) {
