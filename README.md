@@ -115,7 +115,9 @@ stop the GUI before starting it again on the same port.
 ## Cloud detector with RF-DETR (hidden)
 
 **The RF-DETR cloud deployment is not working, so the GUI hides its Local/Cloud
-switch, Retry cloud button, C shortcut and compare option.** The service code
+switch, Retry cloud button, C shortcut and compare option.** In their place, the
+header shows a **Cloud (Vercel)** link that opens [the Vercel deployment](#vercel-upload-image)
+in a new tab. Nothing from the live GUI is sent to it. The service code
 and `--endpoint` option are unchanged. To show the controls again, set
 `SHOW_CLOUD_CONTROLS` to `true` in [the page template](src/templates/index.html).
 The steps below are kept for when the service is fixed.
