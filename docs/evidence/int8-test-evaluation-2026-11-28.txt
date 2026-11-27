@@ -1,0 +1,44 @@
+INT8 vs FP32 on the clean four-class test split (2026-11-28)
+
+Split: data/v4_four_class_clean/test, 769 images, manifest d4242de8c1d3776941c614a99dc432a6
+(rebuilt from Roboflow version2-nvt5l v4 via the scene split 49601080aac1f838190341d331785578).
+Evaluator: scripts/verify_detector.py --evaluate (COCO AP; greedy IoU >= 0.5 for precision/recall).
+FP32 = deploy/vercel/model/yolov8n_v4_four_class.onnx; INT8 = models/local/yolov8n_v4_four_class_int8.onnx.
+Run A reproduces the README's recorded FP32 result exactly.
+"new cut-offs" = the 2026-11-27 trial (Stair 0.25, Wet Floor Sign 0.20), reverted on 2026-11-28 after the
+validation sweep (class-thresholds-validation-sweep-2026-11-28.json). Shipped default = "INT8, 0.35".
+Single images only: 2-of-3 frame confirmation cannot be scored on this split.
+
+run                                  P       R   mAP50  mAP50-95  safety R
+FP32, 0.35 (old)                 79.6%   63.7%   77.4%     50.9%     73.0%
+FP32, new cut-offs               77.7%   64.3%   77.4%     50.9%     73.6%
+INT8, 0.35 (default)             79.0%   63.7%   77.5%     50.8%     74.2%
+INT8, new cut-offs (trial)       76.4%   64.5%   77.5%     50.8%     75.1%
+
+Escalator
+  run                                  P       R    TP    FP    FN    AP50
+  FP32, 0.35 (old)                 92.6%   84.5%    87     7    16   94.4%
+  FP32, new cut-offs               92.6%   84.5%    87     7    16   94.4%
+  INT8, 0.35 (default)             91.8%   87.4%    90     8    13   95.0%
+  INT8, new cut-offs (trial)       91.8%   87.4%    90     8    13   95.0%
+
+People
+  run                                  P       R    TP    FP    FN    AP50
+  FP32, 0.35 (old)                 75.3%   58.0%   324   106   235   69.4%
+  FP32, new cut-offs               75.3%   58.0%   324   106   235   69.4%
+  INT8, 0.35 (default)             74.5%   57.1%   319   109   240   68.0%
+  INT8, new cut-offs (trial)       74.5%   57.1%   319   109   240   68.0%
+
+Stair
+  run                                  P       R    TP    FP    FN    AP50
+  FP32, 0.35 (old)                 80.4%   67.2%   180    44    88   76.3%
+  FP32, new cut-offs               75.5%   69.0%   185    60    83   76.3%
+  INT8, 0.35 (default)             79.8%   67.9%   182    46    86   76.0%
+  INT8, new cut-offs (trial)       73.5%   70.5%   189    68    79   76.0%
+
+Wet Floor Sign
+  run                                  P       R    TP    FP    FN    AP50
+  FP32, 0.35 (old)                 92.1%   67.3%    35     3    17   69.6%
+  FP32, new cut-offs               81.4%   67.3%    35     8    17   69.6%
+  INT8, 0.35 (default)             92.1%   67.3%    35     3    17   70.9%
+  INT8, new cut-offs (trial)       77.8%   67.3%    35    10    17   70.9%

@@ -63,7 +63,7 @@
     "model": "yolov8n",
     "file": "models/local/yolov8n_v4_four_class_int8.onnx",
     "fp32_file": "models/local/yolov8n_v4_four_class.pt",
-    "quantization": "Static INT8 (QDQ, per-channel weights) of deploy/vercel/model/yolov8n_v4_four_class.onnx via scripts/quantize_detector.py; detection-head decoding kept FP32. 'expected' below was measured on the FP32 PyTorch checkpoint.",
+    "quantization": "Static INT8 (QDQ, per-channel weights) of deploy/vercel/model/yolov8n_v4_four_class.onnx via scripts/quantize_detector.py; detection-head decoding kept FP32. 'expected' below was measured on the FP32 PyTorch checkpoint; the INT8 model scores the same on the clean test split (mAP50 77.5% vs 77.4%, precision 79.0% vs 79.6%, recall 63.7% both; docs/evidence/int8-test-evaluation-2026-11-28.txt).",
     "library": "ultralytics==8.4.183",
     "input_size": 640,
     "colour_order": "BGR numpy array or a file path",
@@ -71,10 +71,10 @@
     "class_thresholds": {
       "Escalator": 0.35,
       "People": 0.35,
-      "Stair": 0.25,
-      "Wet Floor Sign": 0.2
+      "Stair": 0.35,
+      "Wet Floor Sign": 0.35
     },
-    "class_thresholds_note": "Stair 0.25 and Wet Floor Sign 0.20 (from 0.35) since 2026-11-27, chosen on demo-video replays with 2-of-3 confirmation; not yet validated on labelled images. 'expected' below was measured at 0.35 on the FP32 model.",
+    "class_thresholds_note": "All 0.35. Stair 0.25 / Wet Floor Sign 0.20 (2026-11-27, from demo-video replays) were reverted on 2026-11-28: a validation sweep of the INT8 model (scripts/sweep_class_thresholds.py, docs/evidence/class-thresholds-validation-sweep-2026-11-28.json) found no class meeting the team rule (recall +5 points, precision >= max(75%, current - 2 points)). Use --class-conf to experiment.",
     "expected": {
       "t4_gpu_ms": 9.8,
       "kaggle_cpu_ms": 65,
@@ -172,5 +172,5 @@
     "retrained_on_cleaned_dataset": false,
     "derivation": "Removed final pillar class-logit rows, preserved all remaining weights"
   },
-  "benchmark_note": "Four-class scope. The model was derived from the original checkpoint; dataset cleanup did not retrain it. Historical five-class scores are archived. Local mode runs an INT8 export that matches the full-precision model on 20 reference images but has not been scored against labels, and Stair and Wet Floor Sign use lower cut-offs than the tested 0.35. Physical distance accuracy is unverified."
+  "benchmark_note": "Four-class scope. The model was derived from the original checkpoint; dataset cleanup did not retrain it. Historical five-class scores are archived. Local mode runs an INT8 export scored on the clean test split at the default 0.35 cut-offs: precision 79.0%, recall 63.7%, mAP50 77.5% (FP32: 79.6%, 63.7%, 77.4%). Physical distance accuracy is unverified."
 }

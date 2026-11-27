@@ -39,8 +39,8 @@ class DetectionTests(unittest.TestCase):
         parser = argparse.ArgumentParser()
         add_detector_arguments(parser)
         local = detector_settings(parser.parse_args([]))
-        self.assertEqual((local['confidence'], local['input_size'], local['nms_iou']), (.2, 640, .7))  # lowest class cut-off
-        self.assertEqual(local['class_thresholds'], {'Escalator': .35, 'People': .35, 'Stair': .25, 'Wet Floor Sign': .2})
+        self.assertEqual((local['confidence'], local['input_size'], local['nms_iou']), (.35, 640, .7))  # lowest class cut-off
+        self.assertEqual(local['class_thresholds'], {'Escalator': .35, 'People': .35, 'Stair': .35, 'Wet Floor Sign': .35})
         self.assertTrue(local['weights'].is_absolute())
         self.assertEqual(local['weights'].name, 'yolov8n_v4_four_class_int8.onnx')
         cloud = detector_settings(parser.parse_args(['--backend', 'cloud', '--endpoint', 'http://localhost:9000']))

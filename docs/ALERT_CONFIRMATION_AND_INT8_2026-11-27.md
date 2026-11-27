@@ -6,10 +6,12 @@ evaluation). **Later the same day they became the defaults:**
 - the INT8 model is the default local detector (`local.file`), committed to Git;
 - 2-of-3 confirmation is on (`alert_gate.confirm_frames`) for camera and video. Uploaded photos are a single frame
   and skip it, otherwise a photo of a stair would be answered "No hazards present";
-- `local.class_thresholds` is Stair 0.25, Wet Floor Sign 0.20, Escalator and People 0.35. Cloud RF-DETR keeps 0.40.
+- `local.class_thresholds` was set to Stair 0.25, Wet Floor Sign 0.20, Escalator and People 0.35. Cloud RF-DETR keeps 0.40.
 
-`--confirm 1/1 --conf 0.35 --model deploy/vercel/model/yolov8n_v4_four_class.onnx` restores the earlier behaviour.
-None of this has been scored against labels yet; see the last paragraph of section 3.
+> **Update 2026-11-28: the lower cut-offs were reverted.** Every local class is back at 0.35. INT8 and 2-of-3
+> confirmation stay. See section 4.
+
+`--confirm 1/1 --model deploy/vercel/model/yolov8n_v4_four_class.onnx` restores the earlier behaviour.
 
 ## 1. K-of-N frame confirmation (`--confirm 2/3`)
 
@@ -114,3 +116,32 @@ recover most of it (115/120 and 49/80). Re-checked on a second laptop: INT8 pass
 `data/v4_four_class_clean`, cache low-confidence predictions with `scripts/verify_detector.py --evaluate` for the
 four-class model, run `scripts/validation_study.py` on them, and read off validation precision and recall for
 Stair at 0.25 and Wet Floor Sign at 0.20 against 0.35. Frame confirmation cannot be checked on still images.
+
+## 4. Scored against labels (2026-11-28)
+
+The clean four-class split was rebuilt from the Roboflow v4 export. The scene split matches manifest 49601080 and the
+four-class set matches d4242de8 (7,749 / 859 / 769). Full precision at 0.35 reproduces the README's recorded test
+result exactly (P 79.6%, R 63.7%, mAP50 77.4%).
+
+**INT8 on the test split (769 images, all classes 0.35):** precision 79.0%, recall 63.7%, mAP50 77.5%,
+mAP50-95 50.8%. Full precision gets 79.6%, 63.7%, 77.4% and 50.9%. INT8 is as accurate as full precision.
+[Evidence](evidence/int8-test-evaluation-2026-11-28.txt)
+
+**Per-class cut-offs, chosen on the validation split (859 images, INT8).** The team's pre-fixed rule
+(`choose_candidate` in `scripts/validation_study.py`) was applied with 0.35 as the baseline, through
+`scripts/sweep_class_thresholds.py`. The rule requires recall +5 points and precision >= max(75%, baseline − 2 points).
+No class met it:
+
+| Class | 0.35 | Trial cut-off |
+| --- | --- | --- |
+| Stair | P 76.0%, R 67.1% | 0.25: P 69.0%, R 70.6% |
+| Wet Floor Sign | P 89.2%, R 85.3% | 0.20: P 81.7%, R 85.3% (recall flat from 0.10 to 0.45) |
+
+The missed signs are not boxes sitting just under the cut-off, so lowering it adds only false alarms. The test split
+agrees. Stair at 0.25 gives R 70.5% / P 73.5%, against 67.9% / 79.8%. Wet Floor Sign at 0.20 gives the same recall
+with 10 false alarms instead of 3. Defaults are therefore all 0.35. `--class-conf` remains for experiments.
+[Validation sweep](evidence/class-thresholds-validation-sweep-2026-11-28.json)
+
+The demo videos showed more frames with a sign at 0.20 (54/80 against 30/80). That does not carry over to labelled
+images, and those clips are not frame-labelled. Frame confirmation still cannot be scored on still images; its case
+rests on the video replays (one-frame alerts 4 → 0).

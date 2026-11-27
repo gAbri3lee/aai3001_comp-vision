@@ -108,12 +108,12 @@ to check speech. Add `--no-tts` for a silent run. These commands skip the
 experimental MiDaS depth stage to keep the demo responsive. Press **Ctrl+C** to
 stop the GUI before starting it again on the same port.
 
-### Alert settings (defaults since 2026-11-27)
+### Alert settings (defaults since 2026-11-28)
 
 | Setting | Default | Effect |
 | --- | --- | --- |
 | Frame confirmation | 2 of 3 | Camera and video: a hazard is spoken only after it is seen at about the same place in 2 of the last 3 detector frames. Removes alerts caused by a one-frame detection; each alert comes about one detector frame later. The banner is not delayed. Uploaded photos are a single frame and are not confirmed. |
-| Confidence cut-offs | Stair 0.25, Wet Floor Sign 0.20, Escalator and People 0.35 | Lower cut-offs for the two safety classes the detector finds least often. Cloud RF-DETR keeps 0.40. |
+| Confidence cut-offs | 0.35 for every class | A box is used only at or above this confidence. Cloud RF-DETR keeps 0.40. Lower Stair and Wet Floor Sign cut-offs were tried and reverted; see below. |
 
 Both are in `visionaid_config.json` (`alert_gate.confirm_frames`, `local.class_thresholds`). Override them per run,
 also in `scripts/replay_alerts.py` and `scripts/verify_detector.py`:
@@ -121,12 +121,12 @@ also in `scripts/replay_alerts.py` and `scripts/verify_detector.py`:
 | Flag | Example |
 | --- | --- |
 | `--confirm K/N` | `--confirm 1/1` turns confirmation off |
-| `--class-conf CLASS=VALUE` (repeatable) | `--class-conf "Stair=0.35"` |
-| `--conf VALUE` | `--conf 0.35` sets every class, so `--confirm 1/1 --conf 0.35` restores the earlier behaviour |
+| `--class-conf CLASS=VALUE` (repeatable) | `--class-conf "Stair=0.25"` |
+| `--conf VALUE` | `--conf 0.5` sets every class |
 
-The lower cut-offs were chosen together with confirmation, which keeps their extra one-frame false alarms from being
-spoken; keep them together. They were tested on the demo videos, not yet on labelled images
-(see [the write-up](docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md)).
+`--confirm 1/1` restores the behaviour before 2026-11-27. Stair 0.25 and Wet Floor Sign 0.20 were the defaults from
+27 to 28 November 2026. A sweep on the labelled validation split found they did not meet the team's rule for lowering
+a cut-off, so every class is back at 0.35 ([results](#int8-default-and-alert-defaults-2026-11-28)).
 
 ## Cloud detector with RF-DETR
 
@@ -271,7 +271,7 @@ and IoU thresholds from 0.50 to 0.95.
 
 ### Four-class demo benchmark
 
-All three runs used the same 769 cleaned test images, ground-truth boxes and COCO evaluator. Precision and recall count box matches at IoU 0.50 using each model’s confidence threshold at the time (0.35 for YOLO, before the 2026-11-27 Stair and Wet Floor Sign cut-offs). The two YOLO rows run the same learned detector in different formats.
+All three runs used the same 769 cleaned test images, ground-truth boxes and COCO evaluator. Precision and recall count box matches at IoU 0.50 using each model’s confidence threshold at the time (0.35 for YOLO, the current default). The two YOLO rows run the same learned detector in different formats.
 
 | Runtime | Confidence | Precision | Recall | mAP50 | mAP50–95 |
 |---|---:|---:|---:|---:|---:|
@@ -296,7 +296,7 @@ The old README quoted historical tests on 920 images and five classes. Removing 
 
 [Full metrics, model hashes and test-set fingerprint](docs/evidence/four-class-demo-benchmark.json) · [Historical five-class evidence](docs/verification_results.json)
 
-### INT8 default and alert defaults (2026-11-27)
+### INT8 default and alert defaults (2026-11-28)
 
 The default local detector is a static INT8 quantisation of the four-class ONNX export, made with
 `scripts/quantize_detector.py`. The detection head's box decoding stays in full precision.
@@ -307,22 +307,45 @@ The default local detector is a static INT8 quantisation of the four-class ONNX 
 | Median time per frame, 2 CPU threads | 50–57 ms | 27–38 ms (1.5–1.9× faster) |
 | Agreement with full precision, 20 golden images | – | 20/20 detections at IoU 0.5; largest confidence change 0.13 |
 
-The precision, recall and mAP figures above were measured on the full-precision model. **INT8 has not yet been
-scored against labels.** Run `scripts/verify_detector.py --evaluate` on the cleaned test split (see below) before
-quoting accuracy for it. On the demo videos, INT8 finds stairs in fewer frames of *Passengers descending the central
-staircase* (100/120, against 119/120). The Stair 0.25 default brings that back to 115/120.
+**Accuracy on the 769-image test split** (the same split as the benchmark above, all classes at 0.35):
 
-The alert defaults were chosen by replaying the 8 bundled demo videos (124 s):
+| Model | Precision | Recall | mAP50 | mAP50-95 | Safety-class recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Full-precision ONNX | 79.6% | 63.7% | 77.4% | 50.9% | 73.0% |
+| **INT8 ONNX (default)** | **79.0%** | **63.7%** | **77.5%** | **50.8%** | **74.2%** |
+
+INT8 is as accurate as full precision. Per class, its recall is equal or higher for Escalator (87.4% vs 84.5%),
+Stair (67.9% vs 67.2%) and Wet Floor Sign (67.3%), and 0.9 points lower for People (57.1% vs 58.0%).
+[Per-class table](docs/evidence/int8-test-evaluation-2026-11-28.txt)
+
+**Lower cut-offs for Stair and Wet Floor Sign (tried, then reverted).** Stair 0.25 and Wet Floor Sign 0.20 were
+tried because they found more stairs and signs in the demo videos. They were then checked on labelled images
+with the INT8 model.
+
+The validation split (859 images) was used to choose. The team's rule from `scripts/validation_study.py` was applied:
+recall must gain at least 5 points and precision must stay at or above max(75%, current − 2 points).
+No class met it:
+
+| Class (validation) | 0.35 | Lower cut-off | Result |
+| --- | --- | --- | --- |
+| Stair | P 76.0%, R 67.1% | 0.25: P 69.0%, R 70.6% | +3.5 recall for −7.0 precision; fails |
+| Wet Floor Sign | P 89.2%, R 85.3% | 0.20: P 81.7%, R 85.3% | No recall gain at any cut-off from 0.10 to 0.45; fails |
+| Escalator, People | – | – | No cut-off meets the rule |
+
+The test split showed the same thing (INT8). Stair at 0.25 gave recall 70.5% and precision 73.5%, against 67.9% and
+79.8% at 0.35. Wet Floor Sign at 0.20 gave the same recall with 10 false alarms instead of 3. Every class is
+therefore back at 0.35. [Validation sweep](docs/evidence/class-thresholds-validation-sweep-2026-11-28.json)
+
+These are single images, so 2-of-3 confirmation could not be scored on them. It was chosen by replaying the 8 bundled
+demo videos (124 s):
 
 | Setting (full-precision ONNX) | Spoken alerts | Alerts from a one-frame detection | Wet-floor clip: frames with a sign box | Stair boxes in clips without stairs |
 | --- | ---: | ---: | ---: | ---: |
 | Earlier defaults (0.35, no confirmation) | 53 | 4 | 30/80 | 0 |
-| `--confirm 2/3` | 46 | 0 | 30/80 | 0 |
-| **Current defaults:** 2 of 3, Stair 0.25, sign 0.20 | 49 | 0 | 54/80 | 0 |
+| **Current defaults:** 2 of 3, all 0.35 | 46 | 0 | 30/80 | 0 |
+| Trial (reverted): 2 of 3, Stair 0.25, sign 0.20 | 49 | 0 | 54/80 | 0 |
 
-With the INT8 default model, the current defaults find the sign in 49/80 frames of the wet-floor clip and say "Caution, Wet Floor Sign ahead" twice.
-
-The clips are not frame-labelled, so these are indicative only. [Write-up and evidence](docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md)
+The lower cut-offs found the sign in more video frames, but the labelled images did not confirm a gain. The clips are not frame-labelled, so these are indicative only. [Write-up and evidence](docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md)
 
 #### Demo steps
 
@@ -342,6 +365,8 @@ python -m pip install -r requirements-test.txt
 python -m pytest -q --basetemp artifacts/pytest-current
 python scripts/verify_detector.py --images golden/images --reference golden/expected/local_yolov8n_four_class.json --frames 0 --output artifacts/golden-four.json
 python scripts/verify_detector.py --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-int8.json
+python scripts/verify_detector.py --images data/v4_four_class_clean/valid/images --evaluate --frames 0 --output artifacts/four-class-int8-valid.json
+python scripts/sweep_class_thresholds.py --split data/v4_four_class_clean/valid --predictions artifacts/four-class-int8-valid.json --output artifacts/class-threshold-sweep.json
 python scripts/verify_detector.py --model models/local/yolov8n_v4_four_class.pt --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-test.json
 python scripts/verify_detector.py --model deploy/vercel/model/yolov8n_v4_four_class.onnx --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-onnx.json
 python scripts/verify_detector.py --runtime rfdetr --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-rfdetr.json
