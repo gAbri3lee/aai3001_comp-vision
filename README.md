@@ -2,7 +2,8 @@
 
 AAI3001 hazard-detection prototype. The live GUI reports **Escalator, People,
 Stairs and Wet Floor Sign** using local YOLOv8n or a separate RF-DETR Nano
-service. The Vercel photo demo in this repository uses the four-class YOLOv8n ONNX export.
+service. Local mode runs an **INT8 ONNX** export of YOLOv8n by default (3.5 MB, about 1.5–1.9× faster on CPU
+than full precision). The Vercel photo demo in this repository uses the full-precision four-class YOLOv8n ONNX export.
 
 | What to try | Where to run it | Input |
 | --- | --- | --- |
@@ -41,33 +42,26 @@ py -3.12 -m venv .venv
 
 ### 2. Set Model Weights
 
-**Fresh clone, local demo:** The repository includes the four-class YOLOv8n ONNX model. After installing the local app dependencies in step 1, use the commands for your platform below. This starts the GUI on CPU and lets you try the four hazard classes before obtaining the separate PyTorch or RF-DETR weights.
+**Fresh clone, local demo:** nothing to copy. The repository includes the default local detector,
+`models/local/yolov8n_v4_four_class_int8.onnx` (INT8), and `requirements.txt` installs ONNX Runtime for it.
+Go straight to step 3. You can run the photo demo without a webcam: open **Upload → Demo library** and click
+**Escalator landing**. Recognition view should display **Escalator** and “Check the direction before stepping on.”
 
-**Windows (PowerShell)**
+**Intel Mac:** the pinned ONNX Runtime has no Intel macOS build, so use the PyTorch checkpoint below and add
+`--model models/local/yolov8n_v4_four_class.pt` to the step 3 command.
 
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-onnx.txt
-.\.venv\Scripts\python.exe src/webapp.py --model deploy/vercel/model/yolov8n_v4_four_class.onnx --no-depth --port 5001
-```
-
-**macOS Terminal (on a platform supported by the pinned ONNX Runtime)**
-
-```bash
-.venv/bin/python -m pip install -r requirements-onnx.txt
-.venv/bin/python src/webapp.py --model deploy/vercel/model/yolov8n_v4_four_class.onnx --no-depth --port 5001
-```
-
-Open [the local GUI](http://127.0.0.1:5001), select **Upload → Demo library**, and click **Escalator landing**. Recognition view should display **Escalator** and “Check the direction before stepping on.” You can run the photo demo without a webcam.
-
-**Default PyTorch GUI or self-hosted RF-DETR:** Use the following handoff weights.
+**Full-precision PyTorch model or self-hosted RF-DETR:** Use the following handoff weights.
 
 Copy the weights from the project handoff to the paths below. Git ignores these
 files.
 
 | File | Used by |
 | --- | --- |
-| `models/local/yolov8n_v4_four_class.pt` | Local YOLOv8n and the GUI's fallback from Cloud |
+| `models/local/yolov8n_v4_four_class.pt` | Local YOLOv8n in full precision with `--model models/local/yolov8n_v4_four_class.pt`; needed on Intel Macs |
 | `models/cloud/rfdetr-nano_v4_four_class.pth` | RF-DETR Docker service, needed when you run the service yourself |
+
+The full-precision ONNX export used by Vercel, `deploy/vercel/model/yolov8n_v4_four_class.onnx`, also ships
+with Git and works with `--model`.
 
 If you only have the original `yolov8n_v4.pt`, place it in `models/local/` and
 create the four-class checkpoint once. The script projects the existing model
@@ -113,6 +107,23 @@ Terminal or Python and try **Upload** while you troubleshoot. Use **Test voice**
 to check speech. Add `--no-tts` for a silent run. These commands skip the
 experimental MiDaS depth stage to keep the demo responsive. Press **Ctrl+C** to
 stop the GUI before starting it again on the same port.
+
+### Optional alert settings
+
+Both settings are off unless you add the flag, and both also work with `scripts/replay_alerts.py`.
+
+| Flag | Effect |
+| --- | --- |
+| `--confirm 2/3` | Speak a hazard only after it is seen at about the same place in 2 of the last 3 detector frames. Removes alerts caused by a one-frame detection; each alert comes about one detector frame later. The banner is not delayed. |
+| `--class-conf "Stair=0.25"` | Lower (or raise) one class's confidence cut-off; repeat the flag for more classes. Other classes keep the configured 0.35. |
+
+Suggested combination, tested on the demo videos (see [the write-up](docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md)):
+
+```powershell
+.\.venv\Scripts\python.exe src/webapp.py --port 5001 --no-depth --confirm 2/3 --class-conf "Stair=0.25" --class-conf "Wet Floor Sign=0.20"
+```
+
+Use lower cut-offs together with `--confirm`: on their own, they let more one-frame false alarms be spoken.
 
 ## Cloud detector with RF-DETR
 
@@ -282,6 +293,32 @@ The old README quoted historical tests on 920 images and five classes. Removing 
 
 [Full metrics, model hashes and test-set fingerprint](docs/evidence/four-class-demo-benchmark.json) · [Historical five-class evidence](docs/verification_results.json)
 
+### INT8 default and alert tuning (2026-11-27)
+
+The default local detector is a static INT8 quantisation of the four-class ONNX export, made with
+`scripts/quantize_detector.py`. The detection head's box decoding stays in full precision.
+
+| | Full-precision ONNX | INT8 ONNX (default) |
+| --- | ---: | ---: |
+| File size | 12.2 MB | 3.5 MB |
+| Median time per frame, 2 CPU threads | 50–57 ms | 27–38 ms (1.5–1.9× faster) |
+| Agreement with full precision, 20 golden images | – | 20/20 detections at IoU 0.5; largest confidence change 0.13 |
+
+The precision, recall and mAP figures above were measured on the full-precision model. **INT8 has not yet been
+scored against labels.** Run `scripts/verify_detector.py --evaluate` on the cleaned test split (see below) before
+quoting accuracy for it. On the demo videos, INT8 finds stairs in fewer frames of *Passengers descending the central
+staircase* (100/120, against 119/120). `--class-conf "Stair=0.25"` brings that back to 115/120.
+
+The optional alert settings were measured by replaying the 8 bundled demo videos (124 s):
+
+| Setting (full-precision ONNX) | Spoken alerts | Alerts from a one-frame detection | Wet-floor clip: frames with a sign box | Stair boxes in clips without stairs |
+| --- | ---: | ---: | ---: | ---: |
+| Configured thresholds | 53 | 4 | 30/80 | 0 |
+| `--confirm 2/3` | 46 | 0 | 30/80 | 0 |
+| `--confirm 2/3`, Stair 0.25, sign 0.20 | 49 | 0 | 54/80 | 0 |
+
+The clips are not frame-labelled, so these are indicative only. [Write-up and evidence](docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md)
+
 #### Demo steps
 
 1. In **Upload → Demo library**, analyse one named photo in each class folder. Check the label and the action beside it.
@@ -299,8 +336,9 @@ with the project interpreter path shown above if your environment is inactive.
 python -m pip install -r requirements-test.txt
 python -m pytest -q --basetemp artifacts/pytest-current
 python scripts/verify_detector.py --images golden/images --reference golden/expected/local_yolov8n_four_class.json --frames 0 --output artifacts/golden-four.json
-python scripts/verify_detector.py --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-test.json
-python scripts/verify_detector.py --model models/local/yolov8n_v4_four_class.onnx --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-onnx.json
+python scripts/verify_detector.py --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-int8.json
+python scripts/verify_detector.py --model models/local/yolov8n_v4_four_class.pt --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-test.json
+python scripts/verify_detector.py --model deploy/vercel/model/yolov8n_v4_four_class.onnx --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-onnx.json
 python scripts/verify_detector.py --runtime rfdetr --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-rfdetr.json
 ```
 

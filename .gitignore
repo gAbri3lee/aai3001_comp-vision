@@ -29,6 +29,8 @@ demo/videos/*
 
 # Vercel photo-check function ships its ONNX model (12 MB); allow it past the *.onnx rule
 !deploy/vercel/model/*.onnx
+# Default local detector: INT8 export (3.5 MB), shipped so a fresh clone runs without copying weights
+!models/local/yolov8n_v4_four_class_int8.onnx
 # Redistributable motion demos, credited in demo/README.md
 !demo/challenges/VivoCity - escalator atrium.mp4
 !demo/videos/* - field sequence.mp4

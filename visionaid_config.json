@@ -61,7 +61,9 @@
   },
   "local": {
     "model": "yolov8n",
-    "file": "models/local/yolov8n_v4_four_class.pt",
+    "file": "models/local/yolov8n_v4_four_class_int8.onnx",
+    "fp32_file": "models/local/yolov8n_v4_four_class.pt",
+    "quantization": "Static INT8 (QDQ, per-channel weights) of deploy/vercel/model/yolov8n_v4_four_class.onnx via scripts/quantize_detector.py; detection-head decoding kept FP32. 'expected' below was measured on the FP32 PyTorch checkpoint.",
     "library": "ultralytics==8.4.183",
     "input_size": 640,
     "colour_order": "BGR numpy array or a file path",
@@ -165,5 +167,5 @@
     "retrained_on_cleaned_dataset": false,
     "derivation": "Removed final pillar class-logit rows, preserved all remaining weights"
   },
-  "benchmark_note": "Four-class scope. The model was derived from the original checkpoint; dataset cleanup did not retrain it. Historical five-class scores are archived. Physical distance accuracy is unverified."
+  "benchmark_note": "Four-class scope. The model was derived from the original checkpoint; dataset cleanup did not retrain it. Historical five-class scores are archived. Local mode runs an INT8 export that matches the full-precision model on 20 reference images but has not been scored against labels. Physical distance accuracy is unverified."
 }

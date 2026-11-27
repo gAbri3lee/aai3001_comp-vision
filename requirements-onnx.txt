@@ -1,3 +1,4 @@
-# Optional verified CPU adapter; install alongside requirements.txt.
+# Extra tools for re-exporting / re-quantising the ONNX detector (scripts/quantize_detector.py).
+# The app itself only needs onnxruntime, which requirements.txt already installs.
 onnx==1.23.2
 onnxruntime==1.31.1

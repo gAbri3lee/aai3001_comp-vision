@@ -41,7 +41,7 @@ class DetectionTests(unittest.TestCase):
         local = detector_settings(parser.parse_args([]))
         self.assertEqual((local['confidence'], local['input_size'], local['nms_iou']), (.35, 640, .7))
         self.assertTrue(local['weights'].is_absolute())
-        self.assertEqual(local['weights'].name, 'yolov8n_v4_four_class.pt')
+        self.assertEqual(local['weights'].name, 'yolov8n_v4_four_class_int8.onnx')
         cloud = detector_settings(parser.parse_args(['--backend', 'cloud', '--endpoint', 'http://localhost:9000']))
         self.assertEqual((cloud['confidence'], cloud['input_size']), (.4, 384))
         override = detector_settings(parser.parse_args(['--conf', '.6', '--imgsz', '320', '--model', 'other.pt']))

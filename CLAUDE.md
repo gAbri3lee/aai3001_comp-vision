@@ -4,6 +4,8 @@ The user authorised removing Pillar on 17 November 2026. Active IDs: 0 Escalator
 
 Active checkpoint: models/local/yolov8n_v4_four_class.pt. It has a native four-output head projected from the supplied checkpoint, with retained weights unchanged. It was not retrained on cleaned data. Original weights, data and metrics remain preserved.
 
+Default local runtime (27 November 2026): models/local/yolov8n_v4_four_class_int8.onnx, a static INT8 quantisation of deploy/vercel/model/yolov8n_v4_four_class.onnx (scripts/quantize_detector.py), committed to Git. It passes golden parity against FP32 but has not been scored against labels; the recorded precision/recall/mAP belong to the FP32 model. --model selects the .pt or FP32 ONNX. Opt-in alert flags: --confirm K/N and --class-conf CLASS=VALUE; shipped thresholds stay 0.35. See docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md.
+
 Clean dataset: data/v4_four_class_clean/data.yaml, 7749/859/769 train/valid/test, manifest d4242de8c1d3776941c614a99dc432a6. Pillar labels removed; useful images/background negatives retained. Background pillars may remain. 715 similar-frame candidates excluded from this derivative, with originals available. Structural/duplicate checks are automated; exhaustive independent annotation review is incomplete.
 
 Cloud belongs to the teammate. Legacy five-class services are supported through explicit cloud.legacy_service_classes mapping, discarding pillar and remapping Stair 3->2 and sign 4->3. Preserve HTTP schema and validate all IDs/names. The default RF-DETR checkpoint has four foreground classes. Reproduce it with scripts/project_four_class_rfdetr.py. Local/fake tests do not verify hosted cloud.
