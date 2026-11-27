@@ -4,7 +4,7 @@ The user authorised removing Pillar on 17 November 2026. Active IDs: 0 Escalator
 
 Active checkpoint: models/local/yolov8n_v4_four_class.pt. It has a native four-output head projected from the supplied checkpoint, with retained weights unchanged. It was not retrained on cleaned data. Original weights, data and metrics remain preserved.
 
-Default local runtime (27 November 2026): models/local/yolov8n_v4_four_class_int8.onnx, a static INT8 quantisation of deploy/vercel/model/yolov8n_v4_four_class.onnx (scripts/quantize_detector.py), committed to Git. It passes golden parity against FP32 but has not been scored against labels; the recorded precision/recall/mAP belong to the FP32 model. --model selects the .pt or FP32 ONNX. Opt-in alert flags: --confirm K/N and --class-conf CLASS=VALUE; shipped thresholds stay 0.35. See docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md.
+Default local runtime (27 November 2026): models/local/yolov8n_v4_four_class_int8.onnx, a static INT8 quantisation of deploy/vercel/model/yolov8n_v4_four_class.onnx (scripts/quantize_detector.py), committed to Git. It passes golden parity against FP32 but has not been scored against labels; the recorded precision/recall/mAP belong to the FP32 model. --model selects the .pt or FP32 ONNX. Alert defaults (user-approved, 27 November 2026): alert_gate.confirm_frames 2-of-3 for camera/video (still-image analysis uses 1-of-1), local thresholds Stair 0.25 and Wet Floor Sign 0.20 (Escalator/People 0.35; cloud unchanged at 0.40). Not yet validated on labelled images; recorded P/R/mAP are at 0.35 on FP32. Override with --confirm, --class-conf, --conf. See docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md.
 
 Clean dataset: data/v4_four_class_clean/data.yaml, 7749/859/769 train/valid/test, manifest d4242de8c1d3776941c614a99dc432a6. Pillar labels removed; useful images/background negatives retained. Background pillars may remain. 715 similar-frame candidates excluded from this derivative, with originals available. Structural/duplicate checks are automated; exhaustive independent annotation review is incomplete.
 
@@ -12,7 +12,7 @@ Cloud belongs to the teammate. Legacy five-class services are supported through 
 
 Pipeline: capture -> detector plus optional COCO -> optional relative depth -> AlertPolicy -> bounded speech. General detections retain ID -1; COCO people use People, others Object. COCO is not open-world. Local mode never sends frames to cloud. Preserve fallback, late-result rejection, one request at a time and source-generation invalidation.
 
-Retained thresholds/size gates/priorities/cooldowns are unchanged. Calibration remains false; no measured range claims. Pinhole estimates only for People/sign after actual calibration; never speak verified metres.
+Size gates/priorities/cooldowns are unchanged; local Stair and Wet Floor Sign thresholds changed as noted above. Calibration remains false; no measured range claims. Pinhole estimates only for People/sign after actual calibration; never speak verified metres.
 
 Keep upload limits, malformed-media isolation, untrusted-filename/path protections, bounded queues and temporary cleanup. Use workspace-local pytest --basetemp on Windows. Four-class golden reference: golden/expected/local_yolov8n_four_class.json. Real upload check: scripts/verify_four_class_runtime.py.
 

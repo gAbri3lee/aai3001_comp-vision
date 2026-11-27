@@ -71,9 +71,10 @@
     "class_thresholds": {
       "Escalator": 0.35,
       "People": 0.35,
-      "Stair": 0.35,
-      "Wet Floor Sign": 0.35
+      "Stair": 0.25,
+      "Wet Floor Sign": 0.2
     },
+    "class_thresholds_note": "Stair 0.25 and Wet Floor Sign 0.20 (from 0.35) since 2026-11-27, chosen on demo-video replays with 2-of-3 confirmation; not yet validated on labelled images. 'expected' below was measured at 0.35 on the FP32 model.",
     "expected": {
       "t4_gpu_ms": 9.8,
       "kaggle_cpu_ms": 65,
@@ -151,6 +152,10 @@
       "Object": 8.0
     },
     "proximity_jump_to_realert": 0.15,
+    "confirm_frames": {
+      "required": 2,
+      "window": 3
+    },
     "known_heights_m": {
       "People": 1.7,
       "Wet Floor Sign": 0.65
@@ -167,5 +172,5 @@
     "retrained_on_cleaned_dataset": false,
     "derivation": "Removed final pillar class-logit rows, preserved all remaining weights"
   },
-  "benchmark_note": "Four-class scope. The model was derived from the original checkpoint; dataset cleanup did not retrain it. Historical five-class scores are archived. Local mode runs an INT8 export that matches the full-precision model on 20 reference images but has not been scored against labels. Physical distance accuracy is unverified."
+  "benchmark_note": "Four-class scope. The model was derived from the original checkpoint; dataset cleanup did not retrain it. Historical five-class scores are archived. Local mode runs an INT8 export that matches the full-precision model on 20 reference images but has not been scored against labels, and Stair and Wet Floor Sign use lower cut-offs than the tested 0.35. Physical distance accuracy is unverified."
 }

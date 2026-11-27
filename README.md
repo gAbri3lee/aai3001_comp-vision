@@ -108,22 +108,25 @@ to check speech. Add `--no-tts` for a silent run. These commands skip the
 experimental MiDaS depth stage to keep the demo responsive. Press **Ctrl+C** to
 stop the GUI before starting it again on the same port.
 
-### Optional alert settings
+### Alert settings (defaults since 2026-11-27)
 
-Both settings are off unless you add the flag, and both also work with `scripts/replay_alerts.py`.
+| Setting | Default | Effect |
+| --- | --- | --- |
+| Frame confirmation | 2 of 3 | Camera and video: a hazard is spoken only after it is seen at about the same place in 2 of the last 3 detector frames. Removes alerts caused by a one-frame detection; each alert comes about one detector frame later. The banner is not delayed. Uploaded photos are a single frame and are not confirmed. |
+| Confidence cut-offs | Stair 0.25, Wet Floor Sign 0.20, Escalator and People 0.35 | Lower cut-offs for the two safety classes the detector finds least often. Cloud RF-DETR keeps 0.40. |
 
-| Flag | Effect |
+Both are in `visionaid_config.json` (`alert_gate.confirm_frames`, `local.class_thresholds`). Override them per run,
+also in `scripts/replay_alerts.py` and `scripts/verify_detector.py`:
+
+| Flag | Example |
 | --- | --- |
-| `--confirm 2/3` | Speak a hazard only after it is seen at about the same place in 2 of the last 3 detector frames. Removes alerts caused by a one-frame detection; each alert comes about one detector frame later. The banner is not delayed. |
-| `--class-conf "Stair=0.25"` | Lower (or raise) one class's confidence cut-off; repeat the flag for more classes. Other classes keep the configured 0.35. |
+| `--confirm K/N` | `--confirm 1/1` turns confirmation off |
+| `--class-conf CLASS=VALUE` (repeatable) | `--class-conf "Stair=0.35"` |
+| `--conf VALUE` | `--conf 0.35` sets every class, so `--confirm 1/1 --conf 0.35` restores the earlier behaviour |
 
-Suggested combination, tested on the demo videos (see [the write-up](docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md)):
-
-```powershell
-.\.venv\Scripts\python.exe src/webapp.py --port 5001 --no-depth --confirm 2/3 --class-conf "Stair=0.25" --class-conf "Wet Floor Sign=0.20"
-```
-
-Use lower cut-offs together with `--confirm`: on their own, they let more one-frame false alarms be spoken.
+The lower cut-offs were chosen together with confirmation, which keeps their extra one-frame false alarms from being
+spoken; keep them together. They were tested on the demo videos, not yet on labelled images
+(see [the write-up](docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md)).
 
 ## Cloud detector with RF-DETR
 
@@ -268,7 +271,7 @@ and IoU thresholds from 0.50 to 0.95.
 
 ### Four-class demo benchmark
 
-All three runs used the same 769 cleaned test images, ground-truth boxes and COCO evaluator. Precision and recall count box matches at IoU 0.50 using each model’s configured confidence threshold. The two YOLO rows run the same learned detector in different formats.
+All three runs used the same 769 cleaned test images, ground-truth boxes and COCO evaluator. Precision and recall count box matches at IoU 0.50 using each model’s confidence threshold at the time (0.35 for YOLO, before the 2026-11-27 Stair and Wet Floor Sign cut-offs). The two YOLO rows run the same learned detector in different formats.
 
 | Runtime | Confidence | Precision | Recall | mAP50 | mAP50–95 |
 |---|---:|---:|---:|---:|---:|
@@ -293,7 +296,7 @@ The old README quoted historical tests on 920 images and five classes. Removing 
 
 [Full metrics, model hashes and test-set fingerprint](docs/evidence/four-class-demo-benchmark.json) · [Historical five-class evidence](docs/verification_results.json)
 
-### INT8 default and alert tuning (2026-11-27)
+### INT8 default and alert defaults (2026-11-27)
 
 The default local detector is a static INT8 quantisation of the four-class ONNX export, made with
 `scripts/quantize_detector.py`. The detection head's box decoding stays in full precision.
@@ -307,15 +310,17 @@ The default local detector is a static INT8 quantisation of the four-class ONNX 
 The precision, recall and mAP figures above were measured on the full-precision model. **INT8 has not yet been
 scored against labels.** Run `scripts/verify_detector.py --evaluate` on the cleaned test split (see below) before
 quoting accuracy for it. On the demo videos, INT8 finds stairs in fewer frames of *Passengers descending the central
-staircase* (100/120, against 119/120). `--class-conf "Stair=0.25"` brings that back to 115/120.
+staircase* (100/120, against 119/120). The Stair 0.25 default brings that back to 115/120.
 
-The optional alert settings were measured by replaying the 8 bundled demo videos (124 s):
+The alert defaults were chosen by replaying the 8 bundled demo videos (124 s):
 
 | Setting (full-precision ONNX) | Spoken alerts | Alerts from a one-frame detection | Wet-floor clip: frames with a sign box | Stair boxes in clips without stairs |
 | --- | ---: | ---: | ---: | ---: |
-| Configured thresholds | 53 | 4 | 30/80 | 0 |
+| Earlier defaults (0.35, no confirmation) | 53 | 4 | 30/80 | 0 |
 | `--confirm 2/3` | 46 | 0 | 30/80 | 0 |
-| `--confirm 2/3`, Stair 0.25, sign 0.20 | 49 | 0 | 54/80 | 0 |
+| **Current defaults:** 2 of 3, Stair 0.25, sign 0.20 | 49 | 0 | 54/80 | 0 |
+
+With the INT8 default model, the current defaults find the sign in 49/80 frames of the wet-floor clip and say "Caution, Wet Floor Sign ahead" twice.
 
 The clips are not frame-labelled, so these are indicative only. [Write-up and evidence](docs/ALERT_CONFIRMATION_AND_INT8_2026-11-27.md)
 

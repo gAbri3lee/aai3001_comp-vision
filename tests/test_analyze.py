@@ -52,7 +52,8 @@ def key(detections):
 def test_upload_matches_the_live_path_for_the_same_image():
     detector = BrightBoxDetector('yolov8n')
     with running({'local': detector}, capture=SceneCapture) as (state, client):
-        assert wait_for(lambda: client.get('/status').json['alert'] == 'Warning, Stair ahead')
+        # The live loop speaks (selects) a hazard once 2-of-3 confirmation has seen it twice.
+        assert wait_for(lambda: (client.get('/status').json['selected'] or {}).get('phrase') == 'Warning, Stair ahead')
         live = client.get('/status').json
         response = upload(client, encoded(scene(), 'png'), 'scene.png')
         assert response.status_code == 200

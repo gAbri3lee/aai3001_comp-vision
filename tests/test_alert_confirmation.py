@@ -31,9 +31,10 @@ def spoken(p, frames):
     return [p.process(dets, (W, H), now=float(t * 10)).speak for t, dets in enumerate(frames)]
 
 
-def test_default_config_speaks_on_the_first_frame():
+def test_default_config_confirms_two_of_three():
+    assert CONFIG['alert_gate']['confirm_frames'] == {'required': 2, 'window': 3}
     p = AlertPolicy(CONFIG['alert_gate'], CONFIG['severity'], clock=lambda: 0.)
-    assert p.process((STAIR,), (W, H), now=0.).speak == 'Warning, Stair ahead'
+    assert spoken(p, [(STAIR,), (STAIR_MOVED,)]) == [None, 'Warning, Stair ahead']
 
 
 def test_one_of_one_is_the_old_behaviour():
@@ -93,6 +94,7 @@ def test_gate_validation_rejects_bad_confirm_frames(value):
 def test_cli_flag_sets_confirm_frames():
     parser = argparse.ArgumentParser()
     add_detector_arguments(parser)
-    settings = detector_settings(parser.parse_args(['--confirm', '2/3']))
-    assert settings['alert_gate']['confirm_frames'] == {'required': 2, 'window': 3}
-    assert 'confirm_frames' not in CONFIG['alert_gate'] or CONFIG['alert_gate']['confirm_frames'] == {'required': 1, 'window': 1}
+    assert detector_settings(parser.parse_args([]))['alert_gate']['confirm_frames'] == {'required': 2, 'window': 3}
+    settings = detector_settings(parser.parse_args(['--confirm', '1/1']))     # --confirm 1/1 turns it off
+    assert settings['alert_gate']['confirm_frames'] == {'required': 1, 'window': 1}
+    assert spoken(AlertPolicy(settings['alert_gate'], CONFIG['severity'], clock=lambda: 0.), [(STAIR,)]) == ['Warning, Stair ahead']

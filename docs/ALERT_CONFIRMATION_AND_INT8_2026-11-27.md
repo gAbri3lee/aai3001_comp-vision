@@ -1,7 +1,15 @@
 # Alert confirmation, per-class thresholds and INT8 export (2026-11-27)
 
-Three no-retraining improvements, all **off by default**: the shipped config, thresholds, size gates and
-cooldowns are unchanged. Turn them on with a flag or a config value once the team agrees.
+Three no-retraining improvements. They were first added as opt-in flags (sections 1–3 record that
+evaluation). **Later the same day they became the defaults:**
+
+- the INT8 model is the default local detector (`local.file`), committed to Git;
+- 2-of-3 confirmation is on (`alert_gate.confirm_frames`) for camera and video. Uploaded photos are a single frame
+  and skip it, otherwise a photo of a stair would be answered "No hazards present";
+- `local.class_thresholds` is Stair 0.25, Wet Floor Sign 0.20, Escalator and People 0.35. Cloud RF-DETR keeps 0.40.
+
+`--confirm 1/1 --conf 0.35 --model deploy/vercel/model/yolov8n_v4_four_class.onnx` restores the earlier behaviour.
+None of this has been scored against labels yet; see the last paragraph of section 3.
 
 ## 1. K-of-N frame confirmation (`--confirm 2/3`)
 

@@ -26,7 +26,8 @@ SIDE_CHAIR = Detection(-1, 'Object', .9, box(.1, .8))
 
 
 def policy():
-    return AlertPolicy(CONFIG['alert_gate'], CONFIG['severity'], clock=lambda: 0.)
+    # Cooldown rules, tested without frame confirmation (covered in test_alert_confirmation.py).
+    return AlertPolicy({**CONFIG['alert_gate'], 'confirm_frames': {'required': 1, 'window': 1}}, CONFIG['severity'], clock=lambda: 0.)
 
 
 def test_spoken_phrase_belongs_to_the_gated_list_of_the_same_frame():

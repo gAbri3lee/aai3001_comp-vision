@@ -37,7 +37,12 @@ def main():
     settings = detector_settings(args)
     config = load_config(args.config)
     spec = config['cloud'] if args.runtime in ('rfdetr', 'cloud') else config['local']
-    alert_threshold = args.conf if args.conf is not None else min(spec['class_thresholds'].values())
+    # Alert cut-offs per class, as the app applies them (--conf / --class-conf included).
+    if args.runtime in ('rfdetr', 'cloud'):
+        thresholds = {n: args.conf if args.conf is not None else t for n, t in spec['class_thresholds'].items()}
+    else:
+        thresholds = dict(settings['class_thresholds'])
+    alert_threshold = next(iter(thresholds.values())) if len(set(thresholds.values())) == 1 else thresholds
     if args.evaluate:
         settings['confidence'] = .001
         settings['class_thresholds'] = dict.fromkeys(config['classes'], .001)
@@ -75,7 +80,7 @@ def main():
     if args.reference:
         if args.evaluate:
             # AP inputs are low-threshold; compare golden outputs at the validated alert threshold.
-            parity_outputs = {k: {**v, 'detections': [d for d in v['detections'] if d['confidence'] >= alert_threshold]}
+            parity_outputs = {k: {**v, 'detections': [d for d in v['detections'] if d['confidence'] >= thresholds[d['class']]]}
                               for k, v in outputs.items()}
         else:
             parity_outputs = outputs

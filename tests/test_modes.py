@@ -129,7 +129,8 @@ def test_mode_switch_clears_the_cooldown_so_the_next_alert_is_spoken():
 
 def test_policy_reset_forgets_cooldowns():
     config = load_config()
-    policy = AlertPolicy(config['alert_gate'], config['severity'], clock=lambda: 0.)
+    # Without frame confirmation (covered in test_alert_confirmation.py).
+    policy = AlertPolicy({**config['alert_gate'], 'confirm_frames': {'required': 1, 'window': 1}}, config['severity'], clock=lambda: 0.)
     assert policy.process((NEAR_STAIR,), (W, H), now=0.).speak == 'Warning, Stair ahead'
     assert policy.process((NEAR_STAIR,), (W, H), now=1.).speak is None
     policy.reset()

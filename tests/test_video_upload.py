@@ -189,12 +189,13 @@ def test_very_large_frames_are_downscaled_before_inference(tmp_path):
 def test_a_video_frame_gets_the_same_alert_as_the_live_camera(tmp_path):
     video = scene_video(tmp_path / 'same.mp4', frames=60)
     with running({'local': BrightBoxDetector('yolov8n')}, capture=camera_or_file(SceneCapture)) as (state, client):
-        assert wait_for(lambda: client.get('/status').json['alert'] == 'Warning, Stair ahead')
+        # Camera and video are frame sequences: a hazard is selected once 2-of-3 confirmation has seen it twice.
+        assert wait_for(lambda: (client.get('/status').json['selected'] or {}).get('phrase') == 'Warning, Stair ahead')
         live = client.get('/status').json
         assert send(client, video).status_code == 200
         def active_video_alert():
             snapshot = client.get('/status').json
-            return snapshot if snapshot['source']['type'] == 'video' and snapshot['alert'] else None
+            return snapshot if snapshot['source']['type'] == 'video' and snapshot['alert'] and snapshot['selected'] else None
 
         deadline = time.monotonic() + 2
         played = active_video_alert()

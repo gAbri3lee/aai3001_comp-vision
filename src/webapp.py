@@ -537,7 +537,10 @@ class PipelineState:
         with self._lock:
             mode = mode or self.mode
             model = self._model_label(mode)
-        policy = AlertPolicy(self.settings['alert_gate'], self.settings['severity'])
+        # A still image is a single frame, so multi-frame confirmation cannot apply:
+        # with it, a photo of a stair would never be spoken ("No hazards present").
+        gate = {**self.settings['alert_gate'], 'confirm_frames': {'required': 1, 'window': 1}}
+        policy = AlertPolicy(gate, self.settings['severity'])
         with self._detect_lock:
             batch = self.detectors[mode].predict(frame)
             result = decide(frame, batch, policy, self.depth_estimator)

@@ -112,7 +112,8 @@ def test_expected_class_marks_each_image_and_summarises_the_batch():
 def test_alert_view_in_a_batch_matches_the_live_loop():
     detector = BrightBoxDetector('yolov8n')
     with running({'local': detector}, capture=SceneCapture) as (state, client):
-        assert wait_for(lambda: client.get('/status').json['alert'] == 'Warning, Stair ahead')
+        # The live loop speaks (selects) a hazard once 2-of-3 confirmation has seen it twice.
+        assert wait_for(lambda: (client.get('/status').json['selected'] or {}).get('phrase') == 'Warning, Stair ahead')
         live = client.get('/status').json
         body = post(client, [('a.jpg', encoded(scene(), 'png')), ('b.png', encoded(scene(), 'png'))],
                     view='alert').json

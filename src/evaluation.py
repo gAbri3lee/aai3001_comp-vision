@@ -62,6 +62,8 @@ def remap_ground_truth(gt, source_names, target_names):
 
 
 def score_detections(gt, paths, outputs, names, threshold, safety_classes):
+    """`threshold` is one alert cut-off for every class, or a {class name: cut-off} dict."""
+    cut_off = threshold if isinstance(threshold, dict) else dict.fromkeys(names, threshold)
     from pycocotools.coco import COCO
     from pycocotools.cocoeval import COCOeval
     if set(outputs) != {p.name for p in paths}:
@@ -82,7 +84,7 @@ def score_detections(gt, paths, outputs, names, threshold, safety_classes):
         for cid in range(len(names)):
             truth = [b for c, b in by_image[k] if c == cid]
             used = set()
-            predicted = sorted((d for d in detections if d['class_id'] == cid and d['confidence'] >= threshold),
+            predicted = sorted((d for d in detections if d['class_id'] == cid and d['confidence'] >= cut_off[names[cid]]),
                                key=lambda d: d['confidence'], reverse=True)
             for detection in predicted:
                 candidates = [j for j in range(len(truth)) if j not in used]

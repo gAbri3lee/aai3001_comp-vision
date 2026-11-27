@@ -12,7 +12,8 @@ import sys
 root = Path(__file__).resolve().parents[2]
 here = Path(__file__).resolve().parent
 config = json.loads((root / 'visionaid_config.json').read_text())
-onnx = root / config['local']['file'].replace('.pt', '.onnx')
+# Vercel serves the full-precision export; local.file is now the INT8 model, so use fp32_file (the .pt).
+onnx = root / config['local'].get('fp32_file', config['local']['file']).replace('.pt', '.onnx')
 if not onnx.is_file():
     subprocess.run([sys.executable, str(root / 'scripts' / 'export_detector.py')], check=True)
 (here / 'model').mkdir(parents=True, exist_ok=True)
