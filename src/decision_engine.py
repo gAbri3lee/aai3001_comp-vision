@@ -8,6 +8,7 @@ The same functions process local and cloud detections, so both backends follow
 identical alert rules. Detections are boxes in original-frame pixels.
 """
 import time
+from collections import deque
 from dataclasses import dataclass
 
 from config import load_config
@@ -19,6 +20,7 @@ SEVERITY = _CONFIG["severity"]
 ALERT_GATE = _CONFIG["alert_gate"]
 
 COOLDOWN_SECONDS = 4.0
+CONFIRM_IOU = 0.2   # A box in an earlier frame counts as the same hazard if it overlaps this much (same label)
 PROXIMITY_JUMP_TO_REALERT = 0.15
 OBJECT_WEIGHT = 0.3
 
@@ -256,6 +258,19 @@ class AlertPolicy:
         self.cooldown = AlertCooldown.from_gate(self.gate, clock)
         self.people = []
         self._selected = None
+        confirm = self.gate.get("confirm_frames") or {"required": 1, "window": 1}
+        self.confirm_required = confirm["required"]
+        self._history = deque(maxlen=max(confirm["window"] - 1, 0))   # earlier detector frames: [(label, box)]
+
+    def confirmed(self, hazard) -> bool:
+        """Frame confirmation: speak a hazard only once the same label has been detected at
+        about the same place (box overlap >= CONFIRM_IOU) in at least `required` of the last
+        `window` detector frames, this frame included. 1-of-1 (the default) always confirms."""
+        if self.confirm_required <= 1:
+            return True
+        seen = 1 + sum(any(label == hazard.label and iou(box, hazard.xyxy) >= CONFIRM_IOU for label, box in frame)
+                       for frame in self._history)
+        return seen >= self.confirm_required
 
     def reset(self):
         """Forget every cooldown and the marked hazard, so the next gated hazard is
@@ -263,6 +278,7 @@ class AlertPolicy:
         self.cooldown = AlertCooldown.from_gate(self.gate, self.clock)
         self.people = []
         self._selected = None
+        self._history.clear()
 
     def process(self, detections, frame_size, depth_map=None, now=None) -> FrameAlerts:
         now = self.clock() if now is None else now
@@ -278,6 +294,8 @@ class AlertPolicy:
                     tracks[id(hazard)].outside_path = True
         selected = None
         for hazard in announceable:
+            if not self.confirmed(hazard):
+                continue
             if hazard.label == 'People':
                 track = tracks[id(hazard)]
                 size = (hazard.xyxy[3] - hazard.xyxy[1]) / frame_size[1]
@@ -296,4 +314,6 @@ class AlertPolicy:
             selected = next((hazard for hazard in announceable
                              if (hazard.label, hazard.position) == self._selected), None)
         self._selected = (selected.label, selected.position) if selected is not None else None
+        if self._history.maxlen:
+            self._history.append([(hazard.label, tuple(hazard.xyxy)) for hazard in hazards])
         return FrameAlerts(hazards, alerts, alerts[0] if alerts else "", selected, speak)

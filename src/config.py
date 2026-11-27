@@ -70,10 +70,46 @@ def validate_alert_gate(gate, names=CLASS_NAMES):
     for key, value in gate['cooldown_seconds'].items():
         _fraction(value, f'cooldown_seconds.{key}', upper=600.0)
     _fraction(gate['proximity_jump_to_realert'], 'proximity_jump_to_realert')
+    confirm = gate.get('confirm_frames')
+    if confirm is not None:
+        required, window = confirm.get('required'), confirm.get('window')
+        if not all(isinstance(v, int) and not isinstance(v, bool) for v in (required, window)) \
+                or not 1 <= required <= window <= 10:
+            raise ValueError('alert_gate.confirm_frames needs integers 1 <= required <= window <= 10')
     for label, value in gate.get('known_heights_m', {}).items():
         if label not in names:
             raise ValueError(f'alert_gate.known_heights_m: unknown class {label}')
         _fraction(value, f'known_heights_m.{label}', upper=10.0)
+
+
+def parse_confirm(text):
+    """'2/3' -> {'required': 2, 'window': 3}."""
+    try:
+        required, window = (int(part) for part in str(text).split('/'))
+    except ValueError:
+        raise ValueError('--confirm must look like K/N, for example 2/3') from None
+    if not 1 <= required <= window <= 10:
+        raise ValueError('--confirm needs 1 <= K <= N <= 10')
+    return {'required': required, 'window': window}
+
+
+def parse_class_conf(items, names=CLASS_NAMES):
+    """['Stair=0.25', 'wet floor sign=0.3'] -> {'Stair': 0.25, 'Wet Floor Sign': 0.3} (class names ignore case)."""
+    canonical = {name.lower(): name for name in names}
+    thresholds = {}
+    for item in items or ():
+        label, sep, value = str(item).rpartition('=')
+        name = canonical.get(label.strip().lower())
+        if not sep or name is None:
+            raise ValueError(f'--class-conf needs CLASS=VALUE with CLASS one of {", ".join(names)}; got {item!r}')
+        try:
+            threshold = float(value)
+        except ValueError:
+            raise ValueError(f'--class-conf value must be a number: {item!r}') from None
+        if not math.isfinite(threshold) or not 0 <= threshold <= 1:
+            raise ValueError(f'--class-conf value must be between 0 and 1: {item!r}')
+        thresholds[name] = threshold
+    return thresholds
 
 
 def add_detector_arguments(parser):
@@ -81,11 +117,15 @@ def add_detector_arguments(parser):
     parser.add_argument('--backend', choices=['local', 'cloud'], default='local')
     parser.add_argument('--model', default=None, help='Override local weights; cloud weights are set on the server')
     parser.add_argument('--conf', type=float, default=None, help='Override all class thresholds (0-1)')
+    parser.add_argument('--class-conf', action='append', default=None, metavar='CLASS=VALUE',
+                        help='Override one class threshold, e.g. --class-conf "Stair=0.25"; repeatable, applied after --conf')
     parser.add_argument('--imgsz', type=int, default=None, help='Override local inference size')
     parser.add_argument('--device', default='cpu', help='Local inference device: cpu, mps, or CUDA index')
     parser.add_argument('--endpoint', default=None, help='Cloud service base URL; frames leave this device')
     parser.add_argument('--timeout', type=float, default=3.0, help='Cloud request deadline in seconds')
     parser.add_argument('--no-gate', action='store_true', help='Disable the alert gate: announce every detection (old behaviour)')
+    parser.add_argument('--confirm', default=None, metavar='K/N',
+                        help='Speak a hazard only after it is seen in K of the last N detector frames, e.g. 2/3 (1/1 = off)')
     parser.add_argument('--max-frame-age', type=float, default=3.0, help='Discard frames/results older than this many seconds')
 
 
@@ -103,11 +143,20 @@ def detector_settings(args):
     gate = dict(config['alert_gate'])
     if getattr(args, 'no_gate', False):
         gate['enabled'] = False
+    if getattr(args, 'confirm', None):
+        gate['confirm_frames'] = parse_confirm(args.confirm)
+        validate_alert_gate(gate, config['classes'])
+    thresholds = {n: args.conf if args.conf is not None else t for n, t in spec['class_thresholds'].items()}
+    per_class = parse_class_conf(getattr(args, 'class_conf', None), config['classes'])
+    thresholds.update(per_class)
+    # The detector's own pre-filter (NMS conf / the cloud request's confidence) must
+    # be the lowest class threshold, or a lowered class never reaches the per-class filter.
+    override = min(thresholds.values()) if per_class else args.conf
     spec.update(classes=config['classes'], severity=config['severity'], backend=args.backend, alert_gate=gate,
                 weights=resolve_path(args.model or spec['file']),
-                confidence=args.conf if args.conf is not None else min(spec['class_thresholds'].values()),
-                class_thresholds={n: args.conf if args.conf is not None else t for n, t in spec['class_thresholds'].items()},
+                confidence=min(thresholds.values()),
+                class_thresholds=thresholds,
                 input_size=args.imgsz or spec['input_size'], device=args.device,
                 endpoint=args.endpoint, timeout=args.timeout, max_frame_age=args.max_frame_age,
-                confidence_override=args.conf)
+                confidence_override=override)
     return spec

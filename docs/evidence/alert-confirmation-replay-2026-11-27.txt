@@ -1,0 +1,6 @@
+config        spoken  per min  single-frame first-alert delay vs fp32_1of1
+fp32_1of1         52     25.2             4          median 0 ms, max 0 ms
+fp32_2of3         45     21.8             0 median 125 ms, max 125 ms; never spoken: ['People_passing_through_a_shared_space: Object (gated in 1 frames)', 'Walk_to_the_subway_stairs: Stair (gated in 1 frames)', 'Wet_floor_sign_-_field_sequence: Object (gated in 1 frames)']
+int8_2of3         48     23.2             1 median 125 ms, max 1201 ms; never spoken: ['People_passing_through_a_shared_space: Object (gated in 1 frames)', 'Walk_to_the_subway_stairs: Stair (gated in 0 frames)', 'Wet_floor_sign_-_field_sequence: Object (gated in 1 frames)']
+
+8 videos, 124 s of footage per config

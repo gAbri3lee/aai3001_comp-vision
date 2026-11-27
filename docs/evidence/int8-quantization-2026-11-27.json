@@ -1,0 +1,31 @@
+{
+  "fp32": "deploy/vercel/model/yolov8n_v4_four_class.onnx",
+  "int8": "models/local/yolov8n_v4_four_class_int8.onnx",
+  "eval_images": 20,
+  "threads": 2,
+  "size_mb": {
+    "fp32": 12.16,
+    "int8": 3.48
+  },
+  "median_ms": {
+    "fp32": 56.8,
+    "int8": 38.2
+  },
+  "speedup": 1.49,
+  "golden_parity_vs_fp32": {
+    "passed": true,
+    "matched": 19,
+    "total": 20,
+    "extra": 1,
+    "missing_images": [],
+    "unexpected_images": [],
+    "largest_confidence_difference": 0.12567025423049927
+  },
+  "agreement_vs_fp32_iou50": {
+    "matched": 20,
+    "total": 20,
+    "missed_share": 0.0,
+    "extra": 0
+  },
+  "note": "Agreement is measured against the FP32 model on held-out images, not against labels. Adopt INT8 only after the validation mAP / safety-recall check on the cleaned split."
+}

@@ -1,0 +1,48 @@
+# Replay of the 8 demo videos (124 s), every 3rd frame, general model on. a-g: FP32 ONNX; h-i: INT8 ONNX.
+# rec = --confirm 2/3 --class-conf "Stair=0.25" --class-conf "Wet Floor Sign=0.20"
+
+config        spoken  per min  single-frame first-alert delay vs a_base_1of1
+a_base_1of1       53     25.7             4          median 0 ms, max 0 ms
+b_base_2of3       46     22.3             0 median 125 ms, max 125 ms; never spoken: ['People_passing_through_a_shared_space: Object (gated in 1 frames)', 'Walk_to_the_subway_stairs: Stair (gated in 1 frames)', 'Wet_floor_sign_-_field_sequence: Object (gated in 1 frames)']
+c_low25_1of1      55     26.6             4          median 0 ms, max 0 ms
+d_low25_2of3      48     23.2             0 median 125 ms, max 125 ms; never spoken: ['People_passing_through_a_shared_space: Object (gated in 1 frames)', 'Walk_to_the_subway_stairs: Stair (gated in 2 frames)', 'Wet_floor_sign_-_field_sequence: Object (gated in 1 frames)']
+e_low20_2of3      49     23.7             0 median 125 ms, max 125 ms; never spoken: ['People_passing_through_a_shared_space: Object (gated in 1 frames)', 'Walk_to_the_subway_stairs: Stair (gated in 3 frames)', 'Wet_floor_sign_-_field_sequence: Object (gated in 1 frames)']
+f_low15_2of3      51     24.7             0 median 112 ms, max 125 ms; never spoken: ['People_passing_through_a_shared_space: Object (gated in 1 frames)', 'Wet_floor_sign_-_field_sequence: Object (gated in 1 frames)']
+g_rec_fp32        49     23.7             0 median 125 ms, max 125 ms; never spoken: ['People_passing_through_a_shared_space: Object (gated in 1 frames)', 'Walk_to_the_subway_stairs: Stair (gated in 2 frames)', 'Wet_floor_sign_-_field_sequence: Object (gated in 1 frames)']
+h_int8_2of3       49     23.7             1 median 125 ms, max 1401 ms; never spoken: ['People_passing_through_a_shared_space: Object (gated in 1 frames)', 'Walk_to_the_subway_stairs: Stair (gated in 0 frames)', 'Wet_floor_sign_-_field_sequence: Object (gated in 1 frames)']
+i_rec_int8        50     24.2             0 median 125 ms, max 125 ms; never spoken: ['People_passing_through_a_shared_space: Object (gated in 1 frames)', 'Walk_to_the_subway_stairs: Stair (gated in 0 frames)', 'Wet_floor_sign_-_field_sequence: Object (gated in 1 frames)']
+
+8 videos, 124 s of footage per config
+
+
+== Stair ==  (clips that contain it: 3)
+config          frames w/ box (in clips with it)   gated  spoken | frames w/ box (other clips)  spoken
+a_base_1of1                        183/291 (63%)     183       8                             0       0
+b_base_2of3                        183/291 (63%)     183       7                             0       0
+c_low25_1of1                       186/291 (64%)     185       9                             0       0
+d_low25_2of3                       186/291 (64%)     185       8                             0       0
+e_low20_2of3                       187/291 (64%)     186       8                             1       0
+f_low15_2of3                       190/291 (65%)     189      10                             2       0
+g_rec_fp32                         186/291 (64%)     185       8                             0       0
+h_int8_2of3                        164/291 (56%)     163       7                             1       0
+i_rec_int8                         179/291 (62%)     179       8                             1       0
+
+== Wet Floor Sign ==  (clips that contain it: 1)
+config          frames w/ box (in clips with it)   gated  spoken | frames w/ box (other clips)  spoken
+a_base_1of1                          30/80 (38%)       5       2                             0       0
+b_base_2of3                          30/80 (38%)       5       1                             0       0
+c_low25_1of1                         45/80 (56%)       8       3                             0       0
+d_low25_2of3                         45/80 (56%)       8       2                             0       0
+e_low20_2of3                         54/80 (68%)       9       3                             0       0
+f_low15_2of3                         61/80 (76%)      10       3                             0       0
+g_rec_fp32                           54/80 (68%)       9       3                             0       0
+h_int8_2of3                          37/80 (46%)       6       2                             0       0
+i_rec_int8                           49/80 (61%)       8       2                             0       0
+
+Per-clip frames with a box (trained model):
+  Stair          Passengers_descending_the_central_staircase   a_base_1of1=119/120  b_base_2of3=119/120  c_low25_1of1=120/120  d_low25_2of3=120/120  e_low20_2of3=120/120  f_low15_2of3=120/120  g_rec_fp32=120/120  h_int8_2of3=100/120  i_rec_int8=115/120
+  Stair          Stairs_and_pedestrians_-_field_sequence       a_base_1of1=63/67  b_base_2of3=63/67  c_low25_1of1=64/67  d_low25_2of3=64/67  e_low20_2of3=64/67  f_low15_2of3=64/67  g_rec_fp32=64/67  h_int8_2of3=64/67  i_rec_int8=64/67
+  Stair          Walk_to_the_subway_stairs                     a_base_1of1=1/104  b_base_2of3=1/104  c_low25_1of1=2/104  d_low25_2of3=2/104  e_low20_2of3=3/104  f_low15_2of3=6/104  g_rec_fp32=2/104  h_int8_2of3=0/104  i_rec_int8=0/104
+  Wet Floor Sign Wet_floor_sign_-_field_sequence               a_base_1of1=30/80  b_base_2of3=30/80  c_low25_1of1=45/80  d_low25_2of3=45/80  e_low20_2of3=54/80  f_low15_2of3=61/80  g_rec_fp32=54/80  h_int8_2of3=37/80  i_rec_int8=49/80
+
+False-alarm detail (spoken Stair / Wet Floor Sign in clips without it):
