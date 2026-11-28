@@ -89,6 +89,11 @@
       }
     }
   },
+  "general": {
+    "file": "models/general/yolov8n_int8.onnx",
+    "fp32_file": "models/general/yolov8n.pt",
+    "note": "Supplementary COCO YOLOv8n (People/Object boxes). Static INT8 of its ONNX export via scripts/quantize_general_model.py, used on CPU; fp32_file (downloaded on first use) is used on other devices, without ONNX Runtime, or when the INT8 file is missing. --general-model overrides. On the clean test split its person boxes give People recall 83.0% vs 85.3% for fp32_file, precision 63.3% vs 60.8% (docs/evidence/general-model-int8-2026-11-28.json); about 1.6x faster."
+  },
   "cloud": {
     "model": "rfdetr-nano",
     "file": "models/cloud/rfdetr-nano_v4_four_class.pth",

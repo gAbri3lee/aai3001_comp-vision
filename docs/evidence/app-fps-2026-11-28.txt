@@ -1,0 +1,20 @@
+VisionAid app frame rate, 2026-11-28 (Windows 11 laptop, 16 logical CPUs, CPU only)
+
+Method: src/webapp.py --source "demo/videos/Stairs and pedestrians - field sequence.mp4" --no-tts,
+/status sampled every 0.25 s for 12 s after a 3 s warm-up; medians. "detector" = hazard model + general
+COCO model per frame (status latency_ms). Same-setting repeats differ by up to ~3 FPS.
+
+Hazard model alone (scripts/verify_detector.py --frames 100, golden images, 4 ONNX threads):
+  FP32 ONNX  44.8 ms  22.2 FPS
+  INT8 ONNX  26.0 ms  37.7 FPS
+General COCO YOLOv8n alone (Ultralytics predict, 640 px; scripts/quantize_general_model.py):
+  yolov8n.pt (PyTorch)  56.4 ms
+  INT8 ONNX             34.7 ms   (1.63x)
+
+Whole app, depth off:
+  hazard FP32 ONNX + general .pt     10.2 FPS  (detector 94.5 ms)
+  hazard INT8      + general .pt     12.4 / 13.1 / 14.6 / 15.4 FPS  (detector 61-77 ms)
+  hazard INT8      + general INT8    19.8 / 20.2 FPS  (detector 46-47 ms)   <- current default
+Whole app, depth on (MiDaS adds ~100 ms/frame), measured before the general INT8 change:
+  hazard FP32 ONNX + general .pt      4.9 FPS
+  hazard INT8      + general .pt      5.7 FPS

@@ -15,7 +15,7 @@ import logging
 from dataclasses import replace
 import time
 
-from config import resolve_path
+from config import load_config, resolve_path
 from detection import make_detection
 from detectors import create_detector
 from golden import iou
@@ -25,11 +25,32 @@ _LOAD = object()
 logger = logging.getLogger(__name__)
 
 
-def load_general_model():
+def general_weights(weights=None, device='cpu'):
+    """The general model file to load: `weights` if given, else the INT8 ONNX on CPU, else the .pt.
+
+    The INT8 file runs through ONNX Runtime on the CPU only; other devices, a missing INT8 file or a
+    missing ONNX Runtime fall back to the full-precision .pt (which Ultralytics downloads on first use).
+    """
+    if weights is not None:
+        return resolve_path(weights)
+    spec = load_config().get('general', {})
+    fp32 = resolve_path(spec.get('fp32_file', 'models/general/yolov8n.pt'))
+    int8 = resolve_path(spec['file']) if spec.get('file') else None
+    if int8 is None or str(device) != 'cpu' or not int8.is_file():
+        return fp32
+    try:
+        import onnxruntime  # noqa: F401
+    except ImportError:
+        logger.warning('ONNX Runtime unavailable; using the full-precision general model')
+        return fp32
+    return int8
+
+
+def load_general_model(weights=None, device='cpu'):
     from ultralytics import YOLO
-    weights = resolve_path('models/general/yolov8n.pt')
+    weights = general_weights(weights, device)
     weights.parent.mkdir(parents=True, exist_ok=True)
-    # Ultralytics downloads the pretrained weights on first use.
+    # Ultralytics downloads the pretrained .pt weights on first use.
     model = YOLO(str(weights), task='detect')
     if len(model.names) != 80 or model.names[0] != 'person' or model.names[56] != 'chair':
         raise ValueError('General detector requires the standard 80-class COCO checkpoint')
@@ -44,7 +65,7 @@ class SceneDetector:
         self.general_error = None
         if general is _LOAD:
             try:
-                general = load_general_model()
+                general = load_general_model(settings.get('general_weights'), settings['device'])
             except Exception as exc:
                 logger.error('General model unavailable: %s', exc)
                 general, self.general_error = None, f'General model unavailable: {exc}'

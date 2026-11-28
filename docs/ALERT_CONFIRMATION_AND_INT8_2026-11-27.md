@@ -145,3 +145,21 @@ with 10 false alarms instead of 3. Defaults are therefore all 0.35. `--class-con
 The demo videos showed more frames with a sign at 0.20 (54/80 against 30/80). That does not carry over to labelled
 images, and those clips are not frame-labelled. Frame confirmation still cannot be scored on still images; its case
 rests on the video replays (one-frame alerts 4 → 0).
+
+## 5. General COCO model also INT8 (2026-11-28)
+
+The app runs a second detector on every frame, the COCO YOLOv8n behind the extra People and Object boxes
+(`src/scene_detector.py`). After the hazard model became INT8, this model was the largest per-frame cost.
+`scripts/quantize_general_model.py` exports and quantises it with the same procedure: calibration on 200 clean
+training images, with the detection head's decoding kept in FP32. The result is `models/general/yolov8n_int8.onnx`
+(`general.file`), which is used on CPU. Other devices, a missing file or a missing ONNX Runtime fall back to
+`yolov8n.pt`, and `--general-model` overrides the choice.
+
+- Speed: 56.4 → 34.7 ms (1.63×). The whole app with depth off goes from 12–15 to about 20 FPS on the demo video;
+  it was 10 FPS before either model was quantised. [Measurements](evidence/app-fps-2026-11-28.txt)
+- Agreement with the .pt at conf 0.35, 20 golden images: 26/29 boxes kept and 3 added. Every difference is a
+  borderline box, 0.27–0.43 in one model and on the other side of 0.35 in the other.
+- Person boxes against the People labels of the test split: recall 85.3% → 83.0%, precision 60.8% → 63.3%. With
+  the hazard model's boxes merged as the app does, People recall is 85.3% → 83.0% and precision 58.8% → 60.7%.
+  The hazard model alone gives 57.1%, so app-level People recall comes mostly from this model.
+  [Evidence](evidence/general-model-int8-2026-11-28.json)

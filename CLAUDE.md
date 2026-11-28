@@ -10,6 +10,8 @@ Clean dataset: data/v4_four_class_clean/data.yaml, 7749/859/769 train/valid/test
 
 Cloud belongs to the teammate. Legacy five-class services are supported through explicit cloud.legacy_service_classes mapping, discarding pillar and remapping Stair 3->2 and sign 4->3. Preserve HTTP schema and validate all IDs/names. The default RF-DETR checkpoint has four foreground classes. Reproduce it with scripts/project_four_class_rfdetr.py. Local/fake tests do not verify hosted cloud.
 
+General COCO model (28 November 2026): config general.file = models/general/yolov8n_int8.onnx (committed, scripts/quantize_general_model.py) on CPU; falls back to general.fp32_file yolov8n.pt on other devices, missing file or missing onnxruntime; --general-model overrides. Test-split person-box People recall 83.0% vs 85.3% (.pt). App FPS depth off ~20 vs 12-15 (docs/evidence/app-fps-2026-11-28.txt).
+
 Pipeline: capture -> detector plus optional COCO -> optional relative depth -> AlertPolicy -> bounded speech. General detections retain ID -1; COCO people use People, others Object. COCO is not open-world. Local mode never sends frames to cloud. Preserve fallback, late-result rejection, one request at a time and source-generation invalidation.
 
 Size gates/priorities/cooldowns and the 0.35 local thresholds are unchanged. Calibration remains false; no measured range claims. Pinhole estimates only for People/sign after actual calibration; never speak verified metres.

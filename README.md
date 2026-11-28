@@ -83,9 +83,10 @@ New-Item -ItemType Directory -Force artifacts | Out-Null
 .\.venv\Scripts\python.exe scripts/remove_pillar_head.py
 ```
 
-The GUI may download a supplementary COCO YOLOv8n checkpoint to
-`models/general/yolov8n.pt` on first use. If that download fails, the trained
-hazard detector can still run.
+The GUI also runs a supplementary COCO YOLOv8n for extra People and Object boxes. On CPU it uses the INT8 export
+committed at `models/general/yolov8n_int8.onnx`. On other devices, or without ONNX Runtime, it downloads
+`models/general/yolov8n.pt` on first use; `--general-model models/general/yolov8n.pt` forces that file. If the general
+model cannot load, the trained hazard detector still runs.
 
 ### 3. Start the browser GUI
 
@@ -336,6 +337,26 @@ The test split showed the same thing (INT8). Stair at 0.25 gave recall 70.5% and
 79.8% at 0.35. Wet Floor Sign at 0.20 gave the same recall with 10 false alarms instead of 3. Every class is
 therefore back at 0.35. [Validation sweep](docs/evidence/class-thresholds-validation-sweep-2026-11-28.json)
 
+**General object model, also INT8 (2026-11-28).** Every frame also runs a supplementary COCO YOLOv8n for extra
+People and Object boxes. It was the largest remaining cost (56 ms in PyTorch), so it is now quantised the same way
+(`scripts/quantize_general_model.py`): 34.7 ms, 1.6× faster.
+
+| Whole app on a demo video, depth off | Frames per second |
+| --- | ---: |
+| Full-precision hazard model + PyTorch general model (before) | 10 |
+| INT8 hazard model + PyTorch general model | 12–15 |
+| **INT8 hazard model + INT8 general model (default)** | **20** |
+
+With depth on, MiDaS adds about 100 ms per frame and the app runs at about 5–6 FPS.
+[Measurements](docs/evidence/app-fps-2026-11-28.txt)
+
+The general model's person boxes supply most of the app's People detections. On the test split, INT8 changes their
+People recall from 85.3% to 83.0% (13 fewer of 559 people) and precision from 60.8% to 63.3%. Its other borderline
+changes are boxes crossing the 0.35 cut-off (0.27–0.43 confidence). Hazard classes are unaffected. Object boxes
+cannot be scored, because the labels cover only the four classes.
+`--general-model models/general/yolov8n.pt` restores the full-precision model.
+[Evidence](docs/evidence/general-model-int8-2026-11-28.json)
+
 These are single images, so 2-of-3 confirmation could not be scored on them. It was chosen by replaying the 8 bundled
 demo videos (124 s):
 
@@ -367,6 +388,7 @@ python scripts/verify_detector.py --images golden/images --reference golden/expe
 python scripts/verify_detector.py --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-int8.json
 python scripts/verify_detector.py --images data/v4_four_class_clean/valid/images --evaluate --frames 0 --output artifacts/four-class-int8-valid.json
 python scripts/sweep_class_thresholds.py --split data/v4_four_class_clean/valid --predictions artifacts/four-class-int8-valid.json --output artifacts/class-threshold-sweep.json
+python scripts/quantize_general_model.py --skip-quantize --people-split data/v4_four_class_clean/test
 python scripts/verify_detector.py --model models/local/yolov8n_v4_four_class.pt --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-test.json
 python scripts/verify_detector.py --model deploy/vercel/model/yolov8n_v4_four_class.onnx --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-onnx.json
 python scripts/verify_detector.py --runtime rfdetr --images data/v4_four_class_clean/test/images --evaluate --frames 0 --output artifacts/four-class-rfdetr.json

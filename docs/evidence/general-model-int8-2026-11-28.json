@@ -1,0 +1,39 @@
+{
+  "reference": "models/general/yolov8n.pt",
+  "int8": "models/general/yolov8n_int8.onnx",
+  "eval_images": 20,
+  "size_mb": {
+    "pt": 6.25,
+    "int8": 3.55
+  },
+  "median_ms": {
+    "pt": 37.7,
+    "int8": 22.2
+  },
+  "speedup": 1.7,
+  "agreement_vs_pt_iou50": {
+    "matched": 26,
+    "total": 29,
+    "missed_share": 0.10344827586206895,
+    "extra": 3
+  },
+  "max_confidence_drop": 0.164,
+  "people_vs_labels": {
+    "split": "data/v4_four_class_clean/test",
+    "images": 769,
+    "pt": {
+      "tp": 477,
+      "fp": 308,
+      "fn": 82,
+      "precision": 0.6076433121019108,
+      "recall": 0.853309481216458
+    },
+    "int8": {
+      "tp": 464,
+      "fp": 269,
+      "fn": 95,
+      "precision": 0.6330150068212824,
+      "recall": 0.8300536672629696
+    }
+  }
+}

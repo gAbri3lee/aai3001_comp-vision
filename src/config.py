@@ -127,6 +127,8 @@ def add_detector_arguments(parser):
     parser.add_argument('--confirm', default=None, metavar='K/N',
                         help='Speak a hazard only after it is seen in K of the last N detector frames, e.g. 2/3 (1/1 = off)')
     parser.add_argument('--max-frame-age', type=float, default=3.0, help='Discard frames/results older than this many seconds')
+    parser.add_argument('--general-model', default=None,
+                        help='Override the supplementary COCO model (default: general.file, INT8 ONNX on CPU)')
 
 
 def detector_settings(args):
@@ -158,5 +160,6 @@ def detector_settings(args):
                 class_thresholds=thresholds,
                 input_size=args.imgsz or spec['input_size'], device=args.device,
                 endpoint=args.endpoint, timeout=args.timeout, max_frame_age=args.max_frame_age,
-                confidence_override=override)
+                confidence_override=override,
+                general_weights=resolve_path(args.general_model) if getattr(args, 'general_model', None) else None)
     return spec
