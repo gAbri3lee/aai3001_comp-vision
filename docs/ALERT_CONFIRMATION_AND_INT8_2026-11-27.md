@@ -163,3 +163,17 @@ training images, with the detection head's decoding kept in FP32. The result is 
   the hazard model's boxes merged as the app does, People recall is 85.3% → 83.0% and precision 58.8% → 60.7%.
   The hazard model alone gives 57.1%, so app-level People recall comes mostly from this model.
   [Evidence](evidence/general-model-int8-2026-11-28.json)
+
+## 6. Depth on every 3rd live frame (2026-11-28)
+
+With both detectors in INT8, depth (MiDaS_small, about 100 ms per frame) was the largest cost whenever it was on.
+`ThrottledDepth` in `src/depth.py` runs it on every Nth live frame (`--depth-every`, default 3). The frames in between
+rank the current boxes against the last map. The map is recomputed early when it is over 1 s old, when the frame
+size changes or when the source or mode changes. Still-image analysis calls the estimator directly. Throughput on the
+*Stairs and pedestrians* clip, with both INT8 detectors and `decide()`: every frame 7.5 FPS, every 2nd 11.2 FPS,
+every 3rd 13.0 FPS, depth off 17.7 FPS. [Measurements](evidence/app-fps-2026-11-28.txt)
+
+Depth gives relative proximity, used only to rank hazards within a frame; no distances are claimed. A hazard that
+appears between depth runs is ranked against a map up to 2 frames (about 150 ms) old. With 2-of-3 confirmation,
+speech already waits a frame.
+

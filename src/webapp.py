@@ -211,10 +211,14 @@ class PipelineState:
             self.detectors["cloud"] = create_detector(self.backend_settings["cloud"],
                                                       general=getattr(local, "general", None))
         if not args.no_depth:
-            from depth import DepthEstimator
+            from depth import DepthEstimator, ThrottledDepth
         if not args.no_tts:
             from tts import Speaker
         self.depth_estimator = None if args.no_depth else DepthEstimator()
+        # Live frames reuse a depth map between depth runs; still-image analysis always uses fresh depth.
+        self.live_depth = (None if self.depth_estimator is None else
+                           ThrottledDepth(self.depth_estimator, getattr(args, 'depth_every', 1)))
+        self._depth_generation = None
         self.speaker = None
         self.speech_error = None
         if not args.no_tts:
@@ -880,6 +884,11 @@ class PipelineState:
                     if self._reset_policy:
                         self.policy.reset()
                         self._reset_policy = False
+                        if self.live_depth is not None:
+                            self.live_depth.reset()
+                    if self.live_depth is not None and generation != self._depth_generation:
+                        self.live_depth.reset()  # never rank a new source against the old one's depth
+                        self._depth_generation = generation
                 if paused:
                     self._show_paused(frame)  # the camera stays open; nothing is inferred
                     continue
@@ -938,7 +947,7 @@ class PipelineState:
                         # One decision per frame: banner, list, highlight and speech all
                         # come from these gated hazards (decision D6).
                         with self._detect_lock:
-                            result = decide(frame, batch, self.policy, self.depth_estimator,
+                            result = decide(frame, batch, self.policy, self.live_depth,
                                             check=lambda: check_fresh('Inference result is stale; discarded'))
                         recognition = media.recognition_dicts(result.hazards)
                         annotated, debug_annotated = annotate(frame, result, show_trained=self.video is not None)
@@ -1233,6 +1242,8 @@ def parse_args():
     parser.add_argument("--source", default=0, help="Camera index or video file path")
     add_detector_arguments(parser)
     parser.add_argument("--no-depth", action="store_true", help="Disable depth estimation stage")
+    parser.add_argument("--depth-every", type=int, default=3, metavar="N",
+                        help="Live video: run depth on every Nth frame and reuse the map in between (1 = every frame)")
     parser.add_argument("--no-tts", action="store_true", help="Disable spoken alerts")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=5000)

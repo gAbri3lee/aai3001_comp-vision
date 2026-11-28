@@ -18,3 +18,12 @@ Whole app, depth off:
 Whole app, depth on (MiDaS adds ~100 ms/frame), measured before the general INT8 change:
   hazard FP32 ONNX + general .pt      4.9 FPS
   hazard INT8      + general .pt      5.7 FPS
+
+Depth every Nth frame (src/depth.py ThrottledDepth, webapp --depth-every), measured as throughput: 150 frames of
+the same video through the app's per-frame work (SceneDetector with both INT8 models + decide() with depth),
+frames / total time, after a 10-frame warm-up. (Sampling /status is unreliable here: frame times alternate
+between depth and non-depth frames, and a median of instantaneous FPS picks one or the other.)
+  depth off        17.7 FPS   56.7 ms/frame
+  depth every 1     7.5 FPS  132.9 ms/frame   (the behaviour before --depth-every)
+  depth every 2    11.2 FPS   89.2 ms/frame
+  depth every 3    13.0 FPS   76.7 ms/frame   <- default; map at most 2 frames (~150 ms) old

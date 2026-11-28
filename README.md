@@ -347,7 +347,18 @@ People and Object boxes. It was the largest remaining cost (56 ms in PyTorch), s
 | INT8 hazard model + PyTorch general model | 12–15 |
 | **INT8 hazard model + INT8 general model (default)** | **20** |
 
-With depth on, MiDaS adds about 100 ms per frame and the app runs at about 5–6 FPS.
+**Depth on every 3rd frame (2026-11-28).** Depth (MiDaS) costs about 100 ms per frame, so with depth on the app
+reached only 5–7 FPS. In live video it now runs on every 3rd frame (`--depth-every 3`), and the frames in between
+rank the current boxes against the last depth map. Relative depth changes little in 2 frames (about 150 ms).
+The map is recomputed early when it is over 1 s old, when the frame size changes or when the source changes.
+Uploaded photos always get fresh depth.
+
+| Depth on, measured as frames per second over 150 video frames | FPS |
+| --- | ---: |
+| Every frame (`--depth-every 1`, the earlier behaviour) | 7.5 |
+| Every 2nd frame | 11.2 |
+| **Every 3rd frame (default)** | **13.0** |
+| Depth off, for comparison | 17.7 |
 [Measurements](docs/evidence/app-fps-2026-11-28.txt)
 
 The general model's person boxes supply most of the app's People detections. On the test split, INT8 changes their
