@@ -87,7 +87,10 @@ class CloudDetector:
                     raise DetectorError('Could not encode camera frame')
                 received['response'] = self.session.post(
                     self.endpoint + '/detect', data=encoded.tobytes(),
-                    headers={'Content-Type': 'image/jpeg'}, timeout=self.timeout,
+                    headers={
+                        'Content-Type': 'image/jpeg',
+                        **({'X-API-Key': self.settings['api_key']} if self.settings.get('api_key') else {}),
+                    }, timeout=self.timeout,
                     params={} if self.settings['confidence_override'] is None else
                            {'confidence': self.settings['confidence_override']})
             except Exception as exc:

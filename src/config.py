@@ -2,6 +2,7 @@
 import argparse
 import json
 import math
+import os
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -84,6 +85,7 @@ def add_detector_arguments(parser):
     parser.add_argument('--imgsz', type=int, default=None, help='Override local inference size')
     parser.add_argument('--device', default='cpu', help='Local inference device: cpu, mps, or CUDA index')
     parser.add_argument('--endpoint', default=None, help='Cloud service base URL; frames leave this device')
+    parser.add_argument('--api-key', default=None, help='Cloud detector API key (or set VISIONAID_API_KEY)')
     parser.add_argument('--timeout', type=float, default=3.0, help='Cloud request deadline in seconds')
     parser.add_argument('--no-gate', action='store_true', help='Disable the alert gate: announce every detection (old behaviour)')
     parser.add_argument('--max-frame-age', type=float, default=3.0, help='Discard frames/results older than this many seconds')
@@ -109,5 +111,6 @@ def detector_settings(args):
                 class_thresholds={n: args.conf if args.conf is not None else t for n, t in spec['class_thresholds'].items()},
                 input_size=args.imgsz or spec['input_size'], device=args.device,
                 endpoint=args.endpoint, timeout=args.timeout, max_frame_age=args.max_frame_age,
+                api_key=args.api_key or os.environ.get('VISIONAID_API_KEY'),
                 confidence_override=args.conf)
     return spec

@@ -1,5 +1,6 @@
 """JPEG-only detector service. Run behind the hosting platform's HTTPS/access control."""
 import io
+import hmac
 import math
 import os
 import threading
@@ -26,6 +27,10 @@ def create_app(detector=None, config=None):
 
     @app.post('/detect')
     def detect():
+        api_key = os.environ.get('VISIONAID_API_KEY')
+        supplied_key = request.headers.get('X-API-Key', '')
+        if api_key and not hmac.compare_digest(supplied_key, api_key):
+            return jsonify(error='Missing or invalid API key'), 401
         if request.mimetype != 'image/jpeg':
             return jsonify(error='Send a JPEG body with Content-Type: image/jpeg'), 415
         confidence = request.args.get('confidence')

@@ -112,15 +112,12 @@ to check speech. Add `--no-tts` for a silent run. These commands skip the
 experimental MiDaS depth stage to keep the demo responsive. Press **Ctrl+C** to
 stop the GUI before starting it again on the same port.
 
-## Cloud detector with RF-DETR (hidden)
+## Cloud detector with RF-DETR
 
-**The RF-DETR cloud deployment is not working, so the GUI hides its Local/Cloud
-switch, Retry cloud button, C shortcut and compare option.** In their place, the
-header shows a **Cloud (Vercel)** link that opens [the Vercel deployment](#vercel-upload-image)
-in a new tab. Nothing from the live GUI is sent to it. The service code
-and `--endpoint` option are unchanged. To show the controls again, set
-`SHOW_CLOUD_CONTROLS` to `true` in [the page template](src/templates/index.html).
-The steps below are kept for when the service is fixed.
+For the deadline-ready Google Cloud Run deployment, including cost controls and
+an API key, follow [the Google Cloud deployment guide](cloud/README-GCP.md).
+The service runs the native four-class RF-DETR Nano checkpoint on CPU and can
+scale to zero. A GPU is not required.
 
 RF-DETR is a separate service. Start Docker Desktop on your device
 and run the commands below from the repo root. The build command is the same
@@ -133,14 +130,13 @@ docker build -f cloud/Dockerfile -t visionaid-rfdetr .
 **macOS**
 
 ```bash
-docker run --rm -p 127.0.0.1:9100:9000 --mount "type=bind,source=$PWD/models/cloud,target=/app/models/cloud,readonly" visionaid-rfdetr
+docker run --rm -p 127.0.0.1:9100:8080 visionaid-rfdetr
 ```
 
 **Windows**
 
 ```powershell
-$cloudModels = Join-Path $PWD.Path 'models\cloud'
-docker run --rm -p 127.0.0.1:9100:9000 --mount "type=bind,source=$cloudModels,target=/app/models/cloud,readonly" visionaid-rfdetr
+docker run --rm -p 127.0.0.1:9100:8080 visionaid-rfdetr
 ```
 
 Leave the service running. In a second terminal, wait for `/health` to return

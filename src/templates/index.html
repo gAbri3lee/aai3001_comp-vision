@@ -63,12 +63,6 @@
     border: 1px solid currentColor; border-radius: 4px;
   }
   .hint { color: var(--muted); font-size: 0.8rem; }
-  a.cloud-link {
-    font-size: 0.9rem; font-weight: 600; color: var(--text); text-decoration: none;
-    background: var(--button); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.75rem;
-  }
-  a.cloud-link:hover { border-color: var(--accent); }
-  a.cloud-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .mode-badge {
     font-weight: 700; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 8px;
     border: 2px solid var(--accent); color: var(--text);
@@ -254,10 +248,6 @@
     <button type="button" id="retry-cloud" hidden>Retry cloud</button>
     <span class="hint" aria-hidden="true"><kbd>C</kbd> switch</span>
   </div>
-  <!-- The RF-DETR cloud service is not deployed. The Cloud tab opens the Vercel photo and video check instead.
-       Nothing from this page is sent to it; it opens in a new tab so the live session here keeps running. -->
-  <a class="cloud-link" id="cloud-link" href="https://aai3001-gwup54owc-computer-vision2.vercel.app/"
-     target="_blank" rel="noopener noreferrer">Cloud (Vercel, opens in a new tab)</a>
   <div class="controls" role="group" aria-label="Alerts">
     <button type="button" id="pause" aria-pressed="false" aria-keyshortcuts="Space">Pause <kbd>Space</kbd></button>
     <button type="button" id="mute" aria-pressed="false" aria-keyshortcuts="M">Mute <kbd>M</kbd></button>
@@ -412,9 +402,8 @@
   const modelStatus = $("model-status"), pipelineStatus = $("pipeline-status"), messages = $("messages");
   const modeBadge = $("mode-badge"), retryCloud = $("retry-cloud");
   const modeButtons = {local: $("mode-local"), cloud: $("mode-cloud")};
-  // The RF-DETR cloud service is not deployed, so its controls stay hidden. The backend and
-  // POST /mode are unchanged. Set this to true to bring the Local/Cloud switch back.
-  const SHOW_CLOUD_CONTROLS = false;
+  // RF-DETR is available when the desktop app starts with a healthy --endpoint.
+  const SHOW_CLOUD_CONTROLS = true;
   const detectorControls = $("detector-controls");
   const pauseButton = $("pause"), muteButton = $("mute"), rate = $("rate"), rateValue = $("rate-value");
   const lastSpoken = $("last-spoken"), legend = $("legend"), spokenLog = $("spoken-log");

@@ -7,8 +7,8 @@ RUN pip install --no-cache-dir torch==2.9.0 torchvision==0.24.0 --index-url ${TO
     pip install --no-cache-dir -r /app/cloud/requirements.txt
 COPY src /app/src
 COPY visionaid_config.json /app/visionaid_config.json
-ENV PYTHONPATH=/app/src VISIONAID_DEVICE=cpu
-EXPOSE 9000
-# Mount the supplied checkpoint at /app/models/cloud/rfdetr-nano_v4_four_class.pth.
-# One worker loads the model once; the app rejects concurrent inference.
-CMD ["gunicorn", "--bind", "0.0.0.0:9000", "--workers", "1", "--threads", "2", "--timeout", "120", "cloud_service:create_app()"]
+COPY models/cloud/rfdetr-nano_v4_four_class.pth /app/models/cloud/rfdetr-nano_v4_four_class.pth
+ENV PYTHONPATH=/app/src VISIONAID_DEVICE=cpu PORT=8080
+EXPOSE 8080
+# One worker loads RF-DETR once. Cloud Run is configured for concurrency 1.
+CMD ["sh", "-c", "exec gunicorn --bind \"0.0.0.0:${PORT}\" --workers 1 --threads 2 --timeout 120 'cloud_service:create_app()'"]

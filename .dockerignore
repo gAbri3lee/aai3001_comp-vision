@@ -2,5 +2,8 @@
 .venv
 __pycache__
 artifacts
-models
+models/*
+!models/cloud/
+models/cloud/*
+!models/cloud/rfdetr-nano_v4_four_class.pth
 *.ipynb

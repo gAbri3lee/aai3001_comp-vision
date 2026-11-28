@@ -3,6 +3,7 @@ import io
 import threading
 import time
 import unittest
+import os
 from unittest.mock import patch
 
 import numpy as np
@@ -50,6 +51,28 @@ class BackendTests(unittest.TestCase):
         self.assertGreater(r, b + 100)
         with patch.object(predictor, 'predict', side_effect=RuntimeError('failed')):
             self.assertEqual(client.post('/detect', data=buffer.getvalue(), content_type='image/jpeg').status_code, 503)
+
+    def test_cloud_service_api_key_protects_inference(self):
+        from unittest.mock import Mock
+        predictor = Mock()
+        app = create_app(predictor, load_config())
+        client = app.test_client()
+        with patch.dict(os.environ, {'VISIONAID_API_KEY': 'secret'}):
+            self.assertEqual(client.get('/health').status_code, 200)
+            self.assertEqual(client.post('/detect', data=b'', content_type='image/jpeg').status_code, 401)
+            response = client.post('/detect', data=b'', content_type='image/jpeg',
+                                   headers={'X-API-Key': 'secret'})
+            self.assertEqual(response.status_code, 400)
+
+    def test_cloud_client_sends_configured_api_key(self):
+        import requests
+        spec = settings('--backend', 'cloud', '--endpoint', 'https://example.test',
+                        '--api-key', 'secret')
+        detector = CloudDetector(spec)
+        with patch.object(detector.session, 'post', side_effect=requests.Timeout()) as post, \
+             self.assertRaises(DetectorError):
+            detector.predict(np.zeros((40, 80, 3), dtype=np.uint8))
+        self.assertEqual(post.call_args.kwargs['headers']['X-API-Key'], 'secret')
 
     def test_cloud_client_real_http_round_trip_and_threshold(self):
         class Predictor:
